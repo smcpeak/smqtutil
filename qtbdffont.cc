@@ -6,6 +6,7 @@
 #include "bdffont.h"                   // BDFFont
 #include "bit2d.h"                     // Bit2d::Size
 #include "exc.h"                       // xbase
+#include "strtokp.h"                   // StrtokParse
 
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
@@ -289,6 +290,22 @@ void drawCenteredString(QtBDFFont &font, QPainter &dest,
 }
 
 
+void drawMultilineString(QtBDFFont &font, QPainter &dest,
+                         QPoint upLeft, rostring str)
+{ 
+  // adjust 'upLeft' so it is the starting origin
+  upLeft += -font.getAllCharsBBox().topLeft();
+
+  // split 'str' into lines
+  StrtokParse tok(str, "\r\n");
+  for (int i=0; i < tok.tokc(); i++) {
+    drawString(font, dest, upLeft, tok[i]);
+    
+    upLeft.setY(upLeft.y() + font.getAllCharsBBox().height());
+  }
+}
+
+
 // -------------------------- test code -----------------------------
 #ifdef TEST_QTBDFFONT
 
@@ -473,9 +490,9 @@ void entry(int argc, char **argv)
   QtBDFFont qfont(font, fg, bg);
 
   QLabel widget(NULL /*parent*/);
-  widget.resize(300,100);
+  widget.resize(300,300);
 
-  QPixmap pixmap(300,100);
+  QPixmap pixmap(300,300);
   pixmap.fill(bg);
 
   QPainter painter(&pixmap);
@@ -484,6 +501,13 @@ void entry(int argc, char **argv)
 
   drawString(qfont, painter, QPoint(50,50),
              "drawString(QtBDFFont &)");
+
+  drawCenteredString(qfont, painter, QPoint(150,150),
+                     "some centered text blah blah blah blah blah");
+
+  painter.drawLine(QPoint(0,200), QPoint(300,200));
+  drawMultilineString(qfont, painter, QPoint(0, 200),
+                      "multiple\nlines\nin a\nstring");
 
   widget.setPixmap(pixmap);
 

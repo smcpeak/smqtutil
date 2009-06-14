@@ -156,4 +156,11 @@ void drawCenteredString(QtBDFFont &font, QPainter &dest,
                         QPoint center, rostring str);
 
 
+// Draw a string that contains multiple newline-separated lines.
+// The 'upLeft' is the upper-left corner to start at; it is *not*
+// the starting origin.
+void drawMultilineString(QtBDFFont &font, QPainter &dest,
+                         QPoint upLeft, rostring str);
+
+
 #endif // QTBDFFONT_H
