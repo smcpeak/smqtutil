@@ -87,9 +87,11 @@ libsmqtutil.a: $(OBJS)
 
 
 # --------------- qtbdffont test program ----------------
+QTBDFFONT_OBJS := $(filter-out qtbdffont.o,$(OBJS))
+
 TOCLEAN += qtbdffont
-qtbdffont: qtbdffont.h qtbdffont.cc $(LIBSMBASE)
-	$(CXX) -o $@ $(CCFLAGS) -DTEST_QTBDFFONT qtbdffont.cc $(LDFLAGS)
+qtbdffont: qtbdffont.h qtbdffont.cc $(QTBDFFONT_OBJS) $(LIBSMBASE)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_QTBDFFONT qtbdffont.cc $(QTBDFFONT_OBJS) $(LDFLAGS)
 
 
 # --------------------- misc ------------------------

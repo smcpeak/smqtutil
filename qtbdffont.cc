@@ -8,6 +8,9 @@
 #include "exc.h"                       // xbase
 #include "strtokp.h"                   // StrtokParse
 
+#include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
+#include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
+
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
 
@@ -474,7 +477,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
 void entry(int argc, char **argv)
 {
   BDFFont font;
-  parseBDFFile(font, "fonts/editor14r.bdf");
+  parseBDFString(font, bdfFontData_editor14r);
 
   QApplication app(argc, argv);
 
@@ -485,8 +488,10 @@ void entry(int argc, char **argv)
   }
 
   // make it again with different colors for drawing
-  QColor fg = Qt::yellow;
-  QColor bg = Qt::blue;
+  //QColor fg = Qt::yellow;
+  //QColor bg = Qt::blue;
+  QColor fg = Qt::black;
+  QColor bg(192, 192, 192);
   QtBDFFont qfont(font, fg, bg);
 
   QLabel widget(NULL /*parent*/);
@@ -502,12 +507,21 @@ void entry(int argc, char **argv)
   drawString(qfont, painter, QPoint(50,50),
              "drawString(QtBDFFont &)");
 
-  drawCenteredString(qfont, painter, QPoint(150,150),
+  BDFFont font2;
+  parseBDFString(font2, bdfFontData_lurs12);
+  QtBDFFont qfont2(font2, fg, bg);
+
+  drawCenteredString(qfont2, painter, QPoint(150,100),
                      "some centered text blah blah blah blah blah");
 
-  painter.drawLine(QPoint(0,200), QPoint(300,200));
-  drawMultilineString(qfont, painter, QPoint(0, 200),
-                      "multiple\nlines\nin a\nstring");
+  painter.drawLine(QPoint(0,150), QPoint(300,150));
+  drawMultilineString(qfont2, painter, QPoint(0, 150),
+                      "Entity iiiimmmm\n"
+                      "RelationEndpoint\n"
+                      "Diagram\n"
+                      "ControlPoint\n"
+                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\n"
+                      "abcdefghijklmnopqrstuvwxyz\n");
 
   widget.setPixmap(pixmap);
 
