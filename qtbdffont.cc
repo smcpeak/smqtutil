@@ -8,7 +8,7 @@
 #include "exc.h"                       // xbase
 
 #include <qimage.h>                    // QImage
-#include <qpaintdevice.h>              // QPaintDevice
+#include <qpainter.h>                  // QPainter
 
 
 // --------------------- QtBDFFont::Metrics -----------------------
@@ -207,7 +207,7 @@ QPoint QtBDFFont::getCharOffset(int index) const
 }
 
 
-void QtBDFFont::drawChar(QPaintDevice *dest, QPoint pt, int index)
+void QtBDFFont::drawChar(QPainter &dest, QPoint pt, int index)
 {
   if (!hasChar(index)) {
     return;
@@ -218,15 +218,13 @@ void QtBDFFont::drawChar(QPaintDevice *dest, QPoint pt, int index)
   pt -= (met.origin - met.bbox.topLeft());
 
   // Copy the image.
-  bitBlt(dest,                         // dest device
-         pt,                           // upper-left of dest rectangle
-         &glyphs,                      // source device
-         met.bbox,                     // source rectangle
-         Qt::CopyROP);                 // blit operation
+  dest.drawPixmap(pt,                  // upper-left of dest rectangle
+                  glyphs,              // source pixmap
+                  met.bbox);           // source rectangle
 }
 
 
-void drawString(QtBDFFont &font, QPaintDevice *dest,
+void drawString(QtBDFFont &font, QPainter &dest,
                 QPoint pt, rostring str)
 {
   for (char const *p = str.c_str(); *p; p++) {
@@ -274,7 +272,7 @@ QRect getStringBBox(QtBDFFont &font, rostring str)
 }
 
 
-void drawCenteredString(QtBDFFont &font, QPaintDevice *dest,
+void drawCenteredString(QtBDFFont &font, QPainter &dest,
                         QPoint center, rostring str)
 {
   // Calculate a bounding rectangle for the entire string.
@@ -298,7 +296,6 @@ void drawCenteredString(QtBDFFont &font, QPaintDevice *dest,
 
 #include <qapplication.h>              // QApplication
 #include <qlabel.h>                    // QLabel
-#include <qpainter.h>                  // QPainter
 
 ARGS_MAIN
 
@@ -397,7 +394,8 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
       QPoint origin = QPoint(MARGIN,MARGIN) - bbox.topLeft();
 
       // Render the glyph.
-      qfont.drawChar(&pixmap, origin, charIndex);
+      QPainter painter(&pixmap);
+      qfont.drawChar(painter, origin, charIndex);
 
       // Now, convert the QPixmap into a QImage to allow fast access
       // to individual pixels.
@@ -480,13 +478,11 @@ void entry(int argc, char **argv)
   QPixmap pixmap(300,100);
   pixmap.fill(bg);
 
-  {
-    QPainter painter(&pixmap);
-    painter.setPen(fg);
-    painter.drawText(50,20, "QPainter::drawText");
-  }
+  QPainter painter(&pixmap);
+  painter.setPen(fg);
+  painter.drawText(50,20, "QPainter::drawText");
 
-  drawString(qfont, &pixmap, QPoint(50,50),
+  drawString(qfont, painter, QPoint(50,50),
              "drawString(QtBDFFont &)");
 
   widget.setPixmap(pixmap);

@@ -1,5 +1,5 @@
 // qtbdffont.h
-// module for writing to QPaintDevices using BDF fonts
+// module for writing to QPainters using BDF fonts
 //
 // This module relies in the smbase/bdffont.h module to obtain font
 // glyphs.  It then copies that font information into a format
@@ -45,7 +45,7 @@
 #include <qrect.h>                     // QRect
 
 class BDFFont;                         // smbase/bdffont.h
-class QPaintDevice;                    // qpaintdevice.h
+class QPainter;                        // qpainter.h
 
 
 // Store a font in a form suitable for drawing.
@@ -130,7 +130,7 @@ public:      // funcs
   // specified in the constructor call.
   //
   // If there is no glyph with the given index, this is a no-op.
-  void drawChar(QPaintDevice *dest, QPoint pt, int index);
+  void drawChar(QPainter &dest, QPoint pt, int index);
 };
 
 
@@ -139,7 +139,7 @@ public:      // funcs
 // The individual characters in 'str' are interpreted as 'unsigned
 // char' for purposes of extracting a character index.  (See note at
 // top of file.)
-void drawString(QtBDFFont &font, QPaintDevice *dest,
+void drawString(QtBDFFont &font, QPainter &dest,
                 QPoint pt, rostring str);
 
 
@@ -152,7 +152,7 @@ QRect getStringBBox(QtBDFFont &font, rostring str);
 
 // Draw a string centered both horizontally and vertically about
 // the given point, according to the glyph bbox metrics.
-void drawCenteredString(QtBDFFont &font, QPainter *dest,
+void drawCenteredString(QtBDFFont &font, QPainter &dest,
                         QPoint center, rostring str);
 
 
