@@ -1,0 +1,7 @@
+*.tmp*
+*.d
+moc_*
+*.o
+qtbdffont
+*.gen.*
+*.a
