@@ -8,9 +8,6 @@
 #include "exc.h"                       // xbase
 #include "strtokp.h"                   // StrtokParse
 
-#include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
-#include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
-
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
 
@@ -38,13 +35,17 @@ bool QtBDFFont::Metrics::isPresent() const
 
 
 // ------------------------- QtBDFFont --------------------------
-QtBDFFont::QtBDFFont(BDFFont const &font,
-                     QColor const &fgColor, QColor const &bgColor)
-  : glyphs(),                // Null for now
+QtBDFFont::QtBDFFont(BDFFont const &font)
+  : glyphMask(),             // Null for now
+    colorPixmap(),
+    fgColor(0,0,0),          // black
+    bgColor(255,255,255),    // white
+    colorPixmapState(CPS_SOLID),
     allCharsBBox(0,0,0,0),
-    metrics(font.glyphIndexLimit())
+    metrics(font.glyphIndexLimit()),
+    transparent(true)
 {
-  // The main thing this constructor does is build the 'glyphs'
+  // The main thing this constructor does is build the 'glyphMask'
   // bitmap and the 'metrics' array.  To do so, we pack the glyph
   // images into a rectangular bitmap.  In general, optimal packing is
   // NP-complete, and the benefit of efficiency here is not great, so
@@ -112,14 +113,16 @@ QtBDFFont::QtBDFFont(BDFFont const &font,
     allCharsBBox |= getCharBBox(i);
   }
 
-  // Allocate an image with the same size as 'glyphs' will
+  // Allocate an image with the same size as 'glyphMask' will
   // ultimately be.  I use a QImage here because I'm going to use the
   // slow method of copying individual pixels, for now, and a
   // QPixmap/QBitmap is very slow at accessing individual pixels.
-  QImage tempGlyphs(currentX,                      // width
-                    maxHeight,                     // height
-                    32);                           // depth
-  tempGlyphs.fill(bgColor.rgb());
+  QImage tempMask(currentX,                      // width
+                  maxHeight,                     // height
+                  1,                             // depth
+                  2,                             // colors
+                  QImage::LittleEndian);         // bit order; I don't care
+  tempMask.fill(0);
 
   // Pass 2: Copy the glyph images using the positions calculated
   // above.
@@ -135,12 +138,16 @@ QtBDFFont::QtBDFFont(BDFFont const &font,
     xassert(glyph->bitmap->Size() == glyph->metrics.bbSize);
 
     // Copy the pixels one by one.
+    //
+    // This could be made faster by doing low-level bit manipulation,
+    // but the Qt docs are a little vague about exactly what would be
+    // required, and this isn't a bottleneck anyway.
     for (int y=0; y < glyph->metrics.bbSize.y; y++) {
       for (int x=0; x < glyph->metrics.bbSize.x; x++) {
         if (glyph->bitmap->get(point(x,y))) {
-          tempGlyphs.setPixel(metrics[i].bbox.x() + x,
-                              metrics[i].bbox.y() + y,
-                              fgColor.rgb());
+          tempMask.setPixel(metrics[i].bbox.x() + x,
+                            metrics[i].bbox.y() + y,
+                            1);
         }
       }
     }
@@ -148,17 +155,19 @@ QtBDFFont::QtBDFFont(BDFFont const &font,
 
   // Create 'glyphs' from 'tempGlyphs'.  This allocates, converts the
   // data from QImage to QBitmap, and copies it to the window system.
-  //
-  // This used to be done with a simple '=' assignment, but I was
-  // having some trouble (turned out to be because I forgot to change
-  // 'glyphs' from a QBitmap to a QPixmap), so I expanded this to a
-  // call with more exposed controls.  It should be equivalent to '='
-  // for my purposes, but I'll leave the extra detail here for easy
-  // manipulation in the future should I need it.
-  int flags = Qt::ColorOnly | Qt::ThresholdDither | Qt::AvoidDither;
-  if (!glyphs.convertFromImage(tempGlyphs, flags)) {
-    xbase("qtbdffont.cc: convertFromImage failed");
-  }
+  glyphMask = tempMask;
+
+  // Create 'colorPixmap', initially just solid 'fgColor'.
+  colorPixmap.resize(glyphMask.size());
+  colorPixmap.fill(fgColor);
+  
+  // Associate it as the mask due to 'transparent'.
+  colorPixmap.setMask(glyphMask);
+  
+  // Tell Qt that 'colorPixmap' is going to be used as the source in a
+  // lot of masked blits.  On X11 this it 5x faster, at the cost of a
+  // small amount of additional memory.
+  colorPixmap.setOptimization(QPixmap::BestOptim);
 }
 
 
@@ -211,6 +220,60 @@ QPoint QtBDFFont::getCharOffset(int index) const
 }
 
 
+// Set 'colorPixmapState' to 'CPS_MIX', and modify 'colorPixmap'
+// accordingly.
+void QtBDFFont::createMixedColorPixmap()
+{ 
+  // This should only be called when 'transparent' is false, which
+  // means that 'glyphMask' is note associated with any pixmaps right
+  // now.
+  xassert(transparent == false);
+  
+  // Fill the entire 'colorPixmap' with the background color.
+  colorPixmap.fill(bgColor);
+
+  // Create a new pixmap to act as the source for the masked blit.
+  //
+  // TODO: It's possible there is a way to do this without making a
+  // temporary pixmap, but I'm not sure right now because it's not
+  // clear exactly when a QPixmap's mask is used.
+  QPixmap temp(colorPixmap.size());
+  temp.fill(fgColor);
+
+  // Although 'temp' will only be used once, the optimization actually
+  // affects the use of the mask object.  If this is the first time
+  // the mask is being used for a masked blit, then we want it to
+  // create and cache (with the mask) the GC now.  This is
+  // particularly important if this QtBDFFont object is never used to
+  // render any transparent text, since in that case the mask is only
+  // ever used here.
+  temp.setOptimization(QPixmap::BestOptim);
+
+  // Do a masked blit of 'fgColor' onto 'colorPixmap'.
+  temp.setMask(glyphMask);
+  bitBlt(&colorPixmap,       // dest image
+         0,0,                // dest x,y
+         &temp,              // src image
+         0,0,                // src x,y
+         temp.width(),       // width
+         temp.height(),      // height
+         Qt::CopyROP,        // rop
+         false);             // ignoreMask
+
+  // Reflect new state.
+  colorPixmapState = CPS_MIX;
+}
+
+
+// Set 'colorPixmapState' to 'CPS_SOLID' and modify 'colorPixmap'
+// accordingly.
+void QtBDFFont::createSolidColorPixmap()
+{
+  colorPixmap.fill(fgColor);
+  colorPixmapState = CPS_SOLID;
+}
+
+
 void QtBDFFont::drawChar(QPainter &dest, QPoint pt, int index)
 {
   if (!hasChar(index)) {
@@ -218,16 +281,59 @@ void QtBDFFont::drawChar(QPainter &dest, QPoint pt, int index)
   }
   Metrics const &met = metrics[index];
 
+  // Make sure 'transparent' and 'colorPixmapState' agree.
+  if (transparent==false && colorPixmapState!=CPS_MIX) {
+    createMixedColorPixmap();
+  }
+
   // Upper-left corner of rectangle to copy, in the 'dest' coords.
   pt -= (met.origin - met.bbox.topLeft());
 
   // Copy the image.
   dest.drawPixmap(pt,                  // upper-left of dest rectangle
-                  glyphs,              // source pixmap
+                  colorPixmap,         // source pixmap
                   met.bbox);           // source rectangle
 }
 
 
+void QtBDFFont::setFgColor(QColor const &newFgColor)
+{
+  if (fgColor != newFgColor) {
+    fgColor = newFgColor;
+    createSolidColorPixmap();
+  }
+}
+
+
+void QtBDFFont::setBgColor(QColor const &newBgColor)
+{
+  if (bgColor != newBgColor) {
+    bgColor = newBgColor;
+    if (colorPixmapState == CPS_MIX) {
+      createSolidColorPixmap();
+    }
+  }
+}
+
+
+void QtBDFFont::setTransparent(bool newTransparent)
+{
+  if (transparent != newTransparent) {
+    transparent = newTransparent;
+                      
+    // Associate or disassociate the mask as appropriate.
+    if (transparent) {
+      colorPixmap.setMask(glyphMask);
+    }
+    else {
+      QBitmap nullBitmap;
+      colorPixmap.setMask(nullBitmap);
+    }
+  }
+}
+
+
+// ------------------- global functions ----------------------
 void drawString(QtBDFFont &font, QPainter &dest,
                 QPoint pt, rostring str)
 {
@@ -313,6 +419,9 @@ void drawMultilineString(QtBDFFont &font, QPainter &dest,
 #ifdef TEST_QTBDFFONT
 
 #include "test.h"                      // ARGS_MAIN
+
+#include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
+#include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
 
 #include <qapplication.h>              // QApplication
 #include <qlabel.h>                    // QLabel
@@ -481,18 +590,19 @@ void entry(int argc, char **argv)
 
   QApplication app(argc, argv);
 
-  // make it once with white bg for the 'compare' routine
-  {
-    QtBDFFont qfont(font, Qt::black /*fg*/, Qt::white /*bg*/);
-    compare(font, qfont);
-  }
+  // first compare with transparent drawing
+  QtBDFFont qfont(font);
+  compare(font, qfont);
+  
+  // then with opaque drawing
+  qfont.setTransparent(false);
+  compare(font, qfont);
 
-  // make it again with different colors for drawing
-  //QColor fg = Qt::yellow;
-  //QColor bg = Qt::blue;
+  // use different colors for onscreen drawing
   QColor fg = Qt::black;
   QColor bg(192, 192, 192);
-  QtBDFFont qfont(font, fg, bg);
+  qfont.setFgColor(fg);
+  qfont.setBgColor(bg);
 
   QLabel widget(NULL /*parent*/);
   widget.resize(300,300);
@@ -507,9 +617,31 @@ void entry(int argc, char **argv)
   drawString(qfont, painter, QPoint(50,50),
              "drawString(QtBDFFont &)");
 
+  // test rendering performance
+  if (1) {
+    // first transparent, then opaque
+    for (int drawMode=0; drawMode < 2; drawMode++) {
+      qfont.setTransparent(drawMode==0? true : false);
+
+      long start = getMilliseconds();
+      int iters = 1000;
+      for (int i=0; i < iters; i++) {
+        drawString(qfont, painter, QPoint(50,50),
+                   "drawString(QtBDFFont &)");
+      }
+      long elapsed = getMilliseconds() - start;
+      
+      cout << (drawMode==0? "transparent: " : "opaque: ")
+           << iters << " iters in " << elapsed << " ms\n";
+    }
+  }
+
   BDFFont font2;
   parseBDFString(font2, bdfFontData_lurs12);
-  QtBDFFont qfont2(font2, fg, bg);
+  QtBDFFont qfont2(font2);
+  qfont2.setFgColor(fg);
+  qfont2.setBgColor(bg);
+  qfont2.setTransparent(false);
 
   drawCenteredString(qfont2, painter, QPoint(150,100),
                      "some centered text blah blah blah blah blah");

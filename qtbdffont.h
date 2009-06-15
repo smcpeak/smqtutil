@@ -18,20 +18,40 @@
 // treat each byte as a character index, and thus are limited to
 // character encoding systems with 256 characters or less.
 
-// 2009-06-13: Originally, the design called for always drawing with a
-// transparent background.  However, I have found that, at least on my
-// machine, blitting with a mask is 20x slower than blitting without a
-// mask, and that causes the display to be noticeable sluggish.  So,
-// I've now switched it so it always draws an opaque background.  As
-// such, the interface has changed so that the user must specify both
-// the foreground and background colors when creating the QtBDFFont
-// object, since changing the colors is as slow as making it in the
-// first place.
+// Performance considerations:
 //
-// NOTE: The "opaque background" only covers the glyph's bounding box.
-// So, in practice, clients must still erase the background area first
-// themselves before rendering text.  This also precludes kerning.  I
-// wish I had a better answer here...
+// Drawing with transparency is about 5-10x slower than drawing with
+// opaque backgrounds (on X11; I have not tested on MS-Windows).
+//
+// Aside: The reason for this appears to be an unfortunate historical
+// choice: the X-Window XCopyArea function unfortunately associates
+// with mask origin with the *destination* rather than the source, so
+// every call requires updating the origin, which invalidates the
+// graphics context cache in the X server.  See
+// http://tronche.com/gui/x/xlib/GC/manipulating.html .
+//
+// So, this module provides two modes, transparent backgrounds and
+// opaque backgrounds, controlled by the 'transparent' attribute of
+// QtBDFFont.
+//
+// Transparent backgrounds are slower, but far more flexible from a
+// client's perspective.  The speed tends to be adequate for things
+// like drawing programs with sparse amounts of text.
+//
+// Opaque backgrounds are faster to draw (e.g., fast enough for a text
+// editor with lots of text to display), but require a single masked
+// blit (5x slower again) in advance to create the source pixmap, so
+// that speed is only realized when the foreground and background
+// colors remain the same for many drawing operations.  It is up to
+// the client to ensure that fg/bg is changed infrequently enough.
+// For example, the client could make several QtBDFFont objects, one
+// for each common fg/bg pair, and then one more for arbitrary fg/bg.
+//
+// Also note, as stated below, that the opaque background covers only
+// the character's glyph bounding box, which is often much smaller
+// than the "character cell" (if such a concept even makes sense).  So
+// another burden transferred to the client is to manually erase the
+// complete background rectangle before drawing the text.
 
 #ifndef QTBDFFONT_H
 #define QTBDFFONT_H
@@ -57,6 +77,8 @@ class QPainter;                        // qpainter.h
 // notion of constness for this class, since it is semantically
 // immutable.
 class QtBDFFont {
+  NO_OBJECT_COPIES(QtBDFFont);
+
 private:     // types
   // Metrics about a single glyph.  Missing glyphs have all values set
   // to 0.
@@ -82,10 +104,33 @@ private:     // types
   };
 
 private:     // data
-  // Pixmap containing all the rendered font glyphs, packed together
-  // such that no two bounding boxes overlap.  Other packing
-  // characteristics are implementation details.
-  QPixmap glyphs;
+  // Bitmap containing all the font glyphs, packed together such that
+  // no two overlap.  Other packing characteristics are implementation
+  // details.
+  QBitmap glyphMask;
+
+  // A pixmap for use as the source in drawPixmap.  It has the same
+  // size as 'glyphMask', and uses 'glyphMask' as its mask when
+  // 'transparent' is true.
+  //
+  // It contains pixels of 'fgColor' and 'bgColor', with exact
+  // arrangement dependent on 'colorPixmapState'.
+  QPixmap colorPixmap;
+
+  // Current foreground text color.  'colorPixmap' is filled with it.  This is
+  // changed when an attempt is made to draw a different color.
+  QColor fgColor;
+
+  // Current background text color.
+  QColor bgColor;
+
+  // Current state of 'colorPixmap' relative to 'fgColor' and
+  // 'bgColor'.
+  enum ColorPixmapState {
+    CPS_SOLID,               // entirely filled with 'fgColor'
+    CPS_MIX                  // 'fgColor' foreground, 'bgColor' background
+  };
+  ColorPixmapState colorPixmapState;
 
   // Relative to the origin, the minimal bounding box that encloses
   // every glyph in the font.
@@ -94,12 +139,22 @@ private:     // data
   // Map from character index to associated metrics.  It does not
   // "grow"; I use GrowArray for its bounds checking.
   GrowArray<Metrics> metrics;
+  
+  // True if drawing operations will use transparent backgrounds,
+  // false for opaque backgrounds.
+  bool transparent;
+
+private:     // funcs
+  void createMixedColorPixmap();
+  void createSolidColorPixmap();
 
 public:      // funcs
   // This makes a copy of all required data in 'font'; 'font' can be
   // destroyed afterward.
-  QtBDFFont(BDFFont const &font,
-            QColor const &fgColor, QColor const &bgColor);
+  //
+  // The initial drawing attributes black text on a white background,
+  // but 'transparent' is true.
+  QtBDFFont(BDFFont const &font);
   ~QtBDFFont();
 
   // Return the maximum valid character index, or -1 if there are no
@@ -125,12 +180,27 @@ public:      // funcs
   // a given glyph.  Returns (0,0) if the glyph is missing.
   QPoint getCharOffset(int index) const;
 
-  // Render a single character at 'pt'.  Renders the entire *bounding
-  // box* opaquely, using the foreground and background colors
-  // specified in the constructor call.
+  // Render a single character at 'pt'.
+  //
+  // If 'transparent' is true, only draw the foreground pixels using
+  // the current foreground color.
+  //
+  // Otherwise, renders the entire *bounding box* opaquely, using the
+  // current foreground and background colors.
   //
   // If there is no glyph with the given index, this is a no-op.
   void drawChar(QPainter &dest, QPoint pt, int index);
+  
+  // Get and set fg/bg colors.  Subsequent calls to 'drawChar'
+  // will use these colors.
+  QColor getFgColor() const { return fgColor; }
+  QColor getBgColor() const { return bgColor; }
+  void setFgColor(QColor const &newFgColor);
+  void setBgColor(QColor const &newBgColor);
+  
+  // Get and set 'transparent'.
+  bool getTransparent() const { return transparent; }
+  void setTransparent(bool newTransparent);
 };
 
 
