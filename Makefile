@@ -20,7 +20,9 @@ CCFLAGS := -g -Wall -I$(QTDIR)/include -I$(SMBASE) -Wno-deprecated
 #
 # The "qt-mt" is the multithreaded version.  I'm not using threads,
 # but it seems that later Qts only have the MT version available.
-LDFLAGS := -g -Wall $(LIBSMBASE) -L$(QTDIR)/lib -lqt-mt
+#
+# Now I'm using qt-3.3.8b, and only the non-MT version is available.
+LDFLAGS := -g -Wall $(LIBSMBASE) -L$(QTDIR)/lib -lqt
 
 
 # patterns of files to delete in the 'clean' target; targets below
