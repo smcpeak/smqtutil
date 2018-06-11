@@ -5,3 +5,6 @@ moc_*
 qtbdffont
 *.gen.*
 *.a
+*.exe
+*.dll
+.gdbinit

@@ -4,22 +4,31 @@
 #ifndef QTUTIL_H
 #define QTUTIL_H
 
-#include <qnamespace.h>       // ButtonState, Key
+#include <QColor>             // QRgb
+#include <qnamespace.h>       // MouseButtons, KeyboardModifiers, Key
 #include <qstring.h>          // QString
+
 #include "str.h"              // string
 
-class QKeyEvent;              // qevent.h
+class QKeyEvent;
+class QPoint;
+class QRect;
+class QSize;
 
 
-string toString(Qt::ButtonState s);
-
-char const *toString(Qt::Key k);
-
+// Render various values and objects as a string, mainly
+// intended for debugging purposes.
+string toString(Qt::MouseButtons buttons);
+string toString(Qt::KeyboardModifiers kmods);
 string toString(QKeyEvent const &k);
+char const *toString(Qt::Key k);
+string toString(QPoint p);
+string toString(QRect r);
+string toString(QSize s);
+string qrgbToString(QRgb rgba);
 
+// Convert 'string' to 'QString'.
 QString toQString(string const &s);
-
-
 #define qstringb(stuff) toQString(stringb(stuff))
 
 

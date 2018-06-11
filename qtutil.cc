@@ -1,67 +1,165 @@
 // qtutil.cc
 // code for qtutil.h
 
-#include "qtutil.h"      // this module
+#include "qtutil.h"                    // this module
 
-#include <qevent.h>      // QKeyEvent
+#include "exc.h"                       // xassert
+
+#include <QKeyEvent>
+#include <QPoint>
+#include <QRect>
+#include <QSize>
+
+#include <stdio.h>                     // sprintf
 
 
-static void handleFlag(stringBuilder &sb, Qt::ButtonState &state,
-                       Qt::ButtonState flag, char const *flagName)
+// The numeric value and name of some enumerator flag.
+template <class T>
+struct FlagDefinition {
+  T value;
+  char const *name;
+};
+
+
+// If 'flags' contains 'flag.value', add its name to 'sb' and remove
+// its value from 'flags'.
+template <class T>
+static void handleFlag(stringBuilder &sb, QFlags<T> &flags,
+                       FlagDefinition<T> const &flag)
 {
-  if (state & flag) {
+  if (flags & flag.value) {
     if (sb.length() > 0) {
       sb << "+";
     }
-    sb << flagName;
-    state = (Qt::ButtonState)(state & ~flag);
+    sb << flag.name;
+    flags ^= flag.value;
   }
 }
 
 
-string toString(Qt::ButtonState state)
+// Render 'flags' as a string by using 'definitions' to decode it.
+template <class T>
+static string flagsToString(QFlags<T> flags,
+                            FlagDefinition<T> const *definitions,
+                            int numDefinitions,
+                            char const *noFlagsName)
 {
   stringBuilder sb;
 
-  #define HANDLE_FLAG(flag) \
-    handleFlag(sb, state, Qt::flag, #flag) /* user ; */
+  for (int i=0; i < numDefinitions; i++) {
+    handleFlag(sb, flags, definitions[i]);
+  }
 
-  HANDLE_FLAG(LeftButton);
-  HANDLE_FLAG(RightButton);
-  HANDLE_FLAG(MidButton);
-  HANDLE_FLAG(ShiftButton);
-  HANDLE_FLAG(ControlButton);
-  HANDLE_FLAG(AltButton);
-  HANDLE_FLAG(Keypad);         // ?
-
-  #undef HANDLE_FLAG
-
-  if (state) {
+  if (flags) {
     if (sb.length() > 0) {
-      sb << " (plus unknown flags)";
+      sb << " (plus unknown flags: " << (int)flags << ")";
     }
     else {
-      sb << "(unknown flags)";
+      sb << "(unknown flags: " << (int)flags << ")";
     }
   }
 
   if (sb.length() == 0) {
-    sb << "NoButton";
+    sb << noFlagsName;
   }
 
   return sb;
 }
 
 
+#define FLAG_DEFN(flag) { Qt::flag, #flag },
+
+static FlagDefinition<Qt::MouseButton> const mouseButtonDefinitions[] = {
+  FLAG_DEFN(LeftButton)
+  FLAG_DEFN(RightButton)
+  FLAG_DEFN(MiddleButton)
+  FLAG_DEFN(BackButton)
+  FLAG_DEFN(ForwardButton)
+  FLAG_DEFN(TaskButton)
+  FLAG_DEFN(ExtraButton4)
+  FLAG_DEFN(ExtraButton5)
+  // ExtraButtons up to 24 are defined, but I'll stop here.
+};
+
+string toString(Qt::MouseButtons buttons)
+{
+  return flagsToString<Qt::MouseButton>(
+    buttons,
+    mouseButtonDefinitions,
+    TABLESIZE(mouseButtonDefinitions),
+    "NoButton");
+}
+
+
+static FlagDefinition<Qt::KeyboardModifier> const keyboardModifierDefinitions[] = {
+  FLAG_DEFN(ShiftModifier)
+  FLAG_DEFN(ControlModifier)
+  FLAG_DEFN(AltModifier)
+  FLAG_DEFN(MetaModifier)
+  FLAG_DEFN(KeypadModifier)
+  FLAG_DEFN(GroupSwitchModifier)
+};
+
+string toString(Qt::KeyboardModifiers kmods)
+{
+  return flagsToString<Qt::KeyboardModifier>(
+    kmods,
+    keyboardModifierDefinitions,
+    TABLESIZE(keyboardModifierDefinitions),
+    "NoModifier");
+}
+
+
+string toString(QPoint p)
+{
+  return stringb('(' << p.x() << ',' << p.y() << ')');
+}
+
+
+string toString(QRect r)
+{
+  return stringb('[' << toString(r.topLeft()) << '+' <<
+                 toString(r.size()) << ']');
+}
+
+
+string toString(QSize s)
+{
+  return stringb('(' << s.width() << ',' << s.height() << ')');
+}
+
+
+string qrgbToString(QRgb rgba)
+{
+  char tmp[10];
+  int n = sprintf(tmp, "#%08X", (unsigned int)rgba);
+  xassert(n < TABLESIZE(tmp));
+  return string(tmp);
+}
+
+
+string toString(QKeyEvent const &k)
+{
+  return stringc << toString(k.modifiers())
+                 << "+" << toString((Qt::Key)(k.key()));
+}
+
+
+QString toQString(string const &s)
+{
+  return QString(s.c_str());
+}
+
+
 char const *toString(Qt::Key k)
 {
-  // this list adapted from the one in qt/src/kernel/qnamespace.h
+  // This list is derived from qtbase/src/corelib/global/qnamespace.h
+  // from Qt 5.9.
 
   #define HANDLE_KEY(key) \
     case Qt::key: return #key;
 
   switch (k) {
-    // misc keys
     HANDLE_KEY(Key_Escape)
     HANDLE_KEY(Key_Tab)
     HANDLE_KEY(Key_Backtab)
@@ -73,8 +171,7 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_Pause)
     HANDLE_KEY(Key_Print)
     HANDLE_KEY(Key_SysReq)
-
-    // cursor movement
+    HANDLE_KEY(Key_Clear)
     HANDLE_KEY(Key_Home)
     HANDLE_KEY(Key_End)
     HANDLE_KEY(Key_Left)
@@ -83,8 +180,6 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_Down)
     HANDLE_KEY(Key_PageUp)
     HANDLE_KEY(Key_PageDown)
-
-    // modifiers
     HANDLE_KEY(Key_Shift)
     HANDLE_KEY(Key_Control)
     HANDLE_KEY(Key_Meta)
@@ -92,8 +187,6 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_CapsLock)
     HANDLE_KEY(Key_NumLock)
     HANDLE_KEY(Key_ScrollLock)
-
-    // function keys
     HANDLE_KEY(Key_F1)
     HANDLE_KEY(Key_F2)
     HANDLE_KEY(Key_F3)
@@ -118,8 +211,6 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_F22)
     HANDLE_KEY(Key_F23)
     HANDLE_KEY(Key_F24)
-    
-    // F25 .. F35 only on X11
     HANDLE_KEY(Key_F25)
     HANDLE_KEY(Key_F26)
     HANDLE_KEY(Key_F27)
@@ -131,17 +222,16 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_F33)
     HANDLE_KEY(Key_F34)
     HANDLE_KEY(Key_F35)
-    
-    // extra keys
     HANDLE_KEY(Key_Super_L)
     HANDLE_KEY(Key_Super_R)
     HANDLE_KEY(Key_Menu)
     HANDLE_KEY(Key_Hyper_L)
     HANDLE_KEY(Key_Hyper_R)
     HANDLE_KEY(Key_Help)
+    HANDLE_KEY(Key_Direction_L)
+    HANDLE_KEY(Key_Direction_R)
     HANDLE_KEY(Key_Space)
-
-    // 7 bit printable ASCII
+    //HANDLE_KEY(Key_Any)  // Weird.  Duplicate.
     HANDLE_KEY(Key_Exclam)
     HANDLE_KEY(Key_QuoteDbl)
     HANDLE_KEY(Key_NumberSign)
@@ -210,9 +300,6 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_Bar)
     HANDLE_KEY(Key_BraceRight)
     HANDLE_KEY(Key_AsciiTilde)
-
-    // HANDLE_KEY(Latin)
-
     HANDLE_KEY(Key_nobreakspace)
     HANDLE_KEY(Key_exclamdown)
     HANDLE_KEY(Key_cent)
@@ -277,57 +364,246 @@ char const *toString(Qt::Key k)
     HANDLE_KEY(Key_Yacute)
     HANDLE_KEY(Key_THORN)
     HANDLE_KEY(Key_ssharp)
-    HANDLE_KEY(Key_agrave)
-    HANDLE_KEY(Key_aacute)
-    HANDLE_KEY(Key_acircumflex)
-    HANDLE_KEY(Key_atilde)
-    HANDLE_KEY(Key_adiaeresis)
-    HANDLE_KEY(Key_aring)
-    HANDLE_KEY(Key_ae)
-    HANDLE_KEY(Key_ccedilla)
-    HANDLE_KEY(Key_egrave)
-    HANDLE_KEY(Key_eacute)
-    HANDLE_KEY(Key_ecircumflex)
-    HANDLE_KEY(Key_ediaeresis)
-    HANDLE_KEY(Key_igrave)
-    HANDLE_KEY(Key_iacute)
-    HANDLE_KEY(Key_icircumflex)
-    HANDLE_KEY(Key_idiaeresis)
-    HANDLE_KEY(Key_eth)
-    HANDLE_KEY(Key_ntilde)
-    HANDLE_KEY(Key_ograve)
-    HANDLE_KEY(Key_oacute)
-    HANDLE_KEY(Key_ocircumflex)
-    HANDLE_KEY(Key_otilde)
-    HANDLE_KEY(Key_odiaeresis)
     HANDLE_KEY(Key_division)
-    HANDLE_KEY(Key_oslash)
-    HANDLE_KEY(Key_ugrave)
-    HANDLE_KEY(Key_uacute)
-    HANDLE_KEY(Key_ucircumflex)
-    HANDLE_KEY(Key_udiaeresis)
-    HANDLE_KEY(Key_yacute)
-    HANDLE_KEY(Key_thorn)
     HANDLE_KEY(Key_ydiaeresis)
-
+    HANDLE_KEY(Key_AltGr)
+    HANDLE_KEY(Key_Multi_key)
+    HANDLE_KEY(Key_Codeinput)
+    HANDLE_KEY(Key_SingleCandidate)
+    HANDLE_KEY(Key_MultipleCandidate)
+    HANDLE_KEY(Key_PreviousCandidate)
+    HANDLE_KEY(Key_Mode_switch)
+    HANDLE_KEY(Key_Kanji)
+    HANDLE_KEY(Key_Muhenkan)
+    HANDLE_KEY(Key_Henkan)
+    HANDLE_KEY(Key_Romaji)
+    HANDLE_KEY(Key_Hiragana)
+    HANDLE_KEY(Key_Katakana)
+    HANDLE_KEY(Key_Hiragana_Katakana)
+    HANDLE_KEY(Key_Zenkaku)
+    HANDLE_KEY(Key_Hankaku)
+    HANDLE_KEY(Key_Zenkaku_Hankaku)
+    HANDLE_KEY(Key_Touroku)
+    HANDLE_KEY(Key_Massyo)
+    HANDLE_KEY(Key_Kana_Lock)
+    HANDLE_KEY(Key_Kana_Shift)
+    HANDLE_KEY(Key_Eisu_Shift)
+    HANDLE_KEY(Key_Eisu_toggle)
+    HANDLE_KEY(Key_Hangul)
+    HANDLE_KEY(Key_Hangul_Start)
+    HANDLE_KEY(Key_Hangul_End)
+    HANDLE_KEY(Key_Hangul_Hanja)
+    HANDLE_KEY(Key_Hangul_Jamo)
+    HANDLE_KEY(Key_Hangul_Romaja)
+    HANDLE_KEY(Key_Hangul_Jeonja)
+    HANDLE_KEY(Key_Hangul_Banja)
+    HANDLE_KEY(Key_Hangul_PreHanja)
+    HANDLE_KEY(Key_Hangul_PostHanja)
+    HANDLE_KEY(Key_Hangul_Special)
+    HANDLE_KEY(Key_Dead_Grave)
+    HANDLE_KEY(Key_Dead_Acute)
+    HANDLE_KEY(Key_Dead_Circumflex)
+    HANDLE_KEY(Key_Dead_Tilde)
+    HANDLE_KEY(Key_Dead_Macron)
+    HANDLE_KEY(Key_Dead_Breve)
+    HANDLE_KEY(Key_Dead_Abovedot)
+    HANDLE_KEY(Key_Dead_Diaeresis)
+    HANDLE_KEY(Key_Dead_Abovering)
+    HANDLE_KEY(Key_Dead_Doubleacute)
+    HANDLE_KEY(Key_Dead_Caron)
+    HANDLE_KEY(Key_Dead_Cedilla)
+    HANDLE_KEY(Key_Dead_Ogonek)
+    HANDLE_KEY(Key_Dead_Iota)
+    HANDLE_KEY(Key_Dead_Voiced_Sound)
+    HANDLE_KEY(Key_Dead_Semivoiced_Sound)
+    HANDLE_KEY(Key_Dead_Belowdot)
+    HANDLE_KEY(Key_Dead_Hook)
+    HANDLE_KEY(Key_Dead_Horn)
+    HANDLE_KEY(Key_Back)
+    HANDLE_KEY(Key_Forward)
+    HANDLE_KEY(Key_Stop)
+    HANDLE_KEY(Key_Refresh)
+    HANDLE_KEY(Key_VolumeDown)
+    HANDLE_KEY(Key_VolumeMute)
+    HANDLE_KEY(Key_VolumeUp)
+    HANDLE_KEY(Key_BassBoost)
+    HANDLE_KEY(Key_BassUp)
+    HANDLE_KEY(Key_BassDown)
+    HANDLE_KEY(Key_TrebleUp)
+    HANDLE_KEY(Key_TrebleDown)
+    HANDLE_KEY(Key_MediaPlay)
+    HANDLE_KEY(Key_MediaStop)
+    HANDLE_KEY(Key_MediaPrevious)
+    HANDLE_KEY(Key_MediaNext)
+    HANDLE_KEY(Key_MediaRecord)
+    HANDLE_KEY(Key_MediaPause)
+    HANDLE_KEY(Key_MediaTogglePlayPause)
+    HANDLE_KEY(Key_HomePage)
+    HANDLE_KEY(Key_Favorites)
+    HANDLE_KEY(Key_Search)
+    HANDLE_KEY(Key_Standby)
+    HANDLE_KEY(Key_OpenUrl)
+    HANDLE_KEY(Key_LaunchMail)
+    HANDLE_KEY(Key_LaunchMedia)
+    HANDLE_KEY(Key_Launch0)
+    HANDLE_KEY(Key_Launch1)
+    HANDLE_KEY(Key_Launch2)
+    HANDLE_KEY(Key_Launch3)
+    HANDLE_KEY(Key_Launch4)
+    HANDLE_KEY(Key_Launch5)
+    HANDLE_KEY(Key_Launch6)
+    HANDLE_KEY(Key_Launch7)
+    HANDLE_KEY(Key_Launch8)
+    HANDLE_KEY(Key_Launch9)
+    HANDLE_KEY(Key_LaunchA)
+    HANDLE_KEY(Key_LaunchB)
+    HANDLE_KEY(Key_LaunchC)
+    HANDLE_KEY(Key_LaunchD)
+    HANDLE_KEY(Key_LaunchE)
+    HANDLE_KEY(Key_LaunchF)
+    HANDLE_KEY(Key_MonBrightnessUp)
+    HANDLE_KEY(Key_MonBrightnessDown)
+    HANDLE_KEY(Key_KeyboardLightOnOff)
+    HANDLE_KEY(Key_KeyboardBrightnessUp)
+    HANDLE_KEY(Key_KeyboardBrightnessDown)
+    HANDLE_KEY(Key_PowerOff)
+    HANDLE_KEY(Key_WakeUp)
+    HANDLE_KEY(Key_Eject)
+    HANDLE_KEY(Key_ScreenSaver)
+    HANDLE_KEY(Key_WWW)
+    HANDLE_KEY(Key_Memo)
+    HANDLE_KEY(Key_LightBulb)
+    HANDLE_KEY(Key_Shop)
+    HANDLE_KEY(Key_History)
+    HANDLE_KEY(Key_AddFavorite)
+    HANDLE_KEY(Key_HotLinks)
+    HANDLE_KEY(Key_BrightnessAdjust)
+    HANDLE_KEY(Key_Finance)
+    HANDLE_KEY(Key_Community)
+    HANDLE_KEY(Key_AudioRewind)
+    HANDLE_KEY(Key_BackForward)
+    HANDLE_KEY(Key_ApplicationLeft)
+    HANDLE_KEY(Key_ApplicationRight)
+    HANDLE_KEY(Key_Book)
+    HANDLE_KEY(Key_CD)
+    HANDLE_KEY(Key_Calculator)
+    HANDLE_KEY(Key_ToDoList)
+    HANDLE_KEY(Key_ClearGrab)
+    HANDLE_KEY(Key_Close)
+    HANDLE_KEY(Key_Copy)
+    HANDLE_KEY(Key_Cut)
+    HANDLE_KEY(Key_Display)
+    HANDLE_KEY(Key_DOS)
+    HANDLE_KEY(Key_Documents)
+    HANDLE_KEY(Key_Excel)
+    HANDLE_KEY(Key_Explorer)
+    HANDLE_KEY(Key_Game)
+    HANDLE_KEY(Key_Go)
+    HANDLE_KEY(Key_iTouch)
+    HANDLE_KEY(Key_LogOff)
+    HANDLE_KEY(Key_Market)
+    HANDLE_KEY(Key_Meeting)
+    HANDLE_KEY(Key_MenuKB)
+    HANDLE_KEY(Key_MenuPB)
+    HANDLE_KEY(Key_MySites)
+    HANDLE_KEY(Key_News)
+    HANDLE_KEY(Key_OfficeHome)
+    HANDLE_KEY(Key_Option)
+    HANDLE_KEY(Key_Paste)
+    HANDLE_KEY(Key_Phone)
+    HANDLE_KEY(Key_Calendar)
+    HANDLE_KEY(Key_Reply)
+    HANDLE_KEY(Key_Reload)
+    HANDLE_KEY(Key_RotateWindows)
+    HANDLE_KEY(Key_RotationPB)
+    HANDLE_KEY(Key_RotationKB)
+    HANDLE_KEY(Key_Save)
+    HANDLE_KEY(Key_Send)
+    HANDLE_KEY(Key_Spell)
+    HANDLE_KEY(Key_SplitScreen)
+    HANDLE_KEY(Key_Support)
+    HANDLE_KEY(Key_TaskPane)
+    HANDLE_KEY(Key_Terminal)
+    HANDLE_KEY(Key_Tools)
+    HANDLE_KEY(Key_Travel)
+    HANDLE_KEY(Key_Video)
+    HANDLE_KEY(Key_Word)
+    HANDLE_KEY(Key_Xfer)
+    HANDLE_KEY(Key_ZoomIn)
+    HANDLE_KEY(Key_ZoomOut)
+    HANDLE_KEY(Key_Away)
+    HANDLE_KEY(Key_Messenger)
+    HANDLE_KEY(Key_WebCam)
+    HANDLE_KEY(Key_MailForward)
+    HANDLE_KEY(Key_Pictures)
+    HANDLE_KEY(Key_Music)
+    HANDLE_KEY(Key_Battery)
+    HANDLE_KEY(Key_Bluetooth)
+    HANDLE_KEY(Key_WLAN)
+    HANDLE_KEY(Key_UWB)
+    HANDLE_KEY(Key_AudioForward)
+    HANDLE_KEY(Key_AudioRepeat)
+    HANDLE_KEY(Key_AudioRandomPlay)
+    HANDLE_KEY(Key_Subtitle)
+    HANDLE_KEY(Key_AudioCycleTrack)
+    HANDLE_KEY(Key_Time)
+    HANDLE_KEY(Key_Hibernate)
+    HANDLE_KEY(Key_View)
+    HANDLE_KEY(Key_TopMenu)
+    HANDLE_KEY(Key_PowerDown)
+    HANDLE_KEY(Key_Suspend)
+    HANDLE_KEY(Key_ContrastAdjust)
+    HANDLE_KEY(Key_LaunchG)
+    HANDLE_KEY(Key_LaunchH)
+    HANDLE_KEY(Key_TouchpadToggle)
+    HANDLE_KEY(Key_TouchpadOn)
+    HANDLE_KEY(Key_TouchpadOff)
+    HANDLE_KEY(Key_MicMute)
+    HANDLE_KEY(Key_Red)
+    HANDLE_KEY(Key_Green)
+    HANDLE_KEY(Key_Yellow)
+    HANDLE_KEY(Key_Blue)
+    HANDLE_KEY(Key_ChannelUp)
+    HANDLE_KEY(Key_ChannelDown)
+    HANDLE_KEY(Key_Guide)
+    HANDLE_KEY(Key_Info)
+    HANDLE_KEY(Key_Settings)
+    HANDLE_KEY(Key_MicVolumeUp)
+    HANDLE_KEY(Key_MicVolumeDown)
+    HANDLE_KEY(Key_New)
+    HANDLE_KEY(Key_Open)
+    HANDLE_KEY(Key_Find)
+    HANDLE_KEY(Key_Undo)
+    HANDLE_KEY(Key_Redo)
+    HANDLE_KEY(Key_MediaLast)
+    HANDLE_KEY(Key_Select)
+    HANDLE_KEY(Key_Yes)
+    HANDLE_KEY(Key_No)
+    HANDLE_KEY(Key_Cancel)
+    HANDLE_KEY(Key_Printer)
+    HANDLE_KEY(Key_Execute)
+    HANDLE_KEY(Key_Sleep)
+    HANDLE_KEY(Key_Play)
+    HANDLE_KEY(Key_Zoom)
+    HANDLE_KEY(Key_Exit)
+    HANDLE_KEY(Key_Context1)
+    HANDLE_KEY(Key_Context2)
+    HANDLE_KEY(Key_Context3)
+    HANDLE_KEY(Key_Context4)
+    HANDLE_KEY(Key_Call)
+    HANDLE_KEY(Key_Hangup)
+    HANDLE_KEY(Key_Flip)
+    HANDLE_KEY(Key_ToggleCallHangup)
+    HANDLE_KEY(Key_VoiceDial)
+    HANDLE_KEY(Key_LastNumberRedial)
+    HANDLE_KEY(Key_Camera)
+    HANDLE_KEY(Key_CameraFocus)
     HANDLE_KEY(Key_unknown)
 
     default: return "(unknown)";
   }
   
   #undef HANDLE_KEY
-}
-
-
-string toString(QKeyEvent const &k)
-{
-  return stringc << toString(k.state()) << "+" << toString((Qt::Key)(k.key()));
-}
-
-
-QString toQString(string const &s)
-{
-  return QString(s.c_str());
 }
 
 

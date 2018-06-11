@@ -3,10 +3,13 @@
 
 #include "qtbdffont.h"                 // this module
 
+#include "qtutil.h"                    // toString(QRect)
+
 #include "bdffont.h"                   // BDFFont
 #include "bit2d.h"                     // Bit2d::Size
 #include "exc.h"                       // xbase
 #include "strtokp.h"                   // StrtokParse
+#include "test.h"                      // DEBUG_PVAL
 
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
@@ -117,11 +120,20 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
   // ultimately be.  I use a QImage here because I'm going to use the
   // slow method of copying individual pixels, for now, and a
   // QPixmap/QBitmap is very slow at accessing individual pixels.
+  //
+  // Using MonoLSB instead of Mono is a small optimization, since
+  // internally QBitmap::fromImage will convert to MonoLSB.
   QImage tempMask(currentX,                      // width
                   maxHeight,                     // height
-                  1,                             // depth
-                  2,                             // colors
-                  QImage::LittleEndian);         // bit order; I don't care
+                  QImage::Format_MonoLSB);
+
+  // Strangely, although QImage defaults to 0=black and 1=white,
+  // QBitmap::fromImage expects the opposite, and will invert the
+  // bits if we don't pre-set the colors.
+  tempMask.setColor(0, QColor(Qt::color0).rgb());
+  tempMask.setColor(1, QColor(Qt::color1).rgb());
+
+  // Start with 0 (transparent).
   tempMask.fill(0);
 
   // Pass 2: Copy the glyph images using the positions calculated
@@ -155,19 +167,14 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
 
   // Create 'glyphs' from 'tempGlyphs'.  This allocates, converts the
   // data from QImage to QBitmap, and copies it to the window system.
-  glyphMask = tempMask;
+  glyphMask = QBitmap::fromImage(tempMask);
 
   // Create 'colorPixmap', initially just solid 'fgColor'.
-  colorPixmap.resize(glyphMask.size());
+  colorPixmap = QPixmap(glyphMask.size());
   colorPixmap.fill(fgColor);
   
   // Associate it as the mask due to 'transparent'.
   colorPixmap.setMask(glyphMask);
-  
-  // Tell Qt that 'colorPixmap' is going to be used as the source in a
-  // lot of masked blits.  On X11 this it 5x faster, at the cost of a
-  // small amount of additional memory.
-  colorPixmap.setOptimization(QPixmap::BestOptim);
 }
 
 
@@ -200,7 +207,7 @@ QRect QtBDFFont::getCharBBox(int index) const
 {
   if (hasChar(index)) {
     QRect ret(metrics[index].bbox);
-    ret.moveBy(-metrics[index].origin.x(), -metrics[index].origin.y());
+    ret.translate(-metrics[index].origin.x(), -metrics[index].origin.y());
     return ret;
   }
   else {
@@ -240,25 +247,10 @@ void QtBDFFont::createMixedColorPixmap()
   QPixmap temp(colorPixmap.size());
   temp.fill(fgColor);
 
-  // Although 'temp' will only be used once, the optimization actually
-  // affects the use of the mask object.  If this is the first time
-  // the mask is being used for a masked blit, then we want it to
-  // create and cache (with the mask) the GC now.  This is
-  // particularly important if this QtBDFFont object is never used to
-  // render any transparent text, since in that case the mask is only
-  // ever used here.
-  temp.setOptimization(QPixmap::BestOptim);
-
   // Do a masked blit of 'fgColor' onto 'colorPixmap'.
   temp.setMask(glyphMask);
-  bitBlt(&colorPixmap,       // dest image
-         0,0,                // dest x,y
-         &temp,              // src image
-         0,0,                // src x,y
-         temp.width(),       // width
-         temp.height(),      // height
-         Qt::CopyROP,        // rop
-         false);             // ignoreMask
+  QPainter painter(&(this->colorPixmap));
+  painter.drawPixmap(0,0, temp);
 
   // Reflect new state.
   colorPixmapState = CPS_MIX;
@@ -280,6 +272,13 @@ void QtBDFFont::drawChar(QPainter &dest, QPoint pt, int index)
     return;
   }
   Metrics const &met = metrics[index];
+
+  if (met.bbox.isEmpty()) {
+    // This has to be excluded as a special case because
+    // QPainter::drawPixmap treats w=h=0 as meaning "draw
+    // the entire source image".
+    return;
+  }
 
   // Make sure 'transparent' and 'colorPixmapState' agree.
   if (transparent==false && colorPixmapState!=CPS_MIX) {
@@ -321,13 +320,18 @@ void QtBDFFont::setTransparent(bool newTransparent)
   if (transparent != newTransparent) {
     transparent = newTransparent;
                       
-    // Associate or disassociate the mask as appropriate.
     if (transparent) {
+      // The foreground pixels should already have the
+      // foreground color, so mask out the bg pixels.
       colorPixmap.setMask(glyphMask);
     }
     else {
-      QBitmap nullBitmap;
-      colorPixmap.setMask(nullBitmap);
+      // Prepare by setting the entire pixmap to the fg
+      // color and the state to CPS_SOLID.  'drawChar'
+      // will then be able to set things up properly.
+      // (This is a weird design.  It arose due to
+      // porting Qt3 code to Qt5.)
+      this->createSolidColorPixmap();
     }
   }
 }
@@ -367,7 +371,7 @@ QRect getStringBBox(QtBDFFont &font, rostring str)
       for (p++; *p; p++) {
         int charIndex = (unsigned char)*p;
         QRect glyphBBox = font.getCharBBox(charIndex);
-        glyphBBox.moveBy(cursor.x(), cursor.y());
+        glyphBBox.translate(cursor.x(), cursor.y());
         ret |= glyphBBox;
 
         cursor += font.getCharOffset(charIndex);
@@ -528,7 +532,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
 
       // Now, convert the QPixmap into a QImage to allow fast access
       // to individual pixels.
-      QImage image = pixmap.convertToImage();
+      QImage image = pixmap.toImage();
 
       // Examine every pixel in 'image'.
       for (int y=0; y < image.height(); y++) {
@@ -598,6 +602,12 @@ void entry(int argc, char **argv)
   qfont.setTransparent(false);
   compare(font, qfont);
 
+  // Test another cycle of switching modes.
+  qfont.setTransparent(true);
+  compare(font, qfont);
+  qfont.setTransparent(false);
+  compare(font, qfont);
+
   // use different colors for onscreen drawing
   QColor fg = Qt::black;
   QColor bg(192, 192, 192);
@@ -617,6 +627,14 @@ void entry(int argc, char **argv)
   drawString(qfont, painter, QPoint(50,50),
              "drawString(QtBDFFont &)");
 
+  qfont.setTransparent(true);
+  drawString(qfont, painter, QPoint(50, 70),
+             "setTransparent(true)");
+
+  qfont.setTransparent(false);
+  drawString(qfont, painter, QPoint(50, 90),
+             "setTransparent(false)");
+
   // test rendering performance
   if (1) {
     // first transparent, then opaque
@@ -624,7 +642,7 @@ void entry(int argc, char **argv)
       qfont.setTransparent(drawMode==0? true : false);
 
       long start = getMilliseconds();
-      int iters = 1000;
+      int iters = 10000;
       for (int i=0; i < iters; i++) {
         drawString(qfont, painter, QPoint(50,50),
                    "drawString(QtBDFFont &)");
@@ -632,7 +650,7 @@ void entry(int argc, char **argv)
       long elapsed = getMilliseconds() - start;
       
       cout << (drawMode==0? "transparent: " : "opaque: ")
-           << iters << " iters in " << elapsed << " ms\n";
+           << iters << " iters in " << elapsed << " ms" << endl;
     }
   }
 
@@ -657,7 +675,6 @@ void entry(int argc, char **argv)
 
   widget.setPixmap(pixmap);
 
-  app.setMainWidget(&widget);
   widget.show();
 
   app.exec();

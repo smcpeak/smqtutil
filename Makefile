@@ -8,21 +8,32 @@ all: libsmqtutil.a qtbdffont
 SMBASE := ../smbase
 LIBSMBASE := $(SMBASE)/libsmbase.a
 
+# Directory with Qt headers, libraries, and programs.
+QTDIR := /d/bld/qt5/qtbase
+
+# Same, as a path that can be passed to the compiler.
+QTDIR_CPLR := $(shell cygpath -m '$(QTDIR)')
+
 # C++ compiler, etc.
 CXX    := g++
 AR     := ar
 RANLIB := ranlib
 
 # flags for the C and C++ compilers (and preprocessor)
-CCFLAGS := -g -Wall -I$(QTDIR)/include -I$(SMBASE) -Wno-deprecated
+CCFLAGS := -g -Wall -Wno-deprecated -std=c++11
+CCFLAGS += -I$(SMBASE)
+CCFLAGS += -I$(QTDIR_CPLR)/include
+CCFLAGS += -I$(QTDIR_CPLR)/include/QtCore
+CCFLAGS += -I$(QTDIR_CPLR)/include/QtGui
+CCFLAGS += -I$(QTDIR_CPLR)/include/QtWidgets
 
 # flags for the linker
-#
-# The "qt-mt" is the multithreaded version.  I'm not using threads,
-# but it seems that later Qts only have the MT version available.
-#
-# Now I'm using qt-3.3.8b, and only the non-MT version is available.
-LDFLAGS := -g -Wall $(LIBSMBASE) -L$(QTDIR)/lib -lqt
+LDFLAGS := -g -Wall $(LIBSMBASE)
+LDFLAGS += -L$(QTDIR_CPLR)/lib -lQt5Widgets -lQt5Gui -lQt5Core
+
+# Qt build tools
+MOC := $(QTDIR)/bin/moc
+UIC := $(QTDIR)/bin/uic
 
 
 # patterns of files to delete in the 'clean' target; targets below
@@ -31,24 +42,25 @@ TOCLEAN =
 
 
 # ---------------- pattern rules --------------------
-# compile .cc to .o
+# Compile .cc to .o .
+# -MMD causes GCC to write .d file.
+# The -MP modifier adds phony targets to deal with removed headers.
 TOCLEAN += *.o *.d
 %.o : %.cc
-	$(CXX) -c -o $@ $< $(CCFLAGS)
-	@perl $(SMBASE)/depend.pl -o $@ $< $(CCFLAGS) > $*.d
+	$(CXX) -c -MMD -MP -o $@ $< $(CCFLAGS)
 
 
 # Qt meta-object compiler
 .PRECIOUS: moc_%.cc
 TOCLEAN += moc_*.cc
 moc_%.cc: %.h
-	moc -o $@ $^
+	$(MOC) -o $@ $^
 
 
 # Qt designer translator
 %.h %.cc: %.ui
-	uic -o $*.h $*.ui
-	uic -o $*.cc -i $*.h $*.ui
+	$(UIC) -o $*.h $*.ui
+	$(UIC) -o $*.cc -i $*.h $*.ui
 
 
 # ---------------- default fonts --------------------
@@ -88,6 +100,12 @@ libsmqtutil.a: $(OBJS)
 	-$(RANLIB) $@
 
 
+# ------------------- test-qtutil -----------------------
+TOCLEAN += test-qtutil
+test-qtutil: test-qtutil.cc qtutil.o
+	$(CXX) -o $@ $(CCFLAGS) test-qtutil.cc qtutil.o $(LDFLAGS)
+
+
 # --------------- qtbdffont test program ----------------
 QTBDFFONT_OBJS := $(filter-out qtbdffont.o,$(OBJS))
 
@@ -98,9 +116,10 @@ qtbdffont: qtbdffont.h qtbdffont.cc $(QTBDFFONT_OBJS) $(LIBSMBASE)
 
 # --------------------- misc ------------------------
 clean:
-	rm -f $(TOCLEAN)
+	$(RM) $(TOCLEAN)
 
-check:
-	@echo "no useful 'make check' at this time"
+check: test-qtutil
+	./test-qtutil
+	@echo "smqtutil tests PASSED"
 
 # EOF
