@@ -8,3 +8,6 @@ qtbdffont
 *.exe
 *.dll
 .gdbinit
+.cproject
+.project
+.settings

@@ -1,7 +1,7 @@
 # Makefile for smqtutil
 
 # main target
-all: libsmqtutil.a qtbdffont
+all: libsmqtutil.a test-qtutil test-qtbdffont
 
 
 # directories of other software
@@ -64,14 +64,8 @@ moc_%.cc: %.h
 
 
 # ---------------- default fonts --------------------
-%.bdf.gen.cc: fonts/%.bdf
+%.bdf.gen.cc %.bdf.gen.h: fonts/%.bdf
 	perl $(SMBASE)/file-to-strlit.pl bdfFontData_$* $^ $*.bdf.gen.h $@
-
-# This is needed in case 'make' decides it needs the header file.
-# I don't use the multi-target syntax because that is broken in
-# the case of parallel make.
-%.bdf.gen.h: %.bdf.gen.cc
-	@echo "dummy rule to make $@ from $^"
 
 BDFGENSRC :=
 BDFGENSRC += editor14b.bdf.gen.cc
@@ -84,6 +78,7 @@ gensrc: $(BDFGENSRC)
 
 TOCLEAN += $(BDFGENSRC)
 TOCLEAN += $(BDFGENSRC:.cc=.h)
+
 
 # ------------------- main library -------------------
 OBJS :=
@@ -101,25 +96,24 @@ libsmqtutil.a: $(OBJS)
 
 
 # ------------------- test-qtutil -----------------------
-TOCLEAN += test-qtutil
+TEST_PROGRAMS := test-qtutil
 test-qtutil: test-qtutil.cc qtutil.o
 	$(CXX) -o $@ $(CCFLAGS) test-qtutil.cc qtutil.o $(LDFLAGS)
 
 
-# --------------- qtbdffont test program ----------------
-QTBDFFONT_OBJS := $(filter-out qtbdffont.o,$(OBJS))
-
-TOCLEAN += qtbdffont
-qtbdffont: qtbdffont.h qtbdffont.cc $(QTBDFFONT_OBJS) $(LIBSMBASE)
-	$(CXX) -o $@ $(CCFLAGS) -DTEST_QTBDFFONT qtbdffont.cc $(QTBDFFONT_OBJS) $(LDFLAGS)
+# ------------------ test-qtbdffont ---------------------
+TEST_PROGRAMS += test-qtbdffont
+test-qtbdffont: test-qtbdffont.cc $(OBJS)
+	$(CXX) -o $@ $(CCFLAGS) test-qtbdffont.cc $(OBJS) $(LDFLAGS)
 
 
-# --------------------- misc ------------------------
+# ----------------------- misc --------------------------
 clean:
-	$(RM) $(TOCLEAN)
+	$(RM) $(TOCLEAN) $(TEST_PROGRAMS)
 
-check: test-qtutil
+check: $(TEST_PROGRAMS)
 	./test-qtutil
+	./test-qtbdffont
 	@echo "smqtutil tests PASSED"
 
 # EOF
