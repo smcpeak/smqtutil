@@ -1,7 +1,7 @@
 # Makefile for smqtutil
 
 # main target
-all: libsmqtutil.a test-qtutil test-qtbdffont
+all: libsmqtutil.a test-qtutil test-qtbdffont test-layout
 
 
 # directories of other software
@@ -90,7 +90,7 @@ OBJS += qtutil.o
 
 TOCLEAN += libsmqtutil.a
 libsmqtutil.a: $(OBJS)
-	rm -f $@
+	$(RM) $@
 	$(AR) -r $@ $(OBJS)
 	-$(RANLIB) $@
 
@@ -105,6 +105,12 @@ test-qtutil: test-qtutil.cc qtutil.o
 TEST_PROGRAMS += test-qtbdffont
 test-qtbdffont: test-qtbdffont.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) test-qtbdffont.cc $(OBJS) $(LDFLAGS)
+
+
+# -------------------- test-layout ----------------------
+TEST_PROGRAMS += test-layout
+test-layout: test-layout.cc $(OBJS)
+	$(CXX) -o $@ $(CCFLAGS) test-layout.cc $(OBJS) $(LDFLAGS)
 
 
 # ----------------------- misc --------------------------
