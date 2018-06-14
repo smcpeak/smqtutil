@@ -83,6 +83,7 @@ TOCLEAN += $(BDFGENSRC:.cc=.h)
 # ------------------- main library -------------------
 OBJS :=
 OBJS += $(BDFGENSRC:.cc=.o)
+OBJS += qhboxframe.o
 OBJS += qtbdffont.o
 OBJS += qtutil.o
 -include $(OBJS:.o=.d)

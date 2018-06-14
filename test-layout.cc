@@ -1,6 +1,8 @@
 // test-layout.cc
 // Experiment with some aspects of Qt layout.
 
+#include "qhboxframe.h"                // QHBoxFrame
+
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -74,6 +76,18 @@ int main(int argc, char **argv)
       hb->addWidget(new QPushButton("Eight"), 1);
       hb->addWidget(new QPushButton("Nine"), 2);
       vb->addLayout(hb);
+    }
+
+    vb->addStretch(1);
+
+    vb->addWidget(new QLabel("Ten Eleven(1) Twelve in QHBoxFrame"));
+    {
+      QHBoxFrame *hb = new QHBoxFrame();
+      hb->setFrameStyle(QFrame::Box);
+      hb->addWidget(new QPushButton("Ten"));
+      hb->addWidget(new QPushButton("Eleven"), 1);
+      hb->addWidget(new QPushButton("Twelve"));
+      vb->addWidget(hb);
     }
 
     w.setLayout(vb);
