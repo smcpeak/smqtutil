@@ -27,6 +27,9 @@ string toString(QRect r);
 string toString(QSize s);
 string qrgbToString(QRgb rgba);
 
+// Convert 'QString' to 'string'.
+string toString(QString const &s);
+
 // Convert 'string' to 'QString'.
 QString toQString(string const &s);
 #define qstringb(stuff) toQString(stringb(stuff))

@@ -145,6 +145,12 @@ string toString(QKeyEvent const &k)
 }
 
 
+string toString(QString const &s)
+{
+  return string(s.toUtf8().constData());
+}
+
+
 QString toQString(string const &s)
 {
   return QString(s.c_str());
