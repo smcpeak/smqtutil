@@ -72,6 +72,7 @@ BDFGENSRC += editor14b.bdf.gen.cc
 BDFGENSRC += editor14i.bdf.gen.cc
 BDFGENSRC += editor14r.bdf.gen.cc
 BDFGENSRC += lurs12.bdf.gen.cc
+BDFGENSRC += minihex6.bdf.gen.cc
 
 .PHONY: gensrc
 gensrc: $(BDFGENSRC)

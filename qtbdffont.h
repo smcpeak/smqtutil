@@ -140,6 +140,10 @@ private:     // data
   // "grow"; I use GrowArray for its bounds checking.
   GrowArray<Metrics> metrics;
   
+  // Nominal font-wide metrics.  This is used, for example, to know
+  // the proper size for a synthesized replacement glyph.
+  Metrics nominalFontMetrics;
+
   // True if drawing operations will use transparent backgrounds,
   // false for opaque backgrounds.
   bool transparent;
@@ -179,6 +183,14 @@ public:      // funcs
   // Return the offset by which the origin should move after drawing
   // a given glyph.  Returns (0,0) if the glyph is missing.
   QPoint getCharOffset(int index) const;
+
+  // Using the nominal font-wide metrics, return a bbox for a character
+  // cell when the basline point is 'pt'.
+  QRect getNominalCharCell(QPoint pt) const;
+
+  // Return the nominal vector from one glyph's baseline point to the
+  // next.
+  QPoint getNominalCharOffset() const;
 
   // Render a single character at 'pt'.
   //
@@ -231,6 +243,28 @@ void drawCenteredString(QtBDFFont &font, QPainter &dest,
 // the starting origin.
 void drawMultilineString(QtBDFFont &font, QPainter &dest,
                          QPoint upLeft, rostring str);
+
+
+// Draw four uppercase hexadecimal characters in the given bounds
+// rectangle arranged in a pattern like this:
+//   +--+
+//   |AB|
+//   |CD|
+//   +--+
+// where 0xABCD is 'codePoint'.  The intended purpose is to draw a
+// placeholder for a missing font glyph.  Currently this function
+// does not clip its output to 'bounds', so an appropriately small
+// font must be used.
+void drawHexQuad(QtBDFFont &font, QPainter &paint,
+                 QRect const &bounds, int codePoint);
+
+
+// If 'codePoint' has a glyph in 'mainFont', draw it at 'pt'.
+// Otherwise, use 'minihexFont' to draw a hex quad showing the code
+// point value.  Either way, return the baseline point for the next
+// glyph.
+QPoint drawCharOrHexQuad(QtBDFFont &mainFont, QtBDFFont &minihexFont,
+                         QPainter &dest, QPoint pt, int codePoint);
 
 
 #endif // QTBDFFONT_H

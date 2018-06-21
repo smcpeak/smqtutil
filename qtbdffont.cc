@@ -14,6 +14,8 @@
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
 
+#include <stdio.h>                     // snprintf (needs C99 or C++11)
+
 
 // --------------------- QtBDFFont::Metrics -----------------------
 QtBDFFont::Metrics::Metrics()
@@ -38,6 +40,27 @@ bool QtBDFFont::Metrics::isPresent() const
 
 
 // ------------------------- QtBDFFont --------------------------
+// Compute the 'origin' of QtBDFFont::Metrics from GlyphMetrics.
+static QPoint originFromGlyphMetrics(BDFFont::GlyphMetrics const &gmet)
+{
+  // If gmet.bbOffset had value (0,0), then the origin would be the
+  // lower-left corner of the glyph bbox, which is (0, gmet.bbSize.y-1)
+  // in the QtBDFFont coordinate system.
+  //
+  // From there, a positive offset of gmet.bbOffset.x is interpreted
+  // as moving the bbox to the right, which is equivalent to moving
+  // the origin left, so we subtract.
+  //
+  // A positive offset of gmet.bbOffset.y is interpreted as moving
+  // the bbox *up* in the coordinate system of
+  // BDFFont::GlyphMetrics, which is equivalent to moving the origin
+  // down, so we add (since down is positive in the coordinate
+  // system of 'glyphMask').
+  return QPoint(- gmet.bbOffset.x,
+                gmet.bbSize.y-1 + gmet.bbOffset.y);
+}
+
+
 QtBDFFont::QtBDFFont(BDFFont const &font)
   : glyphMask(),             // Null for now
     colorPixmap(),
@@ -46,6 +69,7 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
     colorPixmapState(CPS_SOLID),
     allCharsBBox(0,0,0,0),
     metrics(font.glyphIndexLimit()),
+    nominalFontMetrics(),
     transparent(true)
 {
   // The main thing this constructor does is build the 'glyphMask'
@@ -81,23 +105,8 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
     // place glyph 'i' here
     metrics[i].bbox = QRect(currentX, 0,
                             gmet.bbSize.x, gmet.bbSize.y);
+    metrics[i].origin = QPoint(currentX, 0) + originFromGlyphMetrics(gmet);
 
-    // If gmet.bbOffset had value (0,0), then the origin would be the
-    // lower-left corner of the glyph bbox, which is (currentX,
-    // gmet.bbSize.y-1) in the 'glyphMask' bitmap.
-    //
-    // From there, a positive offset of gmet.bbOffset.x is interpreted
-    // as moving the bbox to the right, which is equivalent to moving
-    // the origin left, so we subtract.
-    //
-    // A positive offset of gmet.bbOffset.y is interpreted as moving
-    // the bbox *up* in the coordinate system of
-    // BDFFont::GlyphMetrics, which is equivalent to moving the origin
-    // down, so we add (since down is positive in the coordinate
-    // system of 'glyphMask').
-    metrics[i].origin = QPoint(currentX - gmet.bbOffset.x,
-                               gmet.bbSize.y-1 + gmet.bbOffset.y);
-                     
     // Get movement offset, which might come from 'font'.
     point dWidth = gmet.hasDWidth()?
                      gmet.dWidth :
@@ -114,6 +123,19 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
 
     // Update 'allCharsBBox'.  This call reads from 'metrics[i]'.
     allCharsBBox |= getCharBBox(i);
+  }
+
+  // Grab font-wide metrics.
+  {
+    BDFFont::GlyphMetrics const &gmet = font.metrics;
+    this->nominalFontMetrics.bbox =
+      QRect(0, 0, gmet.bbSize.x, gmet.bbSize.y);
+    this->nominalFontMetrics.origin = originFromGlyphMetrics(gmet);
+
+    // It is a little sketchy to just assume that the bbox provides
+    // a good inter-character offset, but I don't have any other
+    // metric to use.
+    this->nominalFontMetrics.offset = QPoint(gmet.bbSize.x, 0);
   }
 
   // Allocate an image with the same size as 'glyphMask' will
@@ -207,7 +229,7 @@ QRect QtBDFFont::getCharBBox(int index) const
 {
   if (hasChar(index)) {
     QRect ret(metrics[index].bbox);
-    ret.translate(-metrics[index].origin.x(), -metrics[index].origin.y());
+    ret.translate(- metrics[index].origin);
     return ret;
   }
   else {
@@ -224,6 +246,21 @@ QPoint QtBDFFont::getCharOffset(int index) const
   else {
     return QPoint(0,0);
   }
+}
+
+
+QRect QtBDFFont::getNominalCharCell(QPoint pt) const
+{
+  QRect ret(this->nominalFontMetrics.bbox);
+  ret.translate(- this->nominalFontMetrics.origin);
+  ret.translate(pt);
+  return ret;
+}
+
+
+QPoint QtBDFFont::getNominalCharOffset() const
+{
+  return this->nominalFontMetrics.offset;
 }
 
 
@@ -416,6 +453,39 @@ void drawMultilineString(QtBDFFont &font, QPainter &dest,
     
     upLeft.setY(upLeft.y() + font.getAllCharsBBox().height());
   }
+}
+
+
+void drawHexQuad(QtBDFFont &font, QPainter &paint,
+                 QRect const &bounds, int codePoint)
+{
+  int midx = bounds.center().x();
+  int top = bounds.top();
+  int h = bounds.height();
+
+  char buf[3];
+
+  snprintf(buf, sizeof(buf), "%02X", ((codePoint >> 8) & 0xFF));
+  drawCenteredString(font, paint, QPoint(midx, top + h/4), buf);
+
+  snprintf(buf, sizeof(buf), "%02X", (codePoint & 0xFF));
+  drawCenteredString(font, paint, QPoint(midx, top + h*3/4), buf);
+}
+
+
+QPoint drawCharOrHexQuad(QtBDFFont &mainFont, QtBDFFont &minihexFont,
+                         QPainter &dest, QPoint pt, int codePoint)
+{
+  if (mainFont.hasChar(codePoint)) {
+    mainFont.drawChar(dest, pt, codePoint);
+    pt += mainFont.getCharOffset(codePoint);
+  }
+  else {
+    QRect bounds = mainFont.getNominalCharCell(pt);
+    drawHexQuad(minihexFont, dest, bounds, codePoint);
+    pt += mainFont.getNominalCharOffset();
+  }
+  return pt;
 }
 
 

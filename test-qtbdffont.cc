@@ -6,6 +6,7 @@
 // this directory
 #include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
 #include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
+#include "minihex6.bdf.gen.h"          // bdfFontData_minihex6
 #include "qtutil.h"                    // toString(QRect)
 
 // smbase
@@ -216,9 +217,9 @@ void entry(int argc, char **argv)
   qfont.setBgColor(bg);
 
   QLabel widget(NULL /*parent*/);
-  widget.resize(300,300);
+  widget.resize(600,300);
 
-  QPixmap pixmap(300,300);
+  QPixmap pixmap(600,300);
   pixmap.fill(bg);
 
   QPainter painter(&pixmap);
@@ -273,6 +274,30 @@ void entry(int argc, char **argv)
                       "ControlPoint\n"
                       "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\n"
                       "abcdefghijklmnopqrstuvwxyz\n");
+
+  painter.drawLine(QPoint(300,0), QPoint(300,300));
+  BDFFont minihexFont;
+  parseBDFString(minihexFont, bdfFontData_minihex6);
+  QtBDFFont minihexQFont(minihexFont);
+  minihexQFont.setFgColor(fg);
+  minihexQFont.setBgColor(bg);
+
+  drawString(minihexQFont, painter, QPoint(320,20),
+             "0123456789ABCDEF 0");
+
+  {
+    int const codePoints[] = {
+      'h', 'e', 'l', 'l', 'o', ' ',
+      0x0123, 0x4567, 0x89AB, 0xCDEF,
+      0, 1, 2, 3,
+    };
+
+    QPoint pt(320, 40);
+    for (int i=0; i < TABLESIZE(codePoints); i++) {
+      pt = drawCharOrHexQuad(qfont, minihexQFont,
+                             painter, pt, codePoints[i]);
+    }
+  }
 
   widget.setPixmap(pixmap);
 
