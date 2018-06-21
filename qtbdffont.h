@@ -210,6 +210,9 @@ public:      // funcs
   void setFgColor(QColor const &newFgColor);
   void setBgColor(QColor const &newBgColor);
   
+  // Set fg/bg to match another font.
+  void setSameFgBgColors(QtBDFFont const &other);
+
   // Get and set 'transparent'.
   bool getTransparent() const { return transparent; }
   void setTransparent(bool newTransparent);

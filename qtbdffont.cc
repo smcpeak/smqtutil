@@ -352,6 +352,13 @@ void QtBDFFont::setBgColor(QColor const &newBgColor)
 }
 
 
+void QtBDFFont::setSameFgBgColors(QtBDFFont const &other)
+{
+  this->setFgColor(other.getFgColor());
+  this->setBgColor(other.getBgColor());
+}
+
+
 void QtBDFFont::setTransparent(bool newTransparent)
 {
   if (transparent != newTransparent) {
