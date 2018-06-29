@@ -11,6 +11,7 @@
 #include "str.h"              // string
 
 class QKeyEvent;
+class QObject;
 class QPoint;
 class QRect;
 class QSize;
@@ -33,6 +34,10 @@ string toString(QString const &s);
 // Convert 'string' to 'QString'.
 QString toQString(string const &s);
 #define qstringb(stuff) toQString(stringb(stuff))
+
+// Return a description of 'obj': either "null", or the pointer
+// value and the object name.
+string qObjectDesc(QObject *obj);
 
 
 #endif // QTUTIL_H

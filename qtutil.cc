@@ -157,6 +157,18 @@ QString toQString(string const &s)
 }
 
 
+string qObjectDesc(QObject *obj)
+{
+  if (obj) {
+    return stringb((void*)obj << " (" <<
+                   toString(obj->objectName()) << ')');
+  }
+  else {
+    return "null";
+  }
+}
+
+
 char const *toString(Qt::Key k)
 {
   // This list is derived from qtbase/src/corelib/global/qnamespace.h
