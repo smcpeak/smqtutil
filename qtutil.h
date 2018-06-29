@@ -10,7 +10,6 @@
 
 #include "str.h"              // string
 
-class QKeyEvent;
 class QObject;
 class QPoint;
 class QRect;
@@ -21,7 +20,6 @@ class QSize;
 // intended for debugging purposes.
 string toString(Qt::MouseButtons buttons);
 string toString(Qt::KeyboardModifiers kmods);
-string toString(QKeyEvent const &k);
 char const *toString(Qt::Key k);
 string toString(QPoint p);
 string toString(QRect r);

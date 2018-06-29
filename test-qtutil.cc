@@ -1,6 +1,7 @@
 // test-qtutil.cc
-// Tests for 'qtutil' module.
+// Tests for 'qtutil' and 'qtguiutil' modules.
 
+#include "qtguiutil.h"                 // module to test
 #include "qtutil.h"                    // module to test
 
 #include <QCoreApplication>

@@ -5,7 +5,7 @@
 
 #include "exc.h"                       // xassert
 
-#include <QKeyEvent>
+#include <QObject>
 #include <QPoint>
 #include <QRect>
 #include <QSize>
@@ -135,13 +135,6 @@ string qrgbToString(QRgb rgba)
   int n = sprintf(tmp, "#%08X", (unsigned int)rgba);
   xassert(n < TABLESIZE(tmp));
   return string(tmp);
-}
-
-
-string toString(QKeyEvent const &k)
-{
-  return stringc << toString(k.modifiers())
-                 << "+" << toString((Qt::Key)(k.key()));
 }
 
 

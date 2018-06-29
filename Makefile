@@ -86,6 +86,7 @@ OBJS :=
 OBJS += $(BDFGENSRC:.cc=.o)
 OBJS += qhboxframe.o
 OBJS += qtbdffont.o
+OBJS += qtguiutil.o
 OBJS += qtutil.o
 -include $(OBJS:.o=.d)
 
@@ -99,8 +100,8 @@ libsmqtutil.a: $(OBJS)
 
 # ------------------- test-qtutil -----------------------
 TEST_PROGRAMS := test-qtutil
-test-qtutil: test-qtutil.cc qtutil.o
-	$(CXX) -o $@ $(CCFLAGS) test-qtutil.cc qtutil.o $(LDFLAGS)
+test-qtutil: test-qtutil.cc qtguiutil.o qtutil.o
+	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
 # ------------------ test-qtbdffont ---------------------
