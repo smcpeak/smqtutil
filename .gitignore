@@ -12,3 +12,6 @@ qtbdffont
 .project
 .settings
 config.mk
+test-layout
+test-qtbdffont
+test-qtutil
