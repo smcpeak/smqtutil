@@ -17,6 +17,10 @@ CXX    := g++
 AR     := ar
 RANLIB := ranlib
 
+# Additional compile/link flags.
+EXTRA_CCFLAGS :=
+EXTRA_LDFLAGS :=
+
 # Pull in build configuration.  This must provide definitions of
 # QT5INCLUDE, QT5LIB and QT5BIN.  It can optionally override the
 # variables defined above.
@@ -35,10 +39,12 @@ include qtvars.mk
 CCFLAGS := -g -Wall -Wno-deprecated -std=c++11
 CCFLAGS += -I$(SMBASE)
 CCFLAGS += $(QT_CCFLAGS)
+CCFLAGS += $(EXTRA_CCFLAGS)
 
 # Flags for the linker.
 LDFLAGS := -g -Wall $(SMBASE)/libsmbase.a
 LDFLAGS += $(QT_LDFLAGS)
+LDFLAGS += $(EXTRA_LDFLAGS)
 
 
 # patterns of files to delete in the 'clean' target; targets below
