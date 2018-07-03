@@ -11,3 +11,4 @@ qtbdffont
 .cproject
 .project
 .settings
+config.mk

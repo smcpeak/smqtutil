@@ -4,41 +4,46 @@
 all: libsmqtutil.a test-qtutil test-qtbdffont test-layout
 
 
-# directories of other software
+# ------------------- BEGIN: Configuration ---------------------
+# This is where we set variables that depend on the build or
+# target platform.  The rest of the Makefile should take care
+# of responding to these variables without further intervention.
+
+# Directories of other software.
 SMBASE := ../smbase
-LIBSMBASE := $(SMBASE)/libsmbase.a
 
-# Directory with Qt headers, libraries, and programs.
-QTDIR := /d/bld/qt5/qtbase
-
-# Same, as a path that can be passed to the compiler.
-QTDIR_CPLR := $(shell cygpath -m '$(QTDIR)')
-
-# C++ compiler, etc.
+# Build tools.
 CXX    := g++
 AR     := ar
 RANLIB := ranlib
 
-# flags for the C and C++ compilers (and preprocessor)
+# Pull in build configuration.  This must provide definitions of
+# QT5INCLUDE, QT5LIB and QT5BIN.  It can optionally override the
+# variables defined above.
+ifeq (,$(wildcard config.mk))
+$(error The file config.mk does not exist.  You have to copy config.mk.template to config.mk and then edit the latter by hand)
+endif
+include config.mk
+# -------------------- END: Configuration ----------------------
+
+
+# Set QT_CCFLAGS, QT_LDFLAGS, and define rule for running 'moc'.
+include qtvars.mk
+
+
+# Flags for the C and C++ compilers (and preprocessor).
 CCFLAGS := -g -Wall -Wno-deprecated -std=c++11
 CCFLAGS += -I$(SMBASE)
-CCFLAGS += -I$(QTDIR_CPLR)/include
-CCFLAGS += -I$(QTDIR_CPLR)/include/QtCore
-CCFLAGS += -I$(QTDIR_CPLR)/include/QtGui
-CCFLAGS += -I$(QTDIR_CPLR)/include/QtWidgets
+CCFLAGS += $(QT_CCFLAGS)
 
-# flags for the linker
-LDFLAGS := -g -Wall $(LIBSMBASE)
-LDFLAGS += -L$(QTDIR_CPLR)/lib -lQt5Widgets -lQt5Gui -lQt5Core
-
-# Qt build tools
-MOC := $(QTDIR)/bin/moc
-UIC := $(QTDIR)/bin/uic
+# Flags for the linker.
+LDFLAGS := -g -Wall $(SMBASE)/libsmbase.a
+LDFLAGS += $(QT_LDFLAGS)
 
 
 # patterns of files to delete in the 'clean' target; targets below
 # add things to this using "+="
-TOCLEAN =
+TOCLEAN = $(QT_TOCLEAN)
 
 
 # ---------------- pattern rules --------------------
@@ -48,19 +53,6 @@ TOCLEAN =
 TOCLEAN += *.o *.d
 %.o : %.cc
 	$(CXX) -c -MMD -MP -o $@ $< $(CCFLAGS)
-
-
-# Qt meta-object compiler
-.PRECIOUS: moc_%.cc
-TOCLEAN += moc_*.cc
-moc_%.cc: %.h
-	$(MOC) -o $@ $^
-
-
-# Qt designer translator
-%.h %.cc: %.ui
-	$(UIC) -o $*.h $*.ui
-	$(UIC) -o $*.cc -i $*.h $*.ui
 
 
 # ---------------- default fonts --------------------
