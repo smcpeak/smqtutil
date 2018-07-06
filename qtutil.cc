@@ -3,13 +3,18 @@
 
 #include "qtutil.h"                    // this module
 
+// smase
+#include "datablok.h"                  // DataBlock
 #include "exc.h"                       // xassert
 
+// Qt
+#include <QByteArray>
 #include <QObject>
 #include <QPoint>
 #include <QRect>
 #include <QSize>
 
+// libc
 #include <stdio.h>                     // sprintf
 
 
@@ -159,6 +164,14 @@ string qObjectDesc(QObject *obj)
   else {
     return "null";
   }
+}
+
+
+void printQByteArray(QByteArray const &ba, char const *label)
+{
+  // This is an inefficient but convenient implementation.
+  DataBlock db(ba.constData(), ba.size());
+  db.print(label);
 }
 
 

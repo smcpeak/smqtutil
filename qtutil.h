@@ -10,6 +10,7 @@
 
 #include "str.h"              // string
 
+class QByteArray;
 class QObject;
 class QPoint;
 class QRect;
@@ -36,6 +37,10 @@ QString toQString(string const &s);
 // Return a description of 'obj': either "null", or the pointer
 // value and the object name.
 string qObjectDesc(QObject *obj);
+
+// Print the contents of 'ba' to stdout with 'label', then flush.
+// The format is a hexdump with an ASCII column on the side.
+void printQByteArray(QByteArray const &ba, char const *label);
 
 
 #endif // QTUTIL_H

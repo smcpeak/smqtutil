@@ -4,6 +4,7 @@
 #include "qtguiutil.h"                 // module to test
 #include "qtutil.h"                    // module to test
 
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <QRect>
@@ -11,7 +12,7 @@
 #include "sm-iostream.h"               // cout, etc.
 
 
-void testMouseButtonsToString()
+static void testMouseButtonsToString()
 {
   cout << "testMouseButtonsToString" << endl;
 
@@ -29,7 +30,7 @@ void testMouseButtonsToString()
 }
 
 
-void testKeyboardModifiersToString()
+static void testKeyboardModifiersToString()
 {
   cout << "testKeyboardModifiersToString" << endl;
 
@@ -47,13 +48,25 @@ void testKeyboardModifiersToString()
 }
 
 
-void testKeyEventToString()
+static void testKeyEventToString()
 {
   cout << "testKeyEventToString" << endl;
 
   QKeyEvent ev(QEvent::KeyPress, Qt::Key_B,
                Qt::KeyboardModifiers(Qt::ShiftModifier));
   cout << "ev: " << toString(ev) << endl;
+}
+
+
+static void testPrintQByteArray()
+{
+  QByteArray ba;
+  printQByteArray(ba, "empty");
+
+  for (int i=0; i < 256; i++) {
+    ba.append((char)i);
+  }
+  printQByteArray(ba, "allchars");
 }
 
 
@@ -64,6 +77,7 @@ int main(int argc, char **argv)
   testMouseButtonsToString();
   testKeyboardModifiersToString();
   testKeyEventToString();
+  testPrintQByteArray();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
