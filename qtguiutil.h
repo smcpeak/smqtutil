@@ -9,11 +9,19 @@
 #ifndef QTGUIUTIL_H
 #define QTGUIUTIL_H
 
+#include "exc.h"                       // xBase
 #include "str.h"                       // string
 
 class QKeyEvent;
+class QWidget;
 
 // Render as a string for debugging.
 string toString(QKeyEvent const &k);
+
+
+// Display an unhandled exception error in a message box.  Limits
+// itself to showing five dialog boxes.
+void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
+
 
 #endif // QTGUIUTIL_H
