@@ -7,6 +7,7 @@
 
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QWidget>
 
 
 string toString(QKeyEvent const &k)
@@ -30,6 +31,19 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x)
   QMessageBox::information(parent, "Oops",
     QString(stringc << "Unhandled exception: " << x.why() << "\n"
                     << "Save your work if you can!"));
+}
+
+
+CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
+  : m_widget(w),
+    m_previousCursor(w->cursor())
+{
+  m_widget->setCursor(newCursor);
+}
+
+CursorSetRestore::~CursorSetRestore()
+{
+  m_widget->setCursor(m_previousCursor);
 }
 
 

@@ -12,6 +12,8 @@
 #include "exc.h"                       // xBase
 #include "str.h"                       // string
 
+#include <QCursor>
+
 class QKeyEvent;
 class QWidget;
 
@@ -22,6 +24,18 @@ string toString(QKeyEvent const &k);
 // Display an unhandled exception error in a message box.  Limits
 // itself to showing five dialog boxes.
 void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
+
+
+// Set a widget mouse cursor, then restore it on scope exit.
+class CursorSetRestore {
+public:      // data
+  QWidget *m_widget;
+  QCursor m_previousCursor;
+
+public:      // funcs
+  CursorSetRestore(QWidget *w, QCursor const &newCursor);
+  ~CursorSetRestore();
+};
 
 
 #endif // QTGUIUTIL_H
