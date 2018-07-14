@@ -26,6 +26,12 @@ string toString(QKeyEvent const &k);
 void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
 
 
+// Show a message box in a modal dialog.  This is the same as
+// QMessageBox::information except it doesn't ring the bell or
+// show an "i" icon.
+void messageBox(QWidget *parent, QString title, QString message);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data

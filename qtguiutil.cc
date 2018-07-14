@@ -28,9 +28,19 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x)
     return;
   }
 
-  QMessageBox::information(parent, "Oops",
+  QMessageBox::critical(parent, "Oops",
     QString(stringc << "Unhandled exception: " << x.why() << "\n"
                     << "Save your work if you can!"));
+}
+
+
+void messageBox(QWidget *parent, QString title, QString message)
+{
+  QMessageBox box(parent);
+  box.setWindowTitle(title);
+  box.setText(message);
+  box.addButton(QMessageBox::Ok);
+  box.exec();
 }
 
 
