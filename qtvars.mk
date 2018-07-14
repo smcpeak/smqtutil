@@ -25,6 +25,12 @@ QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtCore
 QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtGui
 QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtWidgets
 
+# Qt has a macro called 'foreach'.  This collides with a method on some
+# of the containers in smbase (e.g., StringVoidDict, which is used by
+# StringSet).  This suppresses 'foreach' while retaining Q_FOREACH, so
+# the functionality is still available.
+QT_CCFLAGS += -DQT_NO_FOREACH
+
 # Qt link flags.
 QT_LDFLAGS := -L ${QT5LIB} -lQt5Widgets -lQt5Gui -lQt5Core
 
