@@ -44,6 +44,17 @@ void messageBox(QWidget *parent, QString title, QString message)
 }
 
 
+bool questionBoxYesCancel(QWidget *parent, QString title, QString question)
+{
+  QMessageBox box(parent);
+  box.setWindowTitle(title);
+  box.setText(question);
+  box.addButton(QMessageBox::Yes);
+  box.addButton(QMessageBox::Cancel);
+  return (box.exec() == QMessageBox::Yes);
+}
+
+
 CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
   : m_widget(w),
     m_previousCursor(w->cursor())

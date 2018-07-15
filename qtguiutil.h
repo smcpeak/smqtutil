@@ -32,6 +32,10 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
 void messageBox(QWidget *parent, QString title, QString message);
 
 
+// Ask a question with Yes and Cancel buttons.  Return true on Yes.
+bool questionBoxYesCancel(QWidget *parent, QString title, QString question);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data
