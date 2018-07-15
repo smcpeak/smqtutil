@@ -63,7 +63,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
         CHECK_EQUAL(bbox.height(), fontGlyph->metrics.bbSize.y);
 
         CHECK_EQUAL(bbox.left(), fontGlyph->metrics.bbOffset.x);
-        
+
         // This formula is complicated because the meaning of
         // increasing 'y' values are reversed, and that in turn means
         // that the "top" point is a different corner than the
@@ -92,7 +92,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
         CHECK_EQUAL(bbox.top(), (-fontGlyph->metrics.bbSize.y) + 1 +
                                 (-fontGlyph->metrics.bbOffset.y));
       }
-      
+
       // Offset.
       QPoint offset = qfont.getCharOffset(charIndex);
       {
@@ -100,14 +100,14 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
         point dWidth = fontGlyph->metrics.hasDWidth()?
                          fontGlyph->metrics.dWidth :
                          font.metrics.dWidth;
-                         
+
         CHECK_EQUAL(offset.x(), dWidth.x);
         CHECK_EQUAL(offset.y(), -dWidth.y);
       }
-      
+
       // Now the interesting part: make a temporary pixmap, render
       // the glyph on to it, then compare it to what is in 'font'.
-              
+
       // The temporary pixmap will have 10 pixels of margin around the
       // sides so that we can detect if the renderer is drawing pixels
       // outside the claimed bounding box.
@@ -135,7 +135,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
             bool isBlack;
             {
               QRgb rgb = image.pixel(x,y);
-                   
+
               // first, make sure 'rgb' is either black or white;
               // it is up to the caller to ensure this
               xassert(qBlue(rgb) == qRed(rgb));
@@ -175,7 +175,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
 
     #undef CHECK_EQUAL
   } // loop over 'charIndex'
-  
+
   cout << "successfully compared " << glyphCount << " glyphs\n";
 }
 
@@ -190,7 +190,7 @@ void entry(int argc, char **argv)
   // first compare with transparent drawing
   QtBDFFont qfont(font);
   compare(font, qfont);
-  
+
   // then with opaque drawing
   qfont.setTransparent(false);
   compare(font, qfont);
@@ -250,7 +250,7 @@ void entry(int argc, char **argv)
                    "drawString(QtBDFFont &)");
       }
       long elapsed = getMilliseconds() - start;
-      
+
       cout << (drawMode==0? "transparent: " : "opaque: ")
            << iters << " iters in " << elapsed << " ms" << endl;
     }

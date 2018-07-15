@@ -194,7 +194,7 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
   // Create 'colorPixmap', initially just solid 'fgColor'.
   colorPixmap = QPixmap(glyphMask.size());
   colorPixmap.fill(fgColor);
-  
+
   // Associate it as the mask due to 'transparent'.
   colorPixmap.setMask(glyphMask);
 }
@@ -267,12 +267,12 @@ QPoint QtBDFFont::getNominalCharOffset() const
 // Set 'colorPixmapState' to 'CPS_MIX', and modify 'colorPixmap'
 // accordingly.
 void QtBDFFont::createMixedColorPixmap()
-{ 
+{
   // This should only be called when 'transparent' is false, which
   // means that 'glyphMask' is note associated with any pixmaps right
   // now.
   xassert(transparent == false);
-  
+
   // Fill the entire 'colorPixmap' with the background color.
   colorPixmap.fill(bgColor);
 
@@ -363,7 +363,7 @@ void QtBDFFont::setTransparent(bool newTransparent)
 {
   if (transparent != newTransparent) {
     transparent = newTransparent;
-                      
+
     if (transparent) {
       // The foreground pixels should already have the
       // foreground color, so mask out the bg pixels.
@@ -449,7 +449,7 @@ void drawCenteredString(QtBDFFont &font, QPainter &dest,
 
 void drawMultilineString(QtBDFFont &font, QPainter &dest,
                          QPoint upLeft, rostring str)
-{ 
+{
   // adjust 'upLeft' so it is the starting origin
   upLeft += -font.getAllCharsBBox().topLeft();
 
@@ -457,7 +457,7 @@ void drawMultilineString(QtBDFFont &font, QPainter &dest,
   StrtokParse tok(str, "\r\n");
   for (int i=0; i < tok.tokc(); i++) {
     drawString(font, dest, upLeft, tok[i]);
-    
+
     upLeft.setY(upLeft.y() + font.getAllCharsBBox().height());
   }
 }

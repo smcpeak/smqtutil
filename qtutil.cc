@@ -626,7 +626,7 @@ char const *toString(Qt::Key k)
 
     default: return "(unknown)";
   }
-  
+
   #undef HANDLE_KEY
 }
 

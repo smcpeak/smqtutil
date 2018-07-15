@@ -139,7 +139,7 @@ private:     // data
   // Map from character index to associated metrics.  It does not
   // "grow"; I use GrowArray for its bounds checking.
   GrowArray<Metrics> metrics;
-  
+
   // Nominal font-wide metrics.  This is used, for example, to know
   // the proper size for a synthesized replacement glyph.
   Metrics nominalFontMetrics;
@@ -202,14 +202,14 @@ public:      // funcs
   //
   // If there is no glyph with the given index, this is a no-op.
   void drawChar(QPainter &dest, QPoint pt, int index);
-  
+
   // Get and set fg/bg colors.  Subsequent calls to 'drawChar'
   // will use these colors.
   QColor getFgColor() const { return fgColor; }
   QColor getBgColor() const { return bgColor; }
   void setFgColor(QColor const &newFgColor);
   void setBgColor(QColor const &newBgColor);
-  
+
   // Set fg/bg to match another font.
   void setSameFgBgColors(QtBDFFont const &other);
 

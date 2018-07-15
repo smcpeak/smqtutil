@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
 
   return 0;
-}  
+}
 
 
 // EOF
