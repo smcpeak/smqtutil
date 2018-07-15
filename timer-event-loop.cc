@@ -39,7 +39,7 @@ void TimerEventLoop::waitForMS(int msecs)
 void sleepWhilePumpingEvents(int ms)
 {
   TimerEventLoop eventLoop;
-  eventLoop.waitForMS(200);
+  eventLoop.waitForMS(ms);
 }
 
 
