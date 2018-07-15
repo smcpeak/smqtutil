@@ -13,6 +13,7 @@
 #include "bdffont.h"                   // BDFFont
 #include "bit2d.h"                     // Bit2d::Size
 #include "exc.h"                       // xbase
+#include "sm-file-util.h"              // SMFileUtil
 #include "strtokp.h"                   // StrtokParse
 #include "test.h"                      // DEBUG_PVAL, ARGS_MAIN
 
@@ -21,6 +22,9 @@
 #include <qimage.h>                    // QImage
 #include <qlabel.h>                    // QLabel
 #include <qpainter.h>                  // QPainter
+
+// libc
+#include <stdlib.h>                    // getenv
 
 
 ARGS_MAIN
@@ -184,6 +188,16 @@ void entry(int argc, char **argv)
 {
   BDFFont font;
   parseBDFString(font, bdfFontData_editor14r);
+
+  // This is a really ugly way to detect a dependence on X11, and is
+  // wrong on Mac OS/X.  But I sunk at least half an hour trying to
+  // figure out the proper placement for Q_WS_X11 in Qt5 and could not!
+  if (!SMFileUtil().windowsPathSemantics() &&
+      !getenv("DISPLAY")) {
+    cout << "Running on non-Windows platform, DISPLAY not set.\n";
+    cout << "Set DISPLAY in order to run the rest of this test.\n";
+    return;
+  }
 
   QApplication app(argc, argv);
 
