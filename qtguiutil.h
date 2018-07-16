@@ -31,6 +31,10 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
 // show an "i" icon.
 void messageBox(QWidget *parent, QString title, QString message);
 
+// Same, but also provide a "details" string.
+void messageBox_details(QWidget *parent, QString title,
+                        QString message, QString details);
+
 
 // Ask a question with Yes and Cancel buttons.  Return true on Yes.
 bool questionBoxYesCancel(QWidget *parent, QString title, QString question);

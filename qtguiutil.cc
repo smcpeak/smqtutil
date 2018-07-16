@@ -44,6 +44,18 @@ void messageBox(QWidget *parent, QString title, QString message)
 }
 
 
+void messageBox_details(QWidget *parent, QString title,
+                        QString message, QString details)
+{
+  QMessageBox box(parent);
+  box.setWindowTitle(title);
+  box.setText(message);
+  box.setDetailedText(details);
+  box.addButton(QMessageBox::Ok);
+  box.exec();
+}
+
+
 bool questionBoxYesCancel(QWidget *parent, QString title, QString question)
 {
   QMessageBox box(parent);
