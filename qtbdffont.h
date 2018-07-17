@@ -64,6 +64,8 @@
 #include <qpoint.h>                    // QPoint
 #include <qrect.h>                     // QRect
 
+#include <Qt>                          // Qt::Alignment
+
 class BDFFont;                         // smbase/bdffont.h
 class QPainter;                        // qpainter.h
 
@@ -239,6 +241,17 @@ QRect getStringBBox(QtBDFFont &font, rostring str);
 // the given point, according to the glyph bbox metrics.
 void drawCenteredString(QtBDFFont &font, QPainter &dest,
                         QPoint center, rostring str);
+
+
+// Similar to QPainter::drawText(QRect, ...), draw the specified text in
+// the given rectangle, aligned per 'alignment'.  Currently the only
+// alignments supported are Left/Right/HCenter and Top/Bottom/VCenter.
+// If a direction's alignment is not specified, it acts like "center".
+//
+// However, unlike QPainter::drawText, this function does *not* clip its
+// output to 'rect'.
+void drawAlignedString(QtBDFFont &font, QPainter &dest,
+  QRect const &rect, Qt::Alignment alignment, string const &str);
 
 
 // Draw a string that contains multiple newline-separated lines.

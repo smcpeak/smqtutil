@@ -433,16 +433,41 @@ QRect getStringBBox(QtBDFFont &font, rostring str)
 void drawCenteredString(QtBDFFont &font, QPainter &dest,
                         QPoint center, rostring str)
 {
-  // Calculate a bounding rectangle for the entire string.
+  drawAlignedString(font, dest, QRect(center, QSize(0,0)),
+    (Qt::AlignHCenter | Qt::AlignVCenter), str);
+}
+
+
+void drawAlignedString(QtBDFFont &font, QPainter &dest,
+  QRect const &rect, Qt::Alignment alignment, string const &str)
+{
+  // Calculate a bounding rectangle for the entire string if it were to
+  // be drawn at (0,0).
   QRect bbox = getStringBBox(font, str);
 
-  // Upper-left of desired rectangle.
-  QPoint pt = center - QPoint(bbox.width() / 2, bbox.height() / 2);
+  // Desired rectangle left edge.
+  int left = (alignment & Qt::AlignLeft)?
+               rect.left() :
+             (alignment & Qt::AlignRight)?
+               rect.left() + rect.width() - bbox.width() :
+             /*else*/
+               rect.left() + (rect.width() - bbox.width())/2;
 
-  // Origin point within the rectangle.
+  // Desired rectangle top edge.
+  int top  = (alignment & Qt::AlignTop)?
+               rect.top() :
+             (alignment & Qt::AlignBottom)?
+               rect.top() + rect.height() - bbox.height() :
+             /*else*/
+               rect.top() + (rect.height() - bbox.height())/2;
+
+  // Package as a point.
+  QPoint pt(left, top);
+
+  // Shift to where the beginning of the baseline should go.
   pt -= bbox.topLeft();
 
-  // Draw it.
+  // Draw at that baseline point.
   drawString(font, dest, pt, str);
 }
 

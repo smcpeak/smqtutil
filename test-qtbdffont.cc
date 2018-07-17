@@ -313,6 +313,27 @@ void entry(int argc, char **argv)
     }
   }
 
+  // Test 'drawAlignedString'.
+  qfont.setTransparent(true);
+  Qt::AlignmentFlag halign[] = {
+    Qt::AlignLeft,
+    Qt::AlignHCenter,
+    Qt::AlignRight
+  };
+  Qt::AlignmentFlag valign[] = {
+    Qt::AlignTop,
+    Qt::AlignVCenter,
+    Qt::AlignBottom
+  };
+  for (int row=0; row < 3; row++) {
+    for (int col=0; col < 3; col++) {
+      QRect rect(320 + col*70, 100 + row*50, 60, 40);
+      painter.drawRect(rect);
+      drawAlignedString(qfont, painter, rect,
+        halign[col] | valign[row], string("ABC"));
+    }
+  }
+
   widget.setPixmap(pixmap);
 
   widget.show();
