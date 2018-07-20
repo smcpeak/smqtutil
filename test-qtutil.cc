@@ -48,13 +48,57 @@ static void testKeyboardModifiersToString()
 }
 
 
+static void testRTKeyboardModifier(Qt::KeyboardModifier m)
+{
+  string s = toString(Qt::KeyboardModifiers(m));
+  Qt::KeyboardModifier m2 = getKeyboardModifierFromString(s);
+  xassert(m == m2);
+}
+
+static void testKeyboardModifierToString()
+{
+  testRTKeyboardModifier(Qt::NoModifier);
+  testRTKeyboardModifier(Qt::ShiftModifier);
+  testRTKeyboardModifier(Qt::ControlModifier);
+  testRTKeyboardModifier(Qt::AltModifier);
+  testRTKeyboardModifier(Qt::MetaModifier);
+  testRTKeyboardModifier(Qt::KeypadModifier);
+  testRTKeyboardModifier(Qt::GroupSwitchModifier);
+
+  try {
+    cout << "will throw:" << endl;
+    getKeyboardModifierFromString("blah");
+    xfailure("should have failed");
+  }
+  catch (xFormat &x) {
+    cout << "as expected: " << x.why() << endl;
+  }
+}
+
+
+static void testRTKeyEvent(QKeyEvent const &ev)
+{
+  string evString(toString(ev));
+  cout << "ev: " << evString << endl;
+
+  QKeyEvent *ev2 = getKeyPressFromString(evString);
+  xassert(evString == toString(*ev2));
+  delete ev2;
+}
+
 static void testKeyEventToString()
 {
   cout << "testKeyEventToString" << endl;
 
-  QKeyEvent ev(QEvent::KeyPress, Qt::Key_B,
-               Qt::KeyboardModifiers(Qt::ShiftModifier));
-  cout << "ev: " << toString(ev) << endl;
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_Escape,
+              Qt::KeyboardModifiers(Qt::NoModifier)));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_B,
+              Qt::KeyboardModifiers(Qt::ShiftModifier)));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_Delete,
+              Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::AltModifier)));
 }
 
 
@@ -76,6 +120,7 @@ int main(int argc, char **argv)
 
   testMouseButtonsToString();
   testKeyboardModifiersToString();
+  testKeyboardModifierToString();
   testKeyEventToString();
   testPrintQByteArray();
 

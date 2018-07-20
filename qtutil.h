@@ -28,8 +28,16 @@ string toString(QRect r);
 string toString(QSize s);
 string qrgbToString(QRgb rgba);
 
+// Convert a keyboard modifier name back to its number, or throw xFormat.
+Qt::KeyboardModifier getKeyboardModifierFromString(string const &str);
+
+// Convert a key to its number, or throw xFormat.
+Qt::Key getKeyFromString(string const &str);
+
+
 // Convert 'QString' to 'string'.
 string toString(QString const &s);
+
 
 // Allow inserting QString into stringBuilder and ostream.
 //

@@ -3,10 +3,16 @@
 
 #include "qtguiutil.h"                 // this module
 
+// smqtutil
 #include "qtutil.h"                    // toString for Key and Modifiers
 
+// smbase
+#include "exc.h"                       // xformat
+
+// Qt
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QStringList>
 #include <QWidget>
 
 
@@ -14,6 +20,29 @@ string toString(QKeyEvent const &k)
 {
   return stringc << toString(k.modifiers())
                  << "+" << toString((Qt::Key)(k.key()));
+}
+
+
+QKeyEvent *getKeyPressFromString(string const &str)
+{
+  try {
+    QStringList keys(toQString(str).split('+'));
+    if (keys.isEmpty()) {
+      xformat("no keys in string");
+    }
+
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    for (int i=0; i < keys.count()-1; i++) {
+      modifiers |= getKeyboardModifierFromString(toString(keys.at(i)));
+    }
+
+    Qt::Key key = getKeyFromString(toString(keys.last()));
+
+    return new QKeyEvent(QEvent::KeyPress, key, modifiers);
+  }
+  catch (xFormat &msg) {
+    xformatsb("in key string \"" << str << "\": " << msg.cond());
+  }
 }
 
 

@@ -17,8 +17,13 @@
 class QKeyEvent;
 class QWidget;
 
-// Render as a string for debugging.
+// Render as a string for debugging or event record/replay.
 string toString(QKeyEvent const &k);
+
+// Convert the string back to a QKeyEvent for event replay.  The
+// returned pointer is an owner pointer.  Throws xFormat if the string
+// cannot be parsed as a KeyPress event.
+QKeyEvent *getKeyPressFromString(string const &str);
 
 
 // Display an unhandled exception error in a message box.  Limits
