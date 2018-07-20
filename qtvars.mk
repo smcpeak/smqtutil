@@ -29,7 +29,10 @@ QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtWidgets
 # of the containers in smbase (e.g., StringVoidDict, which is used by
 # StringSet).  This suppresses 'foreach' while retaining Q_FOREACH, so
 # the functionality is still available.
-QT_CCFLAGS += -DQT_NO_FOREACH
+#
+# It also suppresses 'emit', 'signals', etc., which all have Q_XXX
+# counterparts.
+QT_CCFLAGS += -DQT_NO_KEYWORDS
 
 # Qt link flags.
 QT_LDFLAGS := -L ${QT5LIB} -lQt5Widgets -lQt5Gui -lQt5Core
