@@ -149,6 +149,18 @@ string toString(QString const &s)
 }
 
 
+stringBuilder& operator<< (stringBuilder& sb, QString const &str)
+{
+  return sb << str.toUtf8().constData();
+}
+
+
+ostream& operator<< (ostream &os, QString const &str)
+{
+  return os << str.toUtf8().constData();
+}
+
+
 QString toQString(string const &s)
 {
   return QString(s.c_str());

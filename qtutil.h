@@ -8,7 +8,8 @@
 #include <qnamespace.h>       // MouseButtons, KeyboardModifiers, Key
 #include <qstring.h>          // QString
 
-#include "str.h"              // string
+#include "sm-iostream.h"      // ostream
+#include "str.h"              // string, stringBuilder
 
 class QByteArray;
 class QObject;
@@ -29,6 +30,16 @@ string qrgbToString(QRgb rgba);
 
 // Convert 'QString' to 'string'.
 string toString(QString const &s);
+
+// Allow inserting QString into stringBuilder and ostream.
+//
+// For a while I have been avoiding this on safety grounds, instead
+// explicitly calling toString, but that is annoying and the safety
+// benefit seems minimal, particularly as my eventual intent is for
+// 8-bit characters to be UTF-8, and hence this does not lose
+// information.
+stringBuilder& operator<< (stringBuilder& sb, QString const &str);
+ostream& operator<< (ostream &os, QString const &str);
 
 // Convert 'string' to 'QString'.
 QString toQString(string const &s);
