@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <QRect>
+#include <QShortcutEvent>
 
 #include "sm-iostream.h"               // cout, etc.
 
@@ -81,14 +82,14 @@ static void testRTKeyEvent(QKeyEvent const &ev)
   string evString(toString(ev));
   cout << "ev: " << evString << endl;
 
-  QKeyEvent *ev2 = getKeyPressFromString(evString);
+  QKeyEvent *ev2 = getKeyPressEventFromString(evString);
   xassert(evString == toString(*ev2));
   delete ev2;
 }
 
-static void testKeyEventToString()
+static void testKeyPressEventToString()
 {
-  cout << "testKeyEventToString" << endl;
+  cout << "testKeyPressEventToString" << endl;
 
   testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_Escape,
@@ -99,6 +100,26 @@ static void testKeyEventToString()
   testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_Delete,
               Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::AltModifier)));
+}
+
+
+static void testRTShortcutEvent(QShortcutEvent const &ev)
+{
+  string evString(toString(ev.key().toString()));
+  cout << "ev: " << evString << endl;
+
+  QShortcutEvent *ev2 = getShortcutEventFromString(evString);
+  xassert(evString == toString(ev2->key().toString()));
+  delete ev2;
+}
+
+static void testShortcutEventToString()
+{
+  cout << "testShortcutEventToString" << endl;
+
+  testRTShortcutEvent(QShortcutEvent(Qt::Key_X, 0));
+  testRTShortcutEvent(QShortcutEvent(Qt::SHIFT+Qt::Key_Y, 0));
+  testRTShortcutEvent(QShortcutEvent(Qt::SHIFT+Qt::CTRL+Qt::Key_Y, 0));
 }
 
 
@@ -121,7 +142,8 @@ int main(int argc, char **argv)
   testMouseButtonsToString();
   testKeyboardModifiersToString();
   testKeyboardModifierToString();
-  testKeyEventToString();
+  testKeyPressEventToString();
+  testShortcutEventToString();
   testPrintQByteArray();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;

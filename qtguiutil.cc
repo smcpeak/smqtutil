@@ -12,6 +12,7 @@
 // Qt
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QShortcutEvent>
 #include <QStringList>
 #include <QWidget>
 
@@ -23,7 +24,7 @@ string toString(QKeyEvent const &k)
 }
 
 
-QKeyEvent *getKeyPressFromString(string const &str)
+QKeyEvent *getKeyPressEventFromString(string const &str)
 {
   try {
     QStringList keys(toQString(str).split('+'));
@@ -43,6 +44,18 @@ QKeyEvent *getKeyPressFromString(string const &str)
   catch (xFormat &msg) {
     xformatsb("in key string \"" << str << "\": " << msg.cond());
   }
+}
+
+
+QShortcutEvent *getShortcutEventFromString(string const &str)
+{
+  // I do not know how to check for errors here.
+  QKeySequence kseq(QKeySequence::fromString(toQString(str)));
+
+  // I hope the replay process is not sensitive to the ID.  It would be
+  // easy to record it, of course, but I do not think it is stable over
+  // time.
+  return new QShortcutEvent(kseq, 0 /*id*/);
 }
 
 
