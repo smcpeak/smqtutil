@@ -16,16 +16,19 @@
 
 class QKeyEvent;
 class QShortcutEvent;
+class QString;
 class QWidget;
 
 
-// Render as a string for debugging or event record/replay.
+// Render as a string for debugging or event record/replay.  This
+// string just captures the key(s), not the text.
 string toString(QKeyEvent const &k);
 
 // Convert the string back to a QKeyEvent for event replay.  The
 // returned pointer is an owner pointer.  Throws xFormat if the string
 // cannot be parsed as a KeyPress event.
-QKeyEvent *getKeyPressEventFromString(string const &str);
+QKeyEvent *getKeyPressEventFromString(string const &keys,
+                                      QString const &text);
 
 // Convert a string created with QShortcutEvent::key().toString() to an
 // event object.  Throws xFormat on error.  Returns an owner pointer.

@@ -13,6 +13,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QShortcutEvent>
+#include <QString>
 #include <QStringList>
 #include <QWidget>
 
@@ -24,7 +25,8 @@ string toString(QKeyEvent const &k)
 }
 
 
-QKeyEvent *getKeyPressEventFromString(string const &str)
+QKeyEvent *getKeyPressEventFromString(string const &str,
+                                      QString const &text)
 {
   try {
     QStringList keys(toQString(str).split('+'));
@@ -39,7 +41,7 @@ QKeyEvent *getKeyPressEventFromString(string const &str)
 
     Qt::Key key = getKeyFromString(toString(keys.last()));
 
-    return new QKeyEvent(QEvent::KeyPress, key, modifiers);
+    return new QKeyEvent(QEvent::KeyPress, key, modifiers, text);
   }
   catch (xFormat &msg) {
     xformatsb("in key string \"" << str << "\": " << msg.cond());

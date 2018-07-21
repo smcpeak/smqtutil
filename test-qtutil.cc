@@ -82,7 +82,7 @@ static void testRTKeyEvent(QKeyEvent const &ev)
   string evString(toString(ev));
   cout << "ev: " << evString << endl;
 
-  QKeyEvent *ev2 = getKeyPressEventFromString(evString);
+  QKeyEvent *ev2 = getKeyPressEventFromString(evString, ev.text());
   xassert(evString == toString(*ev2));
   delete ev2;
 }
@@ -96,7 +96,7 @@ static void testKeyPressEventToString()
               Qt::KeyboardModifiers(Qt::NoModifier)));
   testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_B,
-              Qt::KeyboardModifiers(Qt::ShiftModifier)));
+              Qt::KeyboardModifiers(Qt::ShiftModifier), "b"));
   testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_Delete,
               Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::AltModifier)));
@@ -149,6 +149,7 @@ int main(int argc, char **argv)
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
 
+  cout << "test-qtutil: PASSED" << endl;
   return 0;
 }
 

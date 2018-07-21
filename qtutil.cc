@@ -3,9 +3,10 @@
 
 #include "qtutil.h"                    // this module
 
-// smase
+// smbase
 #include "datablok.h"                  // DataBlock
 #include "exc.h"                       // xassert
+#include "strutil.h"                   // quoted
 
 // Qt
 #include <QByteArray>
@@ -179,6 +180,12 @@ string toString(QString const &s)
 }
 
 
+string quoted(QString const &s)
+{
+  return quoted(toString(s));
+}
+
+
 stringBuilder& operator<< (stringBuilder& sb, QString const &str)
 {
   return sb << str.toUtf8().constData();
@@ -205,6 +212,29 @@ string qObjectDesc(QObject *obj)
   }
   else {
     return "null";
+  }
+}
+
+
+void setQObjectName(QObject *obj, char const *name)
+{
+  obj->setObjectName(name);
+}
+
+
+string qObjectPath(QObject const *obj)
+{
+  if (!obj) {
+    return "null";
+  }
+
+  if (!obj->parent()) {
+    // Root object.
+    return toString(obj->objectName());
+  }
+  else {
+    return stringb(qObjectPath(obj->parent()) <<
+                   "." << obj->objectName());
   }
 }
 

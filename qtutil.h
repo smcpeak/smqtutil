@@ -39,6 +39,10 @@ Qt::Key getKeyFromString(string const &str);
 string toString(QString const &s);
 
 
+// Equivalent to 'quoted(toString(s))'.
+string quoted(QString const &s);
+
+
 // Allow inserting QString into stringBuilder and ostream.
 //
 // For a while I have been avoiding this on safety grounds, instead
@@ -53,9 +57,24 @@ ostream& operator<< (ostream &os, QString const &str);
 QString toQString(string const &s);
 #define qstringb(stuff) toQString(stringb(stuff))
 
+
 // Return a description of 'obj': either "null", or the pointer
 // value and the object name.
 string qObjectDesc(QObject *obj);
+
+// Set the name.
+void setQObjectName(QObject *obj, char const *name);
+
+// Set the name based on a variable (typically field) name.
+#define SET_QOBJECT_NAME(object) setQObjectName(object, #object)
+
+
+// Return a dotted sequence of object names from a root object down to
+// this object, like "foo.bar.baz", or "null" if obj is NULL.  Where an
+// object name is empty, the path simply has the empty string in that
+// location, like "foo..bar".
+string qObjectPath(QObject const *obj);
+
 
 // Print the contents of 'ba' to stdout with 'label', then flush.
 // The format is a hexdump with an ASCII column on the side.
