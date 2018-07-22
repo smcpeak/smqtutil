@@ -15,6 +15,7 @@
 #include <QCursor>
 
 class QKeyEvent;
+class QKeySequence;
 class QShortcutEvent;
 class QString;
 class QWidget;
@@ -22,7 +23,7 @@ class QWidget;
 
 // Render as a string for debugging or event record/replay.  This
 // string just captures the key(s), not the text.
-string toString(QKeyEvent const &k);
+string keysString(QKeyEvent const &k);
 
 // Convert the string back to a QKeyEvent for event replay.  The
 // returned pointer is an owner pointer.  Throws xFormat if the string
@@ -30,9 +31,13 @@ string toString(QKeyEvent const &k);
 QKeyEvent *getKeyPressEventFromString(string const &keys,
                                       QString const &text);
 
+// Parse a string returned by QKeySequence.toString(), or throw xFormat.
+// The returned object is guaranteed to have at least one key.
+QKeySequence parseKeySequence(string const &keys);
+
 // Convert a string created with QShortcutEvent::key().toString() to an
 // event object.  Throws xFormat on error.  Returns an owner pointer.
-QShortcutEvent *getShortcutEventFromString(string const &str);
+QShortcutEvent *getShortcutEventFromString(string const &keys);
 
 
 // Display an unhandled exception error in a message box.  Limits

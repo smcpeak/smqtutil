@@ -4,12 +4,14 @@
 #ifndef QTUTIL_H
 #define QTUTIL_H
 
-#include <QColor>             // QRgb
-#include <qnamespace.h>       // MouseButtons, KeyboardModifiers, Key
-#include <qstring.h>          // QString
-
+// smbase
 #include "sm-iostream.h"      // ostream
 #include "str.h"              // string, stringBuilder
+
+// Qt
+#include <QColor>             // QRgb
+#include <QString>            // QString
+#include <qnamespace.h>       // MouseButtons, KeyboardModifiers, Key
 
 class QByteArray;
 class QObject;
@@ -18,8 +20,27 @@ class QRect;
 class QSize;
 
 
-// Render various values and objects as a string, mainly
-// intended for debugging purposes.
+// The numeric value and name of some enumerator.
+template <class T>
+struct EnumeratorName {
+  // The numeric value.
+  T m_value;
+
+  // Textual name, as a pointer to a statically allocated string.
+  char const *m_name;
+};
+
+template <class T>
+struct EnumerationNames {
+  // Pointer to a statically allocated array of names.
+  EnumeratorName<T> const *m_names;
+
+  // Number of elements in 'm_names'.
+  int m_size;
+};
+
+
+// Render various values and objects as a string.
 string toString(Qt::MouseButtons buttons);
 string toString(Qt::KeyboardModifiers kmods);
 char const *toString(Qt::Key k);
@@ -28,16 +49,23 @@ string toString(QRect r);
 string toString(QSize s);
 string qrgbToString(QRgb rgba);
 
+
 // Convert a keyboard modifier name back to its number, or throw xFormat.
 Qt::KeyboardModifier getKeyboardModifierFromString(string const &str);
+
 
 // Convert a key to its number, or throw xFormat.
 Qt::Key getKeyFromString(string const &str);
 
+// True if 'key' is (exactly) Qt::Key_Shift, Control, Meta, Alt, or AltGr.
+bool isModifierKey(int key);
+
+// Table of key names.
+extern EnumerationNames<Qt::Key> const g_qtKeyNames;
+
 
 // Convert 'QString' to 'string'.
 string toString(QString const &s);
-
 
 // Equivalent to 'quoted(toString(s))'.
 string quoted(QString const &s);

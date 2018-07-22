@@ -8,55 +8,98 @@
 
 // smbase
 #include "exc.h"                       // xformat
+#include "strutil.h"                   // quoted(string)
 
 // Qt
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QMessageBox>
 #include <QShortcutEvent>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
 
+// libc
+#include <string.h>                    // memcmp
 
-string toString(QKeyEvent const &k)
+
+string keysString(QKeyEvent const &k)
 {
-  return stringc << toString(k.modifiers())
-                 << "+" << toString((Qt::Key)(k.key()));
+  // When the key is a modifier key, QKeyEvent::modifiers() flips the
+  // corresponding bit!  Use QInputEvent::modifiers() instead to get
+  // the data with which the object was originally constructed.
+  Qt::KeyboardModifiers mods = k.QInputEvent::modifiers();
+
+  if (mods == Qt::NoModifier) {
+    return toString(Qt::Key(k.key()));
+  }
+  else {
+    return stringb(toString(mods) << '+' << toString(Qt::Key(k.key())));
+  }
 }
 
 
-QKeyEvent *getKeyPressEventFromString(string const &str,
+QKeyEvent *getKeyPressEventFromString(string const &keys,
                                       QString const &text)
 {
   try {
-    QStringList keys(toQString(str).split('+'));
-    if (keys.isEmpty()) {
+    QStringList keyList(toQString(keys).split('+'));
+    if (keyList.isEmpty()) {
       xformat("no keys in string");
     }
 
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
-    for (int i=0; i < keys.count()-1; i++) {
-      modifiers |= getKeyboardModifierFromString(toString(keys.at(i)));
+    for (int i=0; i < keyList.count()-1; i++) {
+      modifiers |= getKeyboardModifierFromString(toString(keyList.at(i)));
     }
 
-    Qt::Key key = getKeyFromString(toString(keys.last()));
+    Qt::Key key = getKeyFromString(toString(keyList.last()));
 
     return new QKeyEvent(QEvent::KeyPress, key, modifiers, text);
   }
   catch (xFormat &msg) {
-    xformatsb("in key string \"" << str << "\": " << msg.cond());
+    xformatsb("in key string \"" << keys << "\": " << msg.cond());
   }
 }
 
 
-QShortcutEvent *getShortcutEventFromString(string const &str)
+QKeySequence parseKeySequence(string const &keys)
 {
-  // I do not know how to check for errors here.
-  QKeySequence kseq(QKeySequence::fromString(toQString(str)));
+  try {
+    QKeySequence kseq(QKeySequence::fromString(toQString(keys)));
+    if (kseq.count() < 1) {
+      // This happens if 'keys' is empty.
+      xformat("no keys");
+    }
 
-  // I hope the replay process is not sensitive to the ID.  It would be
-  // easy to record it, of course, but I do not think it is stable over
-  // time.
+    // The documentation does not explain this, but 'fromString'
+    // returns Qt::Key_unknown when it cannot parse the string.
+    if (kseq[0] == Qt::Key_unknown) {
+      xformat("unrecognized keys");
+    }
+
+    // Double-check that parsing succeeded, and also enforce a
+    // canonical order to the modifiers, by requiring that we get the
+    // original string by converting back.
+    if (kseq.toString() != toQString(keys)) {
+      xformat("not in canonical representation");
+    }
+
+    return kseq;
+  }
+  catch (xFormat &msg) {
+    xformatsb("in key string " << quoted(keys) << ": " << msg.cond());
+  }
+}
+
+
+QShortcutEvent *getShortcutEventFromString(string const &keys)
+{
+  QKeySequence kseq(parseKeySequence(keys));
+
+  // So far, the replay process appears to not be sensitive to the ID.
+  // It would be easy to record it, of course, but I do not think it is
+  // stable over time.
   return new QShortcutEvent(kseq, 0 /*id*/);
 }
 

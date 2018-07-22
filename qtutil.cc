@@ -16,29 +16,22 @@
 #include <QSize>
 
 // libc
+#include <assert.h>                    // assert
 #include <stdio.h>                     // sprintf
-
-
-// The numeric value and name of some enumerator flag.
-template <class T>
-struct FlagDefinition {
-  T value;
-  char const *name;
-};
 
 
 // If 'flags' contains 'flag.value', add its name to 'sb' and remove
 // its value from 'flags'.
 template <class T>
 static void handleFlag(stringBuilder &sb, QFlags<T> &flags,
-                       FlagDefinition<T> const &flag)
+                       EnumeratorName<T> const &flag)
 {
-  if (flags & flag.value) {
+  if (flags & flag.m_value) {
     if (sb.length() > 0) {
       sb << "+";
     }
-    sb << flag.name;
-    flags ^= flag.value;
+    sb << flag.m_name;
+    flags ^= flag.m_value;
   }
 }
 
@@ -46,7 +39,7 @@ static void handleFlag(stringBuilder &sb, QFlags<T> &flags,
 // Render 'flags' as a string by using 'definitions' to decode it.
 template <class T>
 static string flagsToString(QFlags<T> flags,
-                            FlagDefinition<T> const *definitions,
+                            EnumeratorName<T> const *definitions,
                             int numDefinitions,
                             char const *noFlagsName)
 {
@@ -76,23 +69,23 @@ static string flagsToString(QFlags<T> flags,
 // Convert a string back to a flag, or throw xFormat.
 template <class T>
 static T stringToFlag(string const &str,
-                      FlagDefinition<T> const *definitions,
+                      EnumeratorName<T> const *definitions,
                       int numDefinitions,
                       char const *typeName)
 {
   for (int i=0; i < numDefinitions; i++) {
-    if (str == definitions[i].name) {
-      return definitions[i].value;
+    if (str == definitions[i].m_name) {
+      return definitions[i].m_value;
     }
   }
   xformat(stringb("invalid " << typeName << " name \"" << str << "\""));
-  return definitions[0].value;   // silence warning
+  return definitions[0].m_value;   // silence warning
 }
 
 
 #define FLAG_DEFN(flag) { Qt::flag, #flag },
 
-static FlagDefinition<Qt::MouseButton> const mouseButtonDefinitions[] = {
+static EnumeratorName<Qt::MouseButton> const mouseButtonDefinitions[] = {
   FLAG_DEFN(LeftButton)
   FLAG_DEFN(RightButton)
   FLAG_DEFN(MiddleButton)
@@ -114,14 +107,16 @@ string toString(Qt::MouseButtons buttons)
 }
 
 
-static FlagDefinition<Qt::KeyboardModifier> const keyboardModifierDefinitions[] = {
+#define MODIFIER_FLAG_DEFN(key) { Qt::key##Modifier, #key },
+
+static EnumeratorName<Qt::KeyboardModifier> const keyboardModifierDefinitions[] = {
   FLAG_DEFN(NoModifier)
-  FLAG_DEFN(ShiftModifier)
-  FLAG_DEFN(ControlModifier)
-  FLAG_DEFN(AltModifier)
-  FLAG_DEFN(MetaModifier)
-  FLAG_DEFN(KeypadModifier)
-  FLAG_DEFN(GroupSwitchModifier)
+  MODIFIER_FLAG_DEFN(Shift)
+  { Qt::ControlModifier, "Ctrl" },
+  MODIFIER_FLAG_DEFN(Alt)
+  MODIFIER_FLAG_DEFN(Meta)
+  MODIFIER_FLAG_DEFN(Keypad)
+  MODIFIER_FLAG_DEFN(GroupSwitch)
 };
 
 
@@ -169,9 +164,37 @@ string qrgbToString(QRgb rgba)
 {
   char tmp[10];
   int n = sprintf(tmp, "#%08X", (unsigned int)rgba);
-  xassert(n < TABLESIZE(tmp));
+  assert(n < TABLESIZE(tmp));
   return string(tmp);
 }
+
+
+bool isModifierKey(int key)
+{
+  switch (key) {
+    case Qt::Key_Shift:
+    case Qt::Key_Control:
+    case Qt::Key_Meta:
+    case Qt::Key_Alt:
+    case Qt::Key_AltGr:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+
+static EnumeratorName<Qt::Key> const s_qtKeyNameTable[] = {
+  #define HANDLE_KEY(key) { Qt::key, #key },
+  #include "keys.incl"
+  #undef HANDLE_KEY
+};
+
+EnumerationNames<Qt::Key> const g_qtKeyNames = {
+  s_qtKeyNameTable,
+  TABLESIZE(s_qtKeyNameTable)
+};
 
 
 string toString(QString const &s)

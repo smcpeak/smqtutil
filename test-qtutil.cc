@@ -4,13 +4,18 @@
 #include "qtguiutil.h"                 // module to test
 #include "qtutil.h"                    // module to test
 
+// smbase
+#include "sm-iostream.h"               // cout, etc.
+#include "strutil.h"                   // hasSubstring
+#include "test.h"                      // EXPECT_EQ
+
+// Qt
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QRect>
 #include <QShortcutEvent>
-
-#include "sm-iostream.h"               // cout, etc.
 
 
 static void testMouseButtonsToString()
@@ -77,13 +82,97 @@ static void testKeyboardModifierToString()
 }
 
 
-static void testRTKeyEvent(QKeyEvent const &ev)
+static void testRTKeySequence(QKeySequence const &kseq)
 {
-  string evString(toString(ev));
-  cout << "ev: " << evString << endl;
+  string keyString(toString(kseq.toString()));
+  cout << "keyString: " << quoted(keyString) << endl;
+
+  QKeySequence actual = parseKeySequence(keyString);
+  xassert(actual == kseq);
+}
+
+static void testInvalidKeySequenceString(
+  string const &keys, string const &error)
+{
+  cout << "testing invalid keys: " << quoted(keys) << endl;
+  try {
+    parseKeySequence(keys);
+    xfailure("should have failed!");
+  }
+  catch (xFormat &x) {
+    if (hasSubstring(x.cond(), error)) {
+      cout << "as expected: " << x.cond() << endl;
+    }
+    else {
+      xfailure(stringb("wrong error: " << x.cond()));
+    }
+  }
+}
+
+static void testInvalidKeySequence(QKeySequence const &kseq)
+{
+  string keyString(toString(kseq.toString()));
+  cout << "testing invalid key sequence: " << quoted(keyString) << endl;
+
+  testInvalidKeySequenceString(keyString, "unrecognized");
+}
+
+
+static void testParseKeySequence()
+{
+  cout << "testParseKeySequence" << endl;
+
+  testRTKeySequence(QKeySequence(
+    Qt::Key_A));
+  testRTKeySequence(QKeySequence(
+    Qt::SHIFT | Qt::Key_Plus));
+  testRTKeySequence(QKeySequence(
+    Qt::SHIFT | Qt::CTRL | Qt::Key_Comma));
+  testRTKeySequence(QKeySequence(
+    Qt::SHIFT | Qt::CTRL | Qt::ALT | Qt::Key_Period));
+  testRTKeySequence(QKeySequence(
+    Qt::Key_Semicolon));
+  testRTKeySequence(QKeySequence(
+    Qt::Key_Semicolon, Qt::Key_Semicolon));
+  testRTKeySequence(QKeySequence(
+    Qt::SHIFT | Qt::Key_Semicolon, Qt::CTRL | Qt::Key_Semicolon));
+  testRTKeySequence(QKeySequence(
+    Qt::Key_Comma, Qt::Key_Semicolon, Qt::Key_Comma, Qt::Key_Semicolon));
+
+  testInvalidKeySequenceString("", "no keys");
+  testInvalidKeySequenceString("frog", "unrecognized");
+  testInvalidKeySequenceString("Shift+Ctrl+A", "canonical");
+
+  // QKeySequence cannot represent bare modifiers.  The stringified form
+  // ("\xE1\x9F\x80?") is really weird ("U+17C0 KHMER VOWEL SIGN IE"
+  // followed by "?") and doesn't decode.
+  testInvalidKeySequence(QKeySequence(
+    Qt::Key_Shift));
+
+  // These variations also do not work.
+  testInvalidKeySequence(QKeySequence(
+    Qt::SHIFT | Qt::Key_Shift));
+  testInvalidKeySequence(QKeySequence(
+    Qt::SHIFT));
+  testInvalidKeySequence(QKeySequence(
+    Qt::CTRL | Qt::SHIFT | Qt::Key_Shift));
+
+  // These forms do not decode.
+  testInvalidKeySequenceString("Shift", "unrecognized");
+  testInvalidKeySequenceString("Shift+Shift", "unrecognized");
+  testInvalidKeySequenceString("Ctrl+Shift", "unrecognized");
+}
+
+
+static void testRTKeyEvent(QKeyEvent const &ev, bool quiet=false)
+{
+  string evString(keysString(ev));
+  if (!quiet) {
+    cout << "ev: " << quoted(evString) << endl;
+  }
 
   QKeyEvent *ev2 = getKeyPressEventFromString(evString, ev.text());
-  xassert(evString == toString(*ev2));
+  EXPECT_EQ(keysString(*ev2), evString);
   delete ev2;
 }
 
@@ -98,8 +187,42 @@ static void testKeyPressEventToString()
     QKeyEvent(QEvent::KeyPress, Qt::Key_B,
               Qt::KeyboardModifiers(Qt::ShiftModifier), "b"));
   testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_X,
+              Qt::KeyboardModifiers(Qt::NoModifier), "x"));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_X,
+              Qt::KeyboardModifiers(Qt::ControlModifier), "x"));
+  testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_Delete,
               Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::AltModifier)));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_Shift,
+              Qt::KeyboardModifiers(Qt::ShiftModifier)));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_Shift,
+              Qt::KeyboardModifiers(Qt::NoModifier)));
+  testRTKeyEvent(
+    QKeyEvent(QEvent::KeyPress, Qt::Key_Shift,
+              Qt::KeyboardModifiers(Qt::ControlModifier)));
+
+  cout << "Exhaustive..." << endl;
+  for (int keyIndex=0; keyIndex < g_qtKeyNames.m_size; keyIndex++) {
+    Qt::Key key = g_qtKeyNames.m_names[keyIndex].m_value;
+    for (int modsIndex=0; modsIndex < 8; modsIndex++) {
+      Qt::KeyboardModifiers mods = Qt::NoModifier;
+      if (modsIndex & 1) {
+        mods |= Qt::ShiftModifier;
+      }
+      if (modsIndex & 2) {
+        mods |= Qt::ControlModifier;
+      }
+      if (modsIndex & 4) {
+        mods |= Qt::AltModifier;
+      }
+      testRTKeyEvent(QKeyEvent(QEvent::KeyPress, key, mods),
+                     true /*quiet*/);
+    }
+  }
 }
 
 
@@ -135,13 +258,16 @@ static void testPrintQByteArray()
 }
 
 
-int main(int argc, char **argv)
+static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
+
+  xBase::logExceptions = false;
 
   testMouseButtonsToString();
   testKeyboardModifiersToString();
   testKeyboardModifierToString();
+  testParseKeySequence();
   testKeyPressEventToString();
   testShortcutEventToString();
   testPrintQByteArray();
@@ -150,8 +276,9 @@ int main(int argc, char **argv)
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
 
   cout << "test-qtutil: PASSED" << endl;
-  return 0;
 }
+
+ARGS_TEST_MAIN
 
 
 // EOF
