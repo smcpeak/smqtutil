@@ -46,8 +46,14 @@ string toString(Qt::KeyboardModifiers kmods);
 char const *toString(Qt::Key k);
 string toString(QPoint p);
 string toString(QRect r);
-string toString(QSize s);
 string qrgbToString(QRgb rgba);
+
+
+// Convert QSize to "($width,$height)".
+string toString(QSize s);
+
+// Convert "($width,$height)" to QSize or throw xFormat.
+QSize qSizeFromString(string const &str);
 
 
 // Convert a keyboard modifier name back to its number, or throw xFormat.

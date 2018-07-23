@@ -258,6 +258,30 @@ static void testPrintQByteArray()
 }
 
 
+static void testRTQSizeFromString(QSize const &size)
+{
+  string str(toString(size));
+  QSize size2(qSizeFromString(str));
+  xassert(size == size2);
+}
+
+static void testQSizeFromString()
+{
+  testRTQSizeFromString(QSize(0,0));
+  testRTQSizeFromString(QSize(3,4));
+  testRTQSizeFromString(QSize(1234567890,1029384756));
+
+  try {
+    cout << "should throw:" << endl;
+    qSizeFromString("x");
+    xfailure("should have failed");
+  }
+  catch (xFormat &x) {
+    cout << "as expected: " << x.why() << endl;
+  }
+}
+
+
 static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
@@ -271,6 +295,7 @@ static void entry(int argc, char **argv)
   testKeyPressEventToString();
   testShortcutEventToString();
   testPrintQByteArray();
+  testQSizeFromString();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;

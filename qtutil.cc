@@ -6,6 +6,7 @@
 // smbase
 #include "datablok.h"                  // DataBlock
 #include "exc.h"                       // xassert
+#include "parsestring.h"               // ParseString
 #include "strutil.h"                   // quoted
 
 // Qt
@@ -154,18 +155,32 @@ string toString(QRect r)
 }
 
 
-string toString(QSize s)
-{
-  return stringb('(' << s.width() << ',' << s.height() << ')');
-}
-
-
 string qrgbToString(QRgb rgba)
 {
   char tmp[10];
   int n = sprintf(tmp, "#%08X", (unsigned int)rgba);
   assert(n < TABLESIZE(tmp));
   return string(tmp);
+}
+
+
+string toString(QSize s)
+{
+  return stringb('(' << s.width() << ',' << s.height() << ')');
+}
+
+
+QSize qSizeFromString(string const &str)
+{
+  ParseString ps(str);
+  ps.parseChar('(');
+  int w = ps.parseDecimalUInt();
+  ps.parseChar(',');
+  int h = ps.parseDecimalUInt();
+  ps.parseChar(')');
+  ps.parseEOS();
+
+  return QSize(w, h);
 }
 
 
