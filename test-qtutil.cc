@@ -282,6 +282,41 @@ static void testQSizeFromString()
 }
 
 
+static void expectQObjectPath(QObject const *obj, string const &expect)
+{
+  string actual = qObjectPath(obj);
+  EXPECT_EQ(actual, expect);
+}
+
+static void testQObjectPath()
+{
+  QObject root;
+  root.setObjectName("root");
+  expectQObjectPath(&root, "root");
+
+  QObject *child1 = new QObject(&root);
+  child1->setObjectName("child1");
+
+  QObject *child2 = new QObject(&root);
+  child2->setObjectName("child2");
+
+  QObject *child3 = new QObject(&root);
+  // No name assigned.
+
+  QObject *gc1 = new QObject(child2);
+  gc1->setObjectName("gc1");
+
+  QObject *gc2 = new QObject(child3);
+  gc2->setObjectName("gc2");
+
+  expectQObjectPath(child1, "root.child1");
+  expectQObjectPath(child2, "root.child2");
+  expectQObjectPath(gc1, "root.child2.gc1");
+  expectQObjectPath(child3, "root.#2");
+  expectQObjectPath(gc2, "root.#2.gc2");
+}
+
+
 static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
@@ -296,6 +331,7 @@ static void entry(int argc, char **argv)
   testShortcutEventToString();
   testPrintQByteArray();
   testQSizeFromString();
+  testQObjectPath();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;

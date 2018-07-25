@@ -271,8 +271,21 @@ string qObjectPath(QObject const *obj)
     return toString(obj->objectName());
   }
   else {
-    return stringb(qObjectPath(obj->parent()) <<
-                   "." << obj->objectName());
+    stringBuilder sb;
+    sb << qObjectPath(obj->parent()) << '.';
+    if (obj->objectName().isEmpty()) {
+      // I need a pointer to non-const to invoke 'indexOf'.  Of course
+      // 'indexOf' will not change the object so this is fine.
+      QObject *objnc = const_cast<QObject*>(obj);
+
+      // Identify the child by number.  This is of course less reliable
+      // than a name but is better than using an empty string.
+      sb << '#' << obj->parent()->children().indexOf(objnc);
+    }
+    else {
+      sb << obj->objectName();
+    }
+    return sb.str();
   }
 }
 
