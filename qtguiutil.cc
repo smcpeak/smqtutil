@@ -39,8 +39,10 @@ string keysString(QKeyEvent const &k)
 }
 
 
-QKeyEvent *getKeyPressEventFromString(string const &keys,
-                                      QString const &text)
+static QKeyEvent *getKeyPressOrReleaseEventFromString(
+  QEvent::Type eventType,
+  string const &keys,
+  QString const &text)
 {
   try {
     QStringList keyList(toQString(keys).split('+'));
@@ -55,11 +57,25 @@ QKeyEvent *getKeyPressEventFromString(string const &keys,
 
     Qt::Key key = getKeyFromString(toString(keyList.last()));
 
-    return new QKeyEvent(QEvent::KeyPress, key, modifiers, text);
+    return new QKeyEvent(eventType, key, modifiers, text);
   }
   catch (xFormat &msg) {
     xformatsb("in key string \"" << keys << "\": " << msg.cond());
   }
+}
+
+
+QKeyEvent *getKeyPressEventFromString(string const &keys,
+                                      QString const &text)
+{
+  return getKeyPressOrReleaseEventFromString(QEvent::KeyPress, keys, text);
+}
+
+
+QKeyEvent *getKeyReleaseEventFromString(string const &keys,
+                                        QString const &text)
+{
+  return getKeyPressOrReleaseEventFromString(QEvent::KeyRelease, keys, text);
 }
 
 

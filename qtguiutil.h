@@ -31,6 +31,10 @@ string keysString(QKeyEvent const &k);
 QKeyEvent *getKeyPressEventFromString(string const &keys,
                                       QString const &text);
 
+// Same, but as a release event.
+QKeyEvent *getKeyReleaseEventFromString(string const &keys,
+                                        QString const &text);
+
 // Parse a string returned by QKeySequence.toString(), or throw xFormat.
 // The returned object is guaranteed to have at least one key.
 QKeySequence parseKeySequence(string const &keys);
