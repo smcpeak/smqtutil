@@ -11,8 +11,6 @@ void TimerEventLoop::timerEvent(QTimerEvent *Event)
 {
   // Stop the event loop.
   this->exit(0);
-
-  this->stopTimerIf();
 }
 
 void TimerEventLoop::stopTimerIf()
@@ -23,7 +21,7 @@ void TimerEventLoop::stopTimerIf()
   }
 }
 
-void TimerEventLoop::waitForMS(int msecs)
+int TimerEventLoop::waitForMS(int msecs)
 {
   this->stopTimerIf();
 
@@ -31,9 +29,12 @@ void TimerEventLoop::waitForMS(int msecs)
   xassert(m_timerId != 0);
 
   // Start the event loop.
-  this->exec();
-}
+  int ret = this->exec();
 
+  this->stopTimerIf();
+
+  return ret;
+}
 
 
 void sleepWhilePumpingEvents(int ms)

@@ -33,8 +33,10 @@ public:      // funcs
     : m_timerId(0)
   {}
 
-  // Wait, while pumping the event queue, for 'msecs'.
-  void waitForMS(int msecs);
+  // Wait, while pumping the event queue, for 'msecs'.  Or, if exit()
+  // is called, return even if the full time has not elapsed.  This
+  // whatever is passed to exit() or 0 if the timer expires.
+  int waitForMS(int msecs);
 };
 
 
