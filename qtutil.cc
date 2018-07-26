@@ -245,8 +245,11 @@ QString toQString(string const &s)
 string qObjectDesc(QObject *obj)
 {
   if (obj) {
-    return stringb((void*)obj << " (" <<
-                   toString(obj->objectName()) << ')');
+    return stringb(
+      "{ptr=" << (void*)obj <<
+      " name=" << quoted(toString(obj->objectName())) <<
+      " class=" << obj->metaObject()->className() <<
+      '}');
   }
   else {
     return "null";

@@ -93,7 +93,7 @@ QString toQString(string const &s);
 
 
 // Return a description of 'obj': either "null", or the pointer
-// value and the object name.
+// value, object name, and class name.
 string qObjectDesc(QObject *obj);
 
 // Set the name.
