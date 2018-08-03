@@ -39,6 +39,7 @@ QT_LDFLAGS := -L ${QT5LIB} -lQt5Widgets -lQt5Gui -lQt5Core
 
 # Qt build tools.
 QT_MOC := $(QT5BIN)/moc
+QT_RCC := $(QT5BIN)/rcc
 
 
 # Pattern to run the Qt meta-object compiler.
@@ -47,5 +48,12 @@ QT_TOCLEAN := *.moc.cc
 %.moc.cc: %.h
 	$(QT_MOC) -o $@ $^
 
+# Pattern to run the Qt resource compiler.  This generates a C++ file
+# that just has to be compiled and linked with the executable.  It has
+# a static constructor that registers its resources on startup.
+.PRECIOUS: %.qrc.gen.cc
+QT_TOCLEAN := *.qrc.gen.cc
+%.qrc.gen.cc: %.qrc
+	$(QT_RCC) -o $@ $^
 
 # EOF
