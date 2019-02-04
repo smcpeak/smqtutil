@@ -56,6 +56,11 @@ string toString(QSize s);
 QSize qSizeFromString(string const &str);
 
 
+// Convert between QSize and QPoint.
+QPoint toQPoint(QSize const &size);
+QSize toQSize(QPoint const &point);
+
+
 // Convert a keyboard modifier name back to its number, or throw xFormat.
 Qt::KeyboardModifier getKeyboardModifierFromString(string const &str);
 

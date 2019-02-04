@@ -184,6 +184,17 @@ QSize qSizeFromString(string const &str)
 }
 
 
+QPoint toQPoint(QSize const &size)
+{
+  return QPoint(size.width(), size.height());
+}
+
+QSize toQSize(QPoint const &point)
+{
+  return QSize(point.x(), point.y());
+}
+
+
 bool isModifierKey(int key)
 {
   switch (key) {

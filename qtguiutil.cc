@@ -170,6 +170,14 @@ bool questionBoxYesCancel(QWidget *parent, QString title, QString question)
 }
 
 
+void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow)
+{
+  QPoint targetPt =
+    targetWindow->pos() + toQPoint(targetWindow->size() / 2);
+  windowToMove->move(targetPt - toQPoint(windowToMove->size() / 2));
+}
+
+
 CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
   : m_widget(w),
     m_previousCursor(w->cursor())

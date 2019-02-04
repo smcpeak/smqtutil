@@ -63,6 +63,10 @@ void messageBox_details(QWidget *parent, QString title,
 bool questionBoxYesCancel(QWidget *parent, QString title, QString question);
 
 
+// Move 'windowToMove' so it is centered on the center of 'targetWindow'.
+void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data
