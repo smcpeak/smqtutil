@@ -116,6 +116,14 @@ QShortcutEvent *getShortcutEventFromString(string const &keys)
   // So far, the replay process appears to not be sensitive to the ID.
   // It would be easy to record it, of course, but I do not think it is
   // stable over time.
+  //
+  // Update: In some cases the proper ID is needed, such as when opening
+  // a menu.  The problem is that the numbers themselves are not stable,
+  // and there seems to be no way to programmatically get the ID from,
+  // say, a path to the menu action.  (Qt stores the needed info but
+  // does not expose it in the public API.)  So I'm stuck with passing 0
+  // here when I can, and using some other approach (like directly
+  // invoking menu actions) when I can't.
   return new QShortcutEvent(kseq, 0 /*id*/);
 }
 
