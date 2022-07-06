@@ -35,7 +35,7 @@ QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtWidgets
 QT_CCFLAGS += -DQT_NO_KEYWORDS
 
 # Qt link flags.
-QT_LDFLAGS := -L ${QT5LIB} -lQt5Widgets -lQt5Gui -lQt5Core
+QT_LDFLAGS := -L$(QT5LIB) -lQt5Widgets -lQt5Gui -lQt5Core -Wl,-rpath=$(QT5LIB)
 
 # Qt build tools.
 QT_MOC := $(QT5BIN)/moc
