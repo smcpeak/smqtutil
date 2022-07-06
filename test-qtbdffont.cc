@@ -14,8 +14,8 @@
 #include "bit2d.h"                     // Bit2d::Size
 #include "exc.h"                       // xbase
 #include "sm-file-util.h"              // SMFileUtil
+#include "sm-test.h"                   // DEBUG_PVAL, ARGS_MAIN
 #include "strtokp.h"                   // StrtokParse
-#include "test.h"                      // DEBUG_PVAL, ARGS_MAIN
 
 // Qt
 #include <qapplication.h>              // QApplication

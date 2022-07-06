@@ -5,7 +5,7 @@
 #define TIMER_EVENT_LOOP_H
 
 // smbase
-#include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-override.h"               // OVERRIDE
 
 // Qt

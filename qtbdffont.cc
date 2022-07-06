@@ -3,17 +3,21 @@
 
 #include "qtbdffont.h"                 // this module
 
+// smqtutil
 #include "qtutil.h"                    // toString(QRect)
 
+// smbase
 #include "bdffont.h"                   // BDFFont
 #include "bit2d.h"                     // Bit2d::Size
 #include "exc.h"                       // xbase
+#include "sm-test.h"                   // DEBUG_PVAL
 #include "strtokp.h"                   // StrtokParse
-#include "test.h"                      // DEBUG_PVAL
 
+// Qt
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
 
+// libc
 #include <stdio.h>                     // snprintf (needs C99 or C++11)
 
 
@@ -94,7 +98,7 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
   int currentX = 0;
 
   // Pass 1: Compute 'metrics'.
-  for (int i=0; i < metrics.size(); i++) {
+  for (int i=0; i < metrics.allocatedSize(); i++) {
     BDFFont::Glyph const *glyph = font.getGlyph(i);
     if (!glyph) {
       // metrics[i] should already be zeroed
@@ -160,7 +164,7 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
 
   // Pass 2: Copy the glyph images using the positions calculated
   // above.
-  for (int i=0; i < metrics.size(); i++) {
+  for (int i=0; i < metrics.allocatedSize(); i++) {
     BDFFont::Glyph const *glyph = font.getGlyph(i);
     if (!glyph) {
       continue;
@@ -206,7 +210,7 @@ QtBDFFont::~QtBDFFont()
 
 int QtBDFFont::maxValidChar() const
 {
-  int ret = metrics.size() - 1;
+  int ret = metrics.allocatedSize() - 1;
   while (ret >= 0 && !hasChar(ret)) {
     ret--;
   }
@@ -216,7 +220,7 @@ int QtBDFFont::maxValidChar() const
 
 bool QtBDFFont::hasChar(int index) const
 {
-  if (0 <= index && index < metrics.size()) {
+  if (0 <= index && index < metrics.allocatedSize()) {
     return metrics[index].isPresent();
   }
   else {

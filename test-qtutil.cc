@@ -6,8 +6,8 @@
 
 // smbase
 #include "sm-iostream.h"               // cout, etc.
+#include "sm-test.h"                   // EXPECT_EQ
 #include "strutil.h"                   // hasSubstring
-#include "test.h"                      // EXPECT_EQ
 
 // Qt
 #include <QByteArray>
