@@ -52,7 +52,7 @@ QT_TOCLEAN := *.moc.cc
 # that just has to be compiled and linked with the executable.  It has
 # a static constructor that registers its resources on startup.
 .PRECIOUS: %.qrc.gen.cc
-QT_TOCLEAN := *.qrc.gen.cc
+QT_TOCLEAN += *.qrc.gen.cc
 %.qrc.gen.cc: %.qrc
 	$(QT_RCC) -o $@ $^
 
