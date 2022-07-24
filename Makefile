@@ -86,6 +86,7 @@ OBJS += qhboxframe.o
 OBJS += qtbdffont.o
 OBJS += qtguiutil.o
 OBJS += qtutil.o
+OBJS += sm-line-edit.o
 OBJS += timer-event-loop.o
 -include $(OBJS:.o=.d)
 
