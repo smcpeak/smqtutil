@@ -148,6 +148,7 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x)
 void messageBox(QWidget *parent, QString title, QString message)
 {
   QMessageBox box(parent);
+  box.setObjectName(title);  // Give it a name for use in test scripts.
   box.setWindowTitle(title);
   box.setText(message);
   box.addButton(QMessageBox::Ok);
