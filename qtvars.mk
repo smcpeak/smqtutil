@@ -35,6 +35,9 @@ QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtWidgets
 QT_CCFLAGS += -DQT_NO_KEYWORDS
 
 # Qt link flags.
+#
+# Note: -rpath does not work on Windows.  Instead, $(QT5BIN) must be on
+# the PATH to run the program.
 QT_LDFLAGS := -L$(QT5LIB) -lQt5Widgets -lQt5Gui -lQt5Core -Wl,-rpath=$(QT5LIB)
 
 # Qt build tools.
