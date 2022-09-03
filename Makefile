@@ -1,7 +1,7 @@
 # Makefile for smqtutil
 
 # main target
-all: libsmqtutil.a test-qtutil test-qtbdffont test-layout
+all: libsmqtutil.a qtutil-test test-qtbdffont test-layout
 
 
 # ------------------- BEGIN: Configuration ---------------------
@@ -98,9 +98,9 @@ libsmqtutil.a: $(OBJS)
 	-$(RANLIB) $@
 
 
-# ------------------- test-qtutil -----------------------
-TEST_PROGRAMS := test-qtutil
-test-qtutil: test-qtutil.cc qtguiutil.o qtutil.o
+# ------------------- qtutil-test -----------------------
+TEST_PROGRAMS := qtutil-test
+qtutil-test: qtutil-test.cc qtguiutil.o qtutil.o
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
@@ -121,7 +121,7 @@ clean:
 	$(RM) $(TOCLEAN) $(TEST_PROGRAMS)
 
 check: $(TEST_PROGRAMS)
-	./test-qtutil
+	./qtutil-test
 	./test-qtbdffont
 	@echo "smqtutil tests PASSED"
 

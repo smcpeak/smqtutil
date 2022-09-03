@@ -1,4 +1,4 @@
-// test-qtutil.cc
+// qtutil-test.cc
 // Tests for 'qtutil' and 'qtguiutil' modules.
 
 #include "qtguiutil.h"                 // module to test
@@ -336,7 +336,7 @@ static void entry(int argc, char **argv)
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
 
-  cout << "test-qtutil: PASSED" << endl;
+  cout << "qtutil-test: PASSED" << endl;
 }
 
 ARGS_TEST_MAIN
