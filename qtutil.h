@@ -108,6 +108,15 @@ void setQObjectName(QObject *obj, char const *name);
 #define SET_QOBJECT_NAME(object) setQObjectName(object, #object)
 
 
+// Disconnect all signals where 'sender' is the sender.
+//
+// This is generally a good idea to do in a destructor, upon 'this' and
+// all owned QObjects, since the activity of destruction can otherwise
+// result in signals being sent to QObjects that have been at least
+// partially destroyed.
+void disconnectSignalSender(QObject *sender);
+
+
 // Return a dotted sequence of object names from a root object down to
 // this object, like "foo.bar.baz", or "null" if obj is NULL.  Where an
 // object name is empty, the path simply has the empty string in that

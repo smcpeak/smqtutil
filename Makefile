@@ -99,8 +99,9 @@ libsmqtutil.a: $(OBJS)
 
 
 # ------------------- qtutil-test -----------------------
-TEST_PROGRAMS := qtutil-test
-qtutil-test: qtutil-test.cc qtguiutil.o qtutil.o
+TEST_PROGRAMS :=
+TEST_PROGRAMS += qtutil-test
+qtutil-test: qtutil-test.o qtutil-test.moc.o qtguiutil.o qtutil.o
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 

@@ -274,6 +274,12 @@ void setQObjectName(QObject *obj, char const *name)
 }
 
 
+void disconnectSignalSender(QObject *sender)
+{
+  QObject::disconnect(sender, nullptr, nullptr, nullptr);
+}
+
+
 string qObjectPath(QObject const *obj)
 {
   if (!obj) {

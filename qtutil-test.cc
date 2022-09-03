@@ -1,8 +1,10 @@
 // qtutil-test.cc
 // Tests for 'qtutil' and 'qtguiutil' modules.
 
-#include "qtguiutil.h"                 // module to test
+#include "qtutil-test.h"               // this module
+
 #include "qtutil.h"                    // module to test
+#include "qtguiutil.h"                 // module to test
 
 // smbase
 #include "sm-iostream.h"               // cout, etc.
@@ -18,6 +20,37 @@
 #include <QShortcutEvent>
 
 
+
+// ------------------------------- Sender ------------------------------
+Sender::Sender()
+  : QObject(nullptr /*parent*/)
+{}
+
+
+Sender::~Sender()
+{}
+
+
+// ------------------------------ Receiver -----------------------------
+Receiver::Receiver()
+  : QObject(nullptr /*parent*/),
+    m_receipts(0)
+{}
+
+
+Receiver::~Receiver()
+{
+  disconnectSignalSender(this);
+}
+
+
+void Receiver::on_sig1() noexcept
+{
+  m_receipts++;
+}
+
+
+// ------------------------------- tests -------------------------------
 static void testMouseButtonsToString()
 {
   cout << "testMouseButtonsToString" << endl;
@@ -317,6 +350,35 @@ static void testQObjectPath()
 }
 
 
+static void testDisconnectSignals()
+{
+  Sender s;
+  Receiver r1;
+  Receiver r2;
+
+  QObject::connect(&s, &Sender::signal_sig1,
+                   &r1, &Receiver::on_sig1);
+  QObject::connect(&s, &Sender::signal_sig1,
+                   &r2, &Receiver::on_sig1);
+
+  xassert(r1.m_receipts == 0);
+  xassert(r2.m_receipts == 0);
+
+  Q_EMIT s.signal_sig1();
+
+  xassert(r1.m_receipts == 1);
+  xassert(r2.m_receipts == 1);
+
+  disconnectSignalSender(&s);
+
+  Q_EMIT s.signal_sig1();
+
+  // The counts are unchanged because the signals are disconnected.
+  xassert(r1.m_receipts == 1);
+  xassert(r2.m_receipts == 1);
+}
+
+
 static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
@@ -332,6 +394,7 @@ static void entry(int argc, char **argv)
   testPrintQByteArray();
   testQSizeFromString();
   testQObjectPath();
+  testDisconnectSignals();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
