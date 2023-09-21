@@ -66,6 +66,9 @@ TOCLEAN += *.o *.d
 	perl $(SMBASE)/file-to-strlit.pl bdfFontData_$* $^ $*.bdf.gen.h $@
 
 BDFGENSRC :=
+BDFGENSRC += courB24_ISO8859_1.bdf.gen.cc
+BDFGENSRC += courO24_ISO8859_1.bdf.gen.cc
+BDFGENSRC += courR24_ISO8859_1.bdf.gen.cc
 BDFGENSRC += editor14b.bdf.gen.cc
 BDFGENSRC += editor14i.bdf.gen.cc
 BDFGENSRC += editor14r.bdf.gen.cc

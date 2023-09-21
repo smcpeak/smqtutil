@@ -1,0 +1,25 @@
+fonts/README
+
+Origins of the fonts here:
+
+* cour[BOR]24_ISO8859_1.bdf
+
+  These were obtained by copying cygwin
+  /usr/share/X11/fonts/75dpi/cour[BOR]24-ISO8859-1.pcf.gz,
+  decompressing, and applying pcf2bdf on Linux.
+
+* minihex6.bdf
+
+  My own creation.  mini-hex-font.xcf is its Gimp source.
+
+* editor14[bir].bdf
+
+  I don't recall exactly, but I think they came from a 14-pixel 75 DPI
+  courier font from X11 on some Linux distro.  I then edited a few of
+  the glyphs manually using xmbdfed.
+
+* lurs12.bdf
+
+  I don't remember at all.  Probably X11 again.
+
+EOF

@@ -4,6 +4,7 @@
 #include "qtbdffont.h"                 // module to test
 
 // this directory
+#include "courR24_ISO8859_1.bdf.gen.h" // bdfFontData_courR24_ISO8859_1
 #include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
 #include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
 #include "minihex6.bdf.gen.h"          // bdfFontData_minihex6
@@ -226,14 +227,17 @@ void entry(int argc, char **argv)
 
   // use different colors for onscreen drawing
   QColor fg = Qt::black;
-  QColor bg(192, 192, 192);
+  QColor bg(224, 224, 224);
   qfont.setFgColor(fg);
   qfont.setBgColor(bg);
 
-  QLabel widget(NULL /*parent*/);
-  widget.resize(600,300);
+  int const windowWidth = 600;
+  int const windowHeight = 600;
 
-  QPixmap pixmap(600,300);
+  QLabel widget(NULL /*parent*/);
+  widget.resize(windowWidth, windowHeight);
+
+  QPixmap pixmap(windowWidth, windowHeight);
   pixmap.fill(bg);
 
   QPainter painter(&pixmap);
@@ -270,68 +274,107 @@ void entry(int argc, char **argv)
     }
   }
 
-  BDFFont font2;
-  parseBDFString(font2, bdfFontData_lurs12);
-  QtBDFFont qfont2(font2);
-  qfont2.setFgColor(fg);
-  qfont2.setBgColor(bg);
-  qfont2.setTransparent(false);
+  // Box with a sample of the 'lurs12' font.
+  {
+    BDFFont font2;
+    parseBDFString(font2, bdfFontData_lurs12);
+    QtBDFFont qfont2(font2);
+    compare(font2, qfont2);
+    qfont2.setFgColor(fg);
+    qfont2.setBgColor(bg);
+    qfont2.setTransparent(false);
 
-  drawCenteredString(qfont2, painter, QPoint(150,110),
-                     "some centered text blah blah blah blah blah");
+    drawCenteredString(qfont2, painter, QPoint(150,110),
+                       "some centered text blah blah blah blah blah");
 
-  painter.drawLine(QPoint(0,150), QPoint(300,150));
-  drawMultilineString(qfont2, painter, QPoint(0, 150),
-                      "Entity iiiimmmm\n"
-                      "RelationEndpoint\n"
-                      "Diagram\n"
-                      "ControlPoint\n"
-                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\n"
-                      "abcdefghijklmnopqrstuvwxyz\n");
+    // Divide top-left quadrant horizontally.
+    painter.drawLine(QPoint(0,150), QPoint(300,150));
 
+    drawMultilineString(qfont2, painter, QPoint(0, 150),
+                        "Entity iiiimmmm\n"
+                        "RelationEndpoint\n"
+                        "Diagram\n"
+                        "ControlPoint\n"
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\n"
+                        "abcdefghijklmnopqrstuvwxyz\n");
+  }
+
+  // Vertical line from top-center to midpoint.
   painter.drawLine(QPoint(300,0), QPoint(300,300));
-  BDFFont minihexFont;
-  parseBDFString(minihexFont, bdfFontData_minihex6);
-  QtBDFFont minihexQFont(minihexFont);
-  minihexQFont.setFgColor(fg);
-  minihexQFont.setBgColor(bg);
-
-  drawString(minihexQFont, painter, QPoint(320,20),
-             "0123456789ABCDEF 0");
 
   {
-    int const codePoints[] = {
-      'h', 'e', 'l', 'l', 'o', ' ',
-      0x0123, 0x4567, 0x89AB, 0xCDEF,
-      0, 1, 2, 3,
-    };
+    BDFFont minihexFont;
+    parseBDFString(minihexFont, bdfFontData_minihex6);
+    QtBDFFont minihexQFont(minihexFont);
+    compare(minihexFont, minihexQFont);
+    minihexQFont.setFgColor(fg);
+    minihexQFont.setBgColor(bg);
 
-    QPoint pt(320, 40);
-    for (int i=0; i < TABLESIZE(codePoints); i++) {
-      pt = drawCharOrHexQuad(qfont, minihexQFont,
-                             painter, pt, codePoints[i]);
+    // Sample of ordinary mini-hex characters.
+    drawString(minihexQFont, painter, QPoint(320,20),
+               "0123456789ABCDEF 0");
+
+    // Sample of normal text and text with large code points in order
+    // to exercise the hex quad rendering.
+    {
+      int const codePoints[] = {
+        'h', 'e', 'l', 'l', 'o', ' ',
+        0x0123, 0x4567, 0x89AB, 0xCDEF,
+        0, 1, 2, 3,
+      };
+
+      QPoint pt(320, 40);
+      for (int i=0; i < TABLESIZE(codePoints); i++) {
+        pt = drawCharOrHexQuad(qfont, minihexQFont,
+                               painter, pt, codePoints[i]);
+      }
     }
   }
 
-  // Test 'drawAlignedString'.
-  qfont.setTransparent(true);
-  Qt::AlignmentFlag halign[] = {
-    Qt::AlignLeft,
-    Qt::AlignHCenter,
-    Qt::AlignRight
-  };
-  Qt::AlignmentFlag valign[] = {
-    Qt::AlignTop,
-    Qt::AlignVCenter,
-    Qt::AlignBottom
-  };
-  for (int row=0; row < 3; row++) {
-    for (int col=0; col < 3; col++) {
-      QRect rect(320 + col*70, 100 + row*50, 60, 40);
-      painter.drawRect(rect);
-      drawAlignedString(qfont, painter, rect,
-        halign[col] | valign[row], string("ABC"));
+  // Test 'drawAlignedString' by drawing nine boxes with "ABC" in them
+  // with various alignments.
+  {
+    qfont.setTransparent(true);
+    Qt::AlignmentFlag halign[] = {
+      Qt::AlignLeft,
+      Qt::AlignHCenter,
+      Qt::AlignRight
+    };
+    Qt::AlignmentFlag valign[] = {
+      Qt::AlignTop,
+      Qt::AlignVCenter,
+      Qt::AlignBottom
+    };
+    for (int row=0; row < 3; row++) {
+      for (int col=0; col < 3; col++) {
+        QRect rect(320 + col*70, 100 + row*50, 60, 40);
+        painter.drawRect(rect);
+        drawAlignedString(qfont, painter, rect,
+          halign[col] | valign[row], string("ABC"));
+      }
     }
+  }
+
+  // Box with a sample of the 'courR24_ISO8859_1' font.
+  {
+    BDFFont fontCour24;
+    parseBDFString(fontCour24, bdfFontData_courR24_ISO8859_1);
+    QtBDFFont qfontCour24(fontCour24);
+    compare(fontCour24, qfontCour24);
+    qfontCour24.setFgColor(fg);
+    qfontCour24.setBgColor(bg);
+    qfontCour24.setTransparent(false);
+
+    // Divide top and bottom halves.
+    painter.drawLine(QPoint(0,300), QPoint(600,300));
+
+    drawMultilineString(qfontCour24, painter, QPoint(0, 300),
+                        "Entity iiiimmmm\n"
+                        "RelationEndpoint\n"
+                        "Diagram\n"
+                        "ControlPoint\n"
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\n"
+                        "abcdefghijklmnopqrstuvwxyz\n");
   }
 
   widget.setPixmap(pixmap);
