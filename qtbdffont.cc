@@ -17,6 +17,9 @@
 #include <qimage.h>                    // QImage
 #include <qpainter.h>                  // QPainter
 
+// libc++
+#include <algorithm>                   // std::max
+
 // libc
 #include <stdio.h>                     // snprintf (needs C99 or C++11)
 
@@ -122,7 +125,7 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
     metrics[i].offset = QPoint(dWidth.x, -dWidth.y);
 
     // bump variables involved in packing calculation
-    maxHeight = max(maxHeight, gmet.bbSize.y);
+    maxHeight = std::max(maxHeight, gmet.bbSize.y);
     currentX += gmet.bbSize.x;
 
     // Update 'allCharsBBox'.  This call reads from 'metrics[i]'.

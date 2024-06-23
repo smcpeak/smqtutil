@@ -4,11 +4,12 @@
 #include "qtguiutil.h"                 // this module
 
 // smqtutil
-#include "qtutil.h"                    // toString for Key and Modifiers
+#include "qtutil.h"                    // toString for Key and Modifiers, qstringb
 
 // smbase
-#include "exc.h"                       // xformat
-#include "strutil.h"                   // quoted(string)
+#include "exc.h"                       // smbase::{xformat, XBase}
+#include "string-util.h"               // doubleQuote
+#include "stringb.h"                   // stringb
 
 // Qt
 #include <QKeyEvent>
@@ -21,6 +22,8 @@
 
 // libc
 #include <string.h>                    // memcmp
+
+using namespace smbase;
 
 
 string keysString(QKeyEvent const &k)
@@ -59,7 +62,7 @@ static QKeyEvent *getKeyPressOrReleaseEventFromString(
 
     return new QKeyEvent(eventType, key, modifiers, text);
   }
-  catch (xFormat &msg) {
+  catch (XFormat &msg) {
     xformatsb("in key string \"" << keys << "\": " << msg.cond());
   }
 }
@@ -103,8 +106,8 @@ QKeySequence parseKeySequence(string const &keys)
 
     return kseq;
   }
-  catch (xFormat &msg) {
-    xformatsb("in key string " << quoted(keys) << ": " << msg.cond());
+  catch (XFormat &msg) {
+    xformatsb("in key string " << doubleQuote(keys) << ": " << msg.cond());
   }
 }
 
@@ -128,7 +131,7 @@ QShortcutEvent *getShortcutEventFromString(string const &keys)
 }
 
 
-void unhandledExceptionMsgbox(QWidget *parent, xBase const &x)
+void unhandledExceptionMsgbox(QWidget *parent, XBase const &x)
 {
   // Print to stderr as well.
   printUnhandled(x);
@@ -140,8 +143,8 @@ void unhandledExceptionMsgbox(QWidget *parent, xBase const &x)
   }
 
   QMessageBox::critical(parent, "Oops",
-    QString(stringc << "Unhandled exception: " << x.why() << "\n"
-                    << "Save your work if you can!"));
+    qstringb("Unhandled exception: " << x.why() << "\n" <<
+             "Save your work if you can!"));
 }
 
 

@@ -5,9 +5,9 @@
 
 // smbase
 #include "datablok.h"                  // DataBlock
-#include "exc.h"                       // xassert
+#include "exc.h"                       // xassert, xformatsb
 #include "parsestring.h"               // ParseString
-#include "strutil.h"                   // quoted
+#include "string-util.h"               // doubleQuote
 
 // Qt
 #include <QByteArray>
@@ -67,7 +67,7 @@ static string flagsToString(QFlags<T> flags,
 }
 
 
-// Convert a string back to a flag, or throw xFormat.
+// Convert a string back to a flag, or throw XFormat.
 template <class T>
 static T stringToFlag(string const &str,
                       EnumeratorName<T> const *definitions,
@@ -79,7 +79,7 @@ static T stringToFlag(string const &str,
       return definitions[i].m_value;
     }
   }
-  xformat(stringb("invalid " << typeName << " name \"" << str << "\""));
+  xformatsb("invalid " << typeName << " name \"" << str << "\"");
   return definitions[0].m_value;   // silence warning
 }
 
@@ -229,9 +229,9 @@ string toString(QString const &s)
 }
 
 
-string quoted(QString const &s)
+string doubleQuote(QString const &s)
 {
-  return quoted(toString(s));
+  return doubleQuote(toString(s));
 }
 
 
@@ -258,7 +258,7 @@ string qObjectDesc(QObject *obj)
   if (obj) {
     return stringb(
       "{ptr=" << (void*)obj <<
-      " name=" << quoted(toString(obj->objectName())) <<
+      " name=" << doubleQuote(obj->objectName()) <<
       " class=" << obj->metaObject()->className() <<
       '}');
   }

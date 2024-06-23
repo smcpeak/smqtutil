@@ -7,9 +7,12 @@
 #include "qtguiutil.h"                 // module to test
 
 // smbase
+#include "exc.h"                       // smbase::XFormat
 #include "sm-iostream.h"               // cout, etc.
 #include "sm-test.h"                   // EXPECT_EQ
+#include "string-util.h"               // doubleQuote
 #include "strutil.h"                   // hasSubstring
+#include "xassert.h"                   // xfailure_stringbc
 
 // Qt
 #include <QByteArray>
@@ -19,6 +22,7 @@
 #include <QRect>
 #include <QShortcutEvent>
 
+using namespace smbase;
 
 
 // ------------------------------- Sender ------------------------------
@@ -109,7 +113,7 @@ static void testKeyboardModifierToString()
     getKeyboardModifierFromString("blah");
     xfailure("should have failed");
   }
-  catch (xFormat &x) {
+  catch (XFormat &x) {
     cout << "as expected: " << x.why() << endl;
   }
 }
@@ -118,7 +122,7 @@ static void testKeyboardModifierToString()
 static void testRTKeySequence(QKeySequence const &kseq)
 {
   string keyString(toString(kseq.toString()));
-  cout << "keyString: " << quoted(keyString) << endl;
+  cout << "keyString: " << doubleQuote(keyString) << endl;
 
   QKeySequence actual = parseKeySequence(keyString);
   xassert(actual == kseq);
@@ -127,17 +131,17 @@ static void testRTKeySequence(QKeySequence const &kseq)
 static void testInvalidKeySequenceString(
   string const &keys, string const &error)
 {
-  cout << "testing invalid keys: " << quoted(keys) << endl;
+  cout << "testing invalid keys: " << doubleQuote(keys) << endl;
   try {
     parseKeySequence(keys);
     xfailure("should have failed!");
   }
-  catch (xFormat &x) {
+  catch (XFormat &x) {
     if (hasSubstring(x.cond(), error)) {
       cout << "as expected: " << x.cond() << endl;
     }
     else {
-      xfailure(stringb("wrong error: " << x.cond()));
+      xfailure_stringbc("wrong error: " << x.cond());
     }
   }
 }
@@ -145,7 +149,7 @@ static void testInvalidKeySequenceString(
 static void testInvalidKeySequence(QKeySequence const &kseq)
 {
   string keyString(toString(kseq.toString()));
-  cout << "testing invalid key sequence: " << quoted(keyString) << endl;
+  cout << "testing invalid key sequence: " << doubleQuote(keyString) << endl;
 
   testInvalidKeySequenceString(keyString, "unrecognized");
 }
@@ -201,7 +205,7 @@ static void testRTKeyEvent(QKeyEvent const &ev, bool quiet=false)
 {
   string evString(keysString(ev));
   if (!quiet) {
-    cout << "ev: " << quoted(evString) << endl;
+    cout << "ev: " << doubleQuote(evString) << endl;
   }
 
   QKeyEvent *ev2 = getKeyPressEventFromString(evString, ev.text());
@@ -309,7 +313,7 @@ static void testQSizeFromString()
     qSizeFromString("x");
     xfailure("should have failed");
   }
-  catch (xFormat &x) {
+  catch (XFormat &x) {
     cout << "as expected: " << x.why() << endl;
   }
 }
@@ -382,8 +386,6 @@ static void testDisconnectSignals()
 static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
-
-  xBase::logExceptions = false;
 
   testMouseButtonsToString();
   testKeyboardModifiersToString();

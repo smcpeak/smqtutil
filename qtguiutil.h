@@ -9,7 +9,7 @@
 #ifndef QTGUIUTIL_H
 #define QTGUIUTIL_H
 
-#include "exc.h"                       // xBase
+#include "exc.h"                       // smbase::XBase
 #include "str.h"                       // string
 
 #include <QCursor>
@@ -26,7 +26,7 @@ class QWidget;
 string keysString(QKeyEvent const &k);
 
 // Convert the string back to a QKeyEvent for event replay.  The
-// returned pointer is an owner pointer.  Throws xFormat if the string
+// returned pointer is an owner pointer.  Throws XFormat if the string
 // cannot be parsed as a KeyPress event.
 QKeyEvent *getKeyPressEventFromString(string const &keys,
                                       QString const &text);
@@ -35,18 +35,18 @@ QKeyEvent *getKeyPressEventFromString(string const &keys,
 QKeyEvent *getKeyReleaseEventFromString(string const &keys,
                                         QString const &text);
 
-// Parse a string returned by QKeySequence.toString(), or throw xFormat.
+// Parse a string returned by QKeySequence.toString(), or throw XFormat.
 // The returned object is guaranteed to have at least one key.
 QKeySequence parseKeySequence(string const &keys);
 
 // Convert a string created with QShortcutEvent::key().toString() to an
-// event object.  Throws xFormat on error.  Returns an owner pointer.
+// event object.  Throws XFormat on error.  Returns an owner pointer.
 QShortcutEvent *getShortcutEventFromString(string const &keys);
 
 
 // Display an unhandled exception error in a message box.  Limits
 // itself to showing five dialog boxes.
-void unhandledExceptionMsgbox(QWidget *parent, xBase const &x);
+void unhandledExceptionMsgbox(QWidget *parent, smbase::XBase const &x);
 
 
 // Show a message box in a modal dialog.  This is the same as

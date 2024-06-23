@@ -13,10 +13,12 @@
 // smbase
 #include "bdffont.h"                   // BDFFont
 #include "bit2d.h"                     // Bit2d::Size
-#include "exc.h"                       // xbase
+#include "exc.h"                       // smbase::XBase
+#include "nonport.h"                   // getMilliseconds
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-test.h"                   // DEBUG_PVAL, ARGS_MAIN
 #include "strtokp.h"                   // StrtokParse
+#include "xassert.h"                   // xfailure_stringbc
 
 // Qt
 #include <qapplication.h>              // QApplication
@@ -26,6 +28,8 @@
 
 // libc
 #include <stdlib.h>                    // getenv
+
+using namespace smbase;
 
 
 ARGS_MAIN
@@ -46,8 +50,8 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
         /* fine */                                                 \
       }                                                            \
       else {                                                       \
-        xfailure(stringb("expected '" #a "' (" << (a) <<           \
-                         ") to equal '" #b "' (" << (b) << ")"));  \
+        xfailure_stringbc("expected '" #a "' (" << (a) <<          \
+                          ") to equal '" #b "' (" << (b) << ")");  \
       }
 
     try {
@@ -165,7 +169,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
             CHECK_EQUAL(isBlack, fontGlyph->bitmap->get(corresp));
           }
 
-          catch (xBase &exn) {
+          catch (XBase &exn) {
             exn.prependContext(stringb("pixel (" << x << ", " << y << ")"));
             throw;
           }
@@ -173,7 +177,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
       } // loop over 'y'
     }
 
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb("index " << charIndex));
       throw;
     }

@@ -52,7 +52,7 @@ string qrgbToString(QRgb rgba);
 // Convert QSize to "($width,$height)".
 string toString(QSize s);
 
-// Convert "($width,$height)" to QSize or throw xFormat.
+// Convert "($width,$height)" to QSize or throw XFormat.
 QSize qSizeFromString(string const &str);
 
 
@@ -61,11 +61,11 @@ QPoint toQPoint(QSize const &size);
 QSize toQSize(QPoint const &point);
 
 
-// Convert a keyboard modifier name back to its number, or throw xFormat.
+// Convert a keyboard modifier name back to its number, or throw XFormat.
 Qt::KeyboardModifier getKeyboardModifierFromString(string const &str);
 
 
-// Convert a key to its number, or throw xFormat.
+// Convert a key to its number, or throw XFormat.
 Qt::Key getKeyFromString(string const &str);
 
 // True if 'key' is (exactly) Qt::Key_Shift, Control, Meta, Alt, or AltGr.
@@ -78,8 +78,8 @@ extern EnumerationNames<Qt::Key> const g_qtKeyNames;
 // Convert 'QString' to 'string'.
 string toString(QString const &s);
 
-// Equivalent to 'quoted(toString(s))'.
-string quoted(QString const &s);
+// Equivalent to 'doubleQuote(toString(s))'.
+string doubleQuote(QString const &s);
 
 
 // Allow inserting QString into stringBuilder and ostream.
