@@ -4,7 +4,7 @@
 #include "timer-event-loop.h"          // this module
 
 // smbase
-#include "xassert.h"                   // xassert
+#include "smbase/xassert.h"            // xassert
 
 
 void TimerEventLoop::timerEvent(QTimerEvent *Event)

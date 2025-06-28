@@ -11,14 +11,14 @@
 #include "qtutil.h"                    // toString(QRect)
 
 // smbase
-#include "bdffont.h"                   // BDFFont
-#include "bit2d.h"                     // Bit2d::Size
-#include "exc.h"                       // smbase::XBase
-#include "nonport.h"                   // getMilliseconds
-#include "sm-file-util.h"              // SMFileUtil
-#include "sm-test.h"                   // DEBUG_PVAL, ARGS_MAIN
-#include "strtokp.h"                   // StrtokParse
-#include "xassert.h"                   // xfailure_stringbc
+#include "smbase/bdffont.h"            // BDFFont
+#include "smbase/bit2d.h"              // Bit2d::Size
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/nonport.h"            // getMilliseconds
+#include "smbase/sm-file-util.h"       // SMFileUtil
+#include "smbase/sm-test.h"            // DEBUG_PVAL, ARGS_MAIN
+#include "smbase/strtokp.h"            // StrtokParse
+#include "smbase/xassert.h"            // xfailure_stringbc
 
 // Qt
 #include <qapplication.h>              // QApplication

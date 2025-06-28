@@ -5,8 +5,8 @@
 #define TIMER_EVENT_LOOP_H
 
 // smbase
-#include "sm-macros.h"                 // NO_OBJECT_COPIES
-#include "sm-override.h"               // OVERRIDE
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
+#include "smbase/sm-override.h"        // OVERRIDE
 
 // Qt
 #include <QEventLoop>

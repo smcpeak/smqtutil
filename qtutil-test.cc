@@ -7,12 +7,12 @@
 #include "qtguiutil.h"                 // module to test
 
 // smbase
-#include "exc.h"                       // smbase::XFormat
-#include "sm-iostream.h"               // cout, etc.
-#include "sm-test.h"                   // EXPECT_EQ
-#include "string-util.h"               // doubleQuote
-#include "strutil.h"                   // hasSubstring
-#include "xassert.h"                   // xfailure_stringbc
+#include "smbase/exc.h"                // smbase::XFormat
+#include "smbase/sm-iostream.h"        // cout, etc.
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/strutil.h"            // hasSubstring
+#include "smbase/xassert.h"            // xfailure_stringbc
 
 // Qt
 #include <QByteArray>

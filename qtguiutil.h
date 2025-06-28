@@ -9,8 +9,8 @@
 #ifndef QTGUIUTIL_H
 #define QTGUIUTIL_H
 
-#include "exc.h"                       // smbase::XBase
-#include "str.h"                       // string
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/str.h"                // string
 
 #include <QCursor>
 

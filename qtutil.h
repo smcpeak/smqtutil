@@ -5,13 +5,13 @@
 #define QTUTIL_H
 
 // smbase
-#include "sm-iostream.h"      // ostream
-#include "str.h"              // string, stringBuilder
+#include "smbase/sm-iostream.h"        // ostream
+#include "smbase/str.h"                // string, stringBuilder
 
 // Qt
-#include <QColor>             // QRgb
-#include <QString>            // QString
-#include <qnamespace.h>       // MouseButtons, KeyboardModifiers, Key
+#include <QColor>                      // QRgb
+#include <QString>                     // QString
+#include <qnamespace.h>                // MouseButtons, KeyboardModifiers, Key
 
 class QByteArray;
 class QObject;

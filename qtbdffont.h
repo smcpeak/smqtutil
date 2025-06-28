@@ -56,8 +56,8 @@
 #ifndef QTBDFFONT_H
 #define QTBDFFONT_H
 
-#include "array.h"                     // GrowArray
-#include "str.h"                       // rostring
+#include "smbase/array.h"              // GrowArray
+#include "smbase/str.h"                // rostring
 
 #include <qbitmap.h>                   // QBitmap, QPixmap
 #include <qcolor.h>                    // QColor

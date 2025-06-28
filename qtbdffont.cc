@@ -7,11 +7,11 @@
 #include "qtutil.h"                    // toString(QRect)
 
 // smbase
-#include "bdffont.h"                   // BDFFont
-#include "bit2d.h"                     // Bit2d::Size
-#include "exc.h"                       // xbase
-#include "sm-test.h"                   // DEBUG_PVAL
-#include "strtokp.h"                   // StrtokParse
+#include "smbase/bdffont.h"            // BDFFont
+#include "smbase/bit2d.h"              // Bit2d::Size
+#include "smbase/exc.h"                // xbase
+#include "smbase/sm-test.h"            // DEBUG_PVAL
+#include "smbase/strtokp.h"            // StrtokParse
 
 // Qt
 #include <qimage.h>                    // QImage

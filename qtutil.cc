@@ -4,10 +4,10 @@
 #include "qtutil.h"                    // this module
 
 // smbase
-#include "datablok.h"                  // DataBlock
-#include "exc.h"                       // xassert, xformatsb
-#include "parsestring.h"               // ParseString
-#include "string-util.h"               // doubleQuote
+#include "smbase/datablok.h"           // DataBlock
+#include "smbase/exc.h"                // xassert, xformatsb
+#include "smbase/parsestring.h"        // ParseString
+#include "smbase/string-util.h"        // doubleQuote
 
 // Qt
 #include <QByteArray>

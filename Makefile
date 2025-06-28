@@ -9,8 +9,12 @@ all: libsmqtutil.a qtutil-test test-qtbdffont test-layout
 # target platform.  The rest of the Makefile should take care
 # of responding to these variables without further intervention.
 
-# Directories of other software.
-SMBASE := ../smbase
+# Directory root from which dependent libraries are expected to be
+# found.
+DEPSDIR := ..
+
+# smbase library specifically
+SMBASE = $(DEPSDIR)/smbase
 
 # Build tools.
 CXX    := g++
@@ -37,12 +41,12 @@ include qtvars.mk
 
 # Flags for the C and C++ compilers (and preprocessor).
 CCFLAGS := -g -Wall -Wno-deprecated -std=c++11
-CCFLAGS += -I$(SMBASE)
+CCFLAGS += -I$(DEPSDIR)
 CCFLAGS += $(QT_CCFLAGS)
 CCFLAGS += $(EXTRA_CCFLAGS)
 
 # Flags for the linker.
-LDFLAGS := -g -Wall $(SMBASE)/libsmbase.a
+LDFLAGS := -g -Wall $(SMBASE)/obj/libsmbase.a
 LDFLAGS += $(QT_LDFLAGS)
 LDFLAGS += $(EXTRA_LDFLAGS)
 

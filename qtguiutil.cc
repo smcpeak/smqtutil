@@ -7,9 +7,9 @@
 #include "qtutil.h"                    // toString for Key and Modifiers, qstringb
 
 // smbase
-#include "exc.h"                       // smbase::{xformat, XBase}
-#include "string-util.h"               // doubleQuote
-#include "stringb.h"                   // stringb
+#include "smbase/exc.h"                // smbase::{xformat, XBase}
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/stringb.h"            // stringb
 
 // Qt
 #include <QKeyEvent>
