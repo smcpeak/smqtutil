@@ -38,9 +38,11 @@ include config.mk
 # Set QT_CCFLAGS, QT_LDFLAGS, and define rule for running 'moc'.
 include qtvars.mk
 
+# C++ standard to use.  smbase now requires C++17, so this library does too.
+CPPSTD = c++17
 
 # Flags for the C and C++ compilers (and preprocessor).
-CCFLAGS := -g -Wall -Wno-deprecated -std=c++11
+CCFLAGS = -g -Wall -Wno-deprecated -std=$(CPPSTD)
 CCFLAGS += -I$(DEPSDIR)
 CCFLAGS += $(QT_CCFLAGS)
 CCFLAGS += $(EXTRA_CCFLAGS)

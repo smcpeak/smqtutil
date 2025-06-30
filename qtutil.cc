@@ -6,6 +6,7 @@
 // smbase
 #include "smbase/datablok.h"           // DataBlock
 #include "smbase/exc.h"                // xassert, xformatsb
+#include "smbase/overflow.h"           // safeToInt
 #include "smbase/parsestring.h"        // ParseString
 #include "smbase/string-util.h"        // doubleQuote
 
@@ -225,7 +226,8 @@ EnumerationNames<Qt::Key> const g_qtKeyNames = {
 
 string toString(QString const &s)
 {
-  return string(s.toUtf8().constData());
+  QByteArray utf8(s.toUtf8());
+  return string(utf8.constData(), utf8.length());
 }
 
 
@@ -237,19 +239,19 @@ string doubleQuote(QString const &s)
 
 stringBuilder& operator<< (stringBuilder& sb, QString const &str)
 {
-  return sb << str.toUtf8().constData();
+  return sb << toString(str);
 }
 
 
 ostream& operator<< (ostream &os, QString const &str)
 {
-  return os << str.toUtf8().constData();
+  return os << toString(str);
 }
 
 
 QString toQString(string const &s)
 {
-  return QString(s.c_str());
+  return QString::fromUtf8(s.data(), safeToInt(s.size()));
 }
 
 

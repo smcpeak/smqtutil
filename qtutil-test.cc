@@ -383,6 +383,22 @@ static void testDisconnectSignals()
 }
 
 
+// Check that we can round-trip between `std::string` and `QString`,
+// including preserving embedded NULs.
+static void testStringConversion()
+{
+  std::string s1("a\0b", 3);
+  EXPECT_EQ(s1.size(), 3);
+
+  QString s2 = toQString(s1);
+  EXPECT_EQ(s2.length(), 3);
+
+  std::string s3 = toString(s2);
+  EXPECT_EQ(s3, s1);
+  EXPECT_EQ(s1.size(), 3);
+}
+
+
 static void entry(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
@@ -397,6 +413,7 @@ static void entry(int argc, char **argv)
   testQSizeFromString();
   testQObjectPath();
   testDisconnectSignals();
+  testStringConversion();
 
   cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
   cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
