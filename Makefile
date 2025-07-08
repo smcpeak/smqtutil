@@ -130,7 +130,7 @@ test-layout: test-layout.cc $(OBJS)
 clean:
 	$(RM) $(TOCLEAN) $(TEST_PROGRAMS)
 
-check: $(TEST_PROGRAMS)
+check: all $(TEST_PROGRAMS)
 	./qtutil-test
 	./test-qtbdffont
 	@echo "smqtutil tests PASSED"
