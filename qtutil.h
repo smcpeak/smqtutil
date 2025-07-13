@@ -129,4 +129,18 @@ string qObjectPath(QObject const *obj);
 void printQByteArray(QByteArray const &ba, char const *label);
 
 
+// Block until an event happens (e.g., IPC, or timer expiring), then
+// process that event and return.  If at least one event is already
+// pending, process the pending events and return.
+//
+// The idea is you can write synchronous interactions on top of
+// asynchronous interfaces like:
+//
+//   while (!someCondition()) {
+//     waitForQtEvent();
+//   }
+//
+void waitForQtEvent();
+
+
 #endif // QTUTIL_H

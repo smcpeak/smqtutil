@@ -8,10 +8,12 @@
 #include "smbase/exc.h"                // xassert, xformatsb
 #include "smbase/overflow.h"           // safeToInt
 #include "smbase/parsestring.h"        // ParseString
+#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/string-util.h"        // doubleQuote
 
 // Qt
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QObject>
 #include <QPoint>
 #include <QRect>
@@ -20,6 +22,9 @@
 // libc
 #include <assert.h>                    // assert
 #include <stdio.h>                     // sprintf
+
+
+INIT_TRACE("qtutil");
 
 
 // If 'flags' contains 'flag.value', add its name to 'sb' and remove
@@ -344,6 +349,31 @@ Qt::Key getKeyFromString(string const &str)
 
   xformatsb("unknown Key \"" << str << "\"");
   return Qt::Key_Escape;  // silence warning
+}
+
+
+void waitForQtEvent()
+{
+  // If no event is pending, block until one is.  Then process all
+  // pending events.
+  TRACE2("waitForQtEvent: start: calling processEvents");
+  QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+
+  // At least on Windows, `processEvents` begins by calling
+  // `sendPostedEvents` (which does not report on whether it did
+  // anything), and then it waits for an incoming IPC event.  But that
+  // means the state change caused by dispatching intraprocess events
+  // might not be seen, since we block for IPC regardless.  Therefore,
+  // whenever we think we've gotten some IPC done, also drain the
+  // intraprocess queue so the caller can see all of the effects of that
+  // IPC before deciding whether to block again.
+  //
+  // This seems like a bug in Qt...
+  //
+  TRACE2("waitForQtEvent: middle: calling sendPostedEvents");
+  QCoreApplication::sendPostedEvents();
+
+  TRACE2("waitForQtEvent: end");
 }
 
 
