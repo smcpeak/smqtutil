@@ -179,11 +179,11 @@ string toString(QSize s)
 QSize qSizeFromString(string const &str)
 {
   ParseString ps(str);
-  ps.parseChar('(');
+  ps.parseByte('(');
   int w = ps.parseDecimalUInt();
-  ps.parseChar(',');
+  ps.parseByte(',');
   int h = ps.parseDecimalUInt();
-  ps.parseChar(')');
+  ps.parseByte(')');
   ps.parseEOS();
 
   return QSize(w, h);
