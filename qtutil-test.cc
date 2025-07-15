@@ -22,6 +22,10 @@
 #include <QRect>
 #include <QShortcutEvent>
 
+// libc++
+#include <string_view>                 // std::string_view
+
+
 using namespace smbase;
 
 
@@ -396,6 +400,12 @@ static void testStringConversion()
   std::string s3 = toString(s2);
   EXPECT_EQ(s3, s1);
   EXPECT_EQ(s1.size(), 3);
+
+  std::string_view sv(s3);
+  EXPECT_EQ(toQString(sv).length(), 3);
+
+  char const *cstr = s1.c_str();
+  EXPECT_EQ(toQString(cstr).length(), 1);   // gets truncated
 }
 
 

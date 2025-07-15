@@ -5,13 +5,14 @@
 #define QTUTIL_H
 
 // smbase
-#include "smbase/sm-iostream.h"        // ostream
-#include "smbase/str.h"                // string, stringBuilder
+#include "smbase/sm-iostream.h"                  // ostream
+#include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/str.h"                          // string, stringBuilder
 
 // Qt
-#include <QColor>                      // QRgb
-#include <QString>                     // QString
-#include <qnamespace.h>                // MouseButtons, KeyboardModifiers, Key
+#include <QColor>                                // QRgb
+#include <QString>                               // QString
+#include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
 
 class QByteArray;
 class QObject;
@@ -95,6 +96,10 @@ ostream& operator<< (ostream &os, QString const &str);
 // Convert 'string' to 'QString'.
 QString toQString(string const &s);
 #define qstringb(stuff) toQString(stringb(stuff))
+
+// Also convert `string_view` and `char*`.
+QString toQString(std::string_view sv);
+QString toQString(char const *s);
 
 
 // Return a description of 'obj': either "null", or the pointer

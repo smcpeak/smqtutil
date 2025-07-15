@@ -19,6 +19,9 @@
 #include <QRect>
 #include <QSize>
 
+// libc++
+#include <string_view>                 // std::string_view
+
 // libc
 #include <assert.h>                    // assert
 #include <stdio.h>                     // sprintf
@@ -257,6 +260,19 @@ ostream& operator<< (ostream &os, QString const &str)
 QString toQString(string const &s)
 {
   return QString::fromUtf8(s.data(), safeToInt(s.size()));
+}
+
+
+QString toQString(std::string_view sv)
+{
+  return QString::fromUtf8(sv.data(), safeToInt(sv.size()));
+}
+
+
+QString toQString(char const *s)
+{
+  std::string_view sv(s);
+  return toQString(sv);
 }
 
 
