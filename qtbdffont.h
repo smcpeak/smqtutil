@@ -56,6 +56,8 @@
 #ifndef QTBDFFONT_H
 #define QTBDFFONT_H
 
+#include "qtbdffont-fwd.h"             // fwds for this module
+
 #include "smbase/array.h"              // GrowArray
 #include "smbase/str.h"                // rostring
 
@@ -78,6 +80,12 @@ class QPainter;                        // qpainter.h
 // Some methods are marked 'const', but (for now) there is no useful
 // notion of constness for this class, since it is semantically
 // immutable.
+//
+// TODO: The drawing function at least should be `const`, but cannot be
+// due to the way `colorPixmap` and `colorPixmapState` are manipulated.
+// Those should be marked `mutable`, but I need to audit to be sure
+// there aren't other consequences.
+//
 class QtBDFFont {
   NO_OBJECT_COPIES(QtBDFFont);
 
