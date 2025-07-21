@@ -15,6 +15,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
+#include <QPainter>
 #include <QShortcutEvent>
 #include <QString>
 #include <QStringList>
@@ -190,6 +191,7 @@ void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow)
 }
 
 
+// ------------------------- CursorSetRestore --------------------------
 CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
   : m_widget(w),
     m_previousCursor(w->cursor())
@@ -200,6 +202,20 @@ CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
 CursorSetRestore::~CursorSetRestore()
 {
   m_widget->setCursor(m_previousCursor);
+}
+
+
+// ------------------------ QPainterSaveRestore ------------------------
+QPainterSaveRestore::QPainterSaveRestore(QPainter &painter)
+  : m_painter(painter)
+{
+  m_painter.save();
+}
+
+
+QPainterSaveRestore::~QPainterSaveRestore()
+{
+  m_painter.restore();
 }
 
 

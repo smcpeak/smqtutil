@@ -10,12 +10,14 @@
 #define QTGUIUTIL_H
 
 #include "smbase/exc.h"                // smbase::XBase
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
 #include "smbase/str.h"                // string
 
 #include <QCursor>
 
 class QKeyEvent;
 class QKeySequence;
+class QPainter;
 class QShortcutEvent;
 class QString;
 class QWidget;
@@ -76,6 +78,19 @@ public:      // data
 public:      // funcs
   CursorSetRestore(QWidget *w, QCursor const &newCursor);
   ~CursorSetRestore();
+};
+
+
+// Save the `QPainter` state, then restore it on scope exit.
+class QPainterSaveRestore {
+  NO_OBJECT_COPIES(QPainterSaveRestore);
+
+public:      // data
+  QPainter &m_painter;
+
+public:
+  QPainterSaveRestore(QPainter &painter);
+  ~QPainterSaveRestore();
 };
 
 
