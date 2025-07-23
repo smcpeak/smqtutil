@@ -38,12 +38,26 @@ public:      // types
     int initialWidth;        // Initial column width in pixels.
   };
 
+public:      // data
+  // If true, the columns (try to) fill the available horizontal width;
+  // during resize events, the sizes of other columns are adjusted to
+  // compensate.  Initially false.
+  bool m_columnsFillWidth;
+
 private:     // funcs
   // Synthesize a keypress for the underlying QTableView.
   void synthesizeKey(int key, Qt::KeyboardModifiers modifiers);
 
+protected Q_SLOTS:
+  // React to column resize signals sent by the horizontal header.
+  void on_columnResized(int logicalIndex, int oldSize, int newSize) NOEXCEPT;
+
+protected:   // funcs
+  // If `m_columnsFillWidth`, adjust column widths as needed.
+  virtual void resizeEvent(QResizeEvent *event) OVERRIDE;
+
 public:      // funcs
-  SMTableWidget(QWidget *parent = NULL);
+  SMTableWidget(QWidget *parent);
   ~SMTableWidget();
 
   // Configure the table as a list view (items in rows) rather than a
@@ -55,6 +69,10 @@ public:      // funcs
   //   - Remove the grid lines.
   void configureAsListView();
 
+  // Set `m_columnsFillWidth` to `b`.  If setting to true, also turn off
+  // the horizontal scrollbar.
+  void setColumnsFillWidth(bool b);
+
   // Set the column names and initial widths from 'columnInfo', an array
   // of size 'numColumns'.
   void initializeColumns(ColumnInitInfo const *columnInfo,
@@ -64,6 +82,14 @@ public:      // funcs
   // leading, of the current widget font.  This has to be done for every
   // row separately each time the table is populated.
   void setNaturalTextRowHeight(int row);
+
+  // Adjust the column widths so they fill the widget.  This is done
+  // automatically if `m_columnsFillWidth`, but could be done explicitly
+  // without that flag.
+  void adjustColumnsToFitWidth();
+
+  // Set the minimum column width, in pixels.
+  void setMinimumColumnWidth(int width);
 
   // Overridden QWidget methods.
   virtual void keyPressEvent(QKeyEvent *event) NOEXCEPT OVERRIDE;

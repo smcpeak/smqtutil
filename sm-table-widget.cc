@@ -12,6 +12,7 @@
 
 // Qt
 #include <QFontMetrics>
+#include <QHeaderView>
 #include <QKeyEvent>
 #include <QModelIndex>
 
@@ -23,16 +24,22 @@ INIT_TRACE("sm-table-widget");
 
 
 SMTableWidget::SMTableWidget(QWidget *parent)
-  : QTableWidget(parent)
+  : QTableWidget(parent),
+    m_columnsFillWidth(false)
 {
   // Pixel granularity scrolling is much smoother than row/col.
   setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
   setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+  QObject::connect(horizontalHeader(), &QHeaderView::sectionResized,
+                   this, &SMTableWidget::on_columnResized);
 }
 
 
 SMTableWidget::~SMTableWidget()
-{}
+{
+  QObject::disconnect(horizontalHeader(), nullptr, this, nullptr);
+}
 
 
 void SMTableWidget::synthesizeKey(int key, Qt::KeyboardModifiers modifiers)
@@ -44,6 +51,100 @@ void SMTableWidget::synthesizeKey(int key, Qt::KeyboardModifiers modifiers)
   // but this seems like the generally right thing to do.
   QKeyEvent release(QEvent::KeyRelease, key, modifiers);
   this->QTableWidget::keyReleaseEvent(&release);
+}
+
+
+void SMTableWidget::on_columnResized(int logicalIndex, int oldSize, int newSize) NOEXCEPT
+{
+  GENERIC_CATCH_BEGIN
+
+  TRACE2("on_columnResized: column=" << logicalIndex <<
+         " oldSize=" << oldSize <<
+         " newSize=" << newSize);
+
+  if (!m_columnsFillWidth) {
+    // Use default column sizing behavior.
+    return;
+  }
+
+  QHeaderView *header = horizontalHeader();
+  int columnCount = header->count();
+
+  if (logicalIndex < 0 || logicalIndex >= columnCount - 1)
+    return; // Only handle resizing for A and B
+
+  int nextIndex = logicalIndex + 1;
+
+  // The following logic is more convoluted than necessary.  The
+  // net effect is that resizing one column always changes the
+  // neighbor to the right by the opposite amount, clamping both
+  // to a minimum pixel size.
+  //
+  // TODO: Improve this.
+
+  int minSize = header->minimumSectionSize();
+  int nextSize = header->sectionSize(nextIndex);
+
+  int totalWidth = viewport()->width();
+
+  int otherTotal = 0;
+  for (int i = 0; i < columnCount; ++i) {
+    if (i != nextIndex && i != logicalIndex) {
+      otherTotal += header->sectionSize(i);
+    }
+  }
+
+  // The resized section can be at most:
+  int maxThisSectionSize = totalWidth - otherTotal - minSize;
+
+  // Clamp if too big
+  if (newSize > maxThisSectionSize) {
+    header->blockSignals(true);
+    TRACE2("  clamping; setting this section " << logicalIndex <<
+           " to size " << maxThisSectionSize <<
+           " and next section " << nextIndex <<
+           " to size " << minSize);
+    header->resizeSection(logicalIndex, maxThisSectionSize);
+    header->resizeSection(nextIndex, minSize);
+    header->blockSignals(false);
+    return;
+  }
+
+  // Otherwise adjust neighbor
+  int newNextSize = totalWidth - otherTotal - newSize;
+  if (newNextSize < minSize) {
+    newNextSize = minSize;
+    int adjustedThis = totalWidth - otherTotal - minSize;
+    header->blockSignals(true);
+    TRACE2("  adj both; setting this section " << logicalIndex <<
+           " to size " << adjustedThis <<
+           " and next section " << nextIndex <<
+           " to size " << minSize);
+    header->resizeSection(logicalIndex, adjustedThis);
+    header->resizeSection(nextIndex, minSize);
+    header->blockSignals(false);
+  } else {
+    if (newNextSize != nextSize) {
+      header->blockSignals(true);
+      TRACE2("  setting next section " << nextIndex <<
+             " to size " << newNextSize);
+      header->resizeSection(nextIndex, newNextSize);
+      header->blockSignals(false);
+    }
+  }
+
+  GENERIC_CATCH_END
+}
+
+
+void SMTableWidget::resizeEvent(QResizeEvent *event)
+{
+  TRACE2("resizeEvent");
+  QTableWidget::resizeEvent(event);
+
+  if (m_columnsFillWidth) {
+    adjustColumnsToFitWidth();
+  }
 }
 
 
@@ -100,6 +201,15 @@ void SMTableWidget::configureAsListView()
 }
 
 
+void SMTableWidget::setColumnsFillWidth(bool b)
+{
+  m_columnsFillWidth = b;
+  if (m_columnsFillWidth) {
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  }
+}
+
+
 void SMTableWidget::initializeColumns(ColumnInitInfo const *columnInfo,
                                       int numColumns)
 {
@@ -132,6 +242,62 @@ void SMTableWidget::setNaturalTextRowHeight(int row)
   setRowHeight(row, height);
   TRACE2("after setting height of row " << row << " to " << height <<
          ", it now reports a height of " << rowHeight(row));
+}
+
+
+void SMTableWidget::adjustColumnsToFitWidth()
+{
+  QHeaderView *header = horizontalHeader();
+  int count = header->count();
+  if (count < 1)
+    return;
+
+  int minSize = header->minimumSectionSize();
+
+  int totalWidth = viewport()->width();
+
+  QVector<int> sizes(count);
+  for (int i = 0; i < count; ++i) {
+    sizes[i] = header->sectionSize(i);
+  }
+
+  int currentTotal = 0;
+  for (int size : sizes)
+    currentTotal += size;
+
+  if (currentTotal == totalWidth)
+    return;
+
+  // Scale all columns proportionally, but respect min size.
+  int diff = totalWidth - currentTotal;
+
+  int adjustableColumns = count;
+  for (int i = 0; i < count; ++i) {
+    if (sizes[i] <= minSize && diff < 0)
+      adjustableColumns--;
+  }
+
+  if (adjustableColumns <= 0)
+    return;
+
+  int deltaPerCol = diff / adjustableColumns;
+
+  header->blockSignals(true);
+
+  for (int i = 0; i < count; ++i) {
+    int newSize = sizes[i] + deltaPerCol;
+    if (newSize < minSize)
+      newSize = minSize;
+    header->resizeSection(i, newSize);
+  }
+
+  header->blockSignals(false);
+}
+
+
+void SMTableWidget::setMinimumColumnWidth(int width)
+{
+  horizontalHeader()->setMinimumSectionSize(width);
 }
 
 

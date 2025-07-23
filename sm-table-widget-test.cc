@@ -43,6 +43,10 @@ int main(int argc, char *argv[])
   table->initializeColumns(columns, TABLESIZE(columns));
   table->setRowCount(10);
 
+  table->setMinimumColumnWidth(30);
+  table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  table->setColumnsFillWidth(true);
+
   // Flags for the items.  The point is to omit Qt::ItemIsEditable.
   Qt::ItemFlags const itemFlags =
     Qt::ItemIsSelectable | Qt::ItemIsEnabled;
