@@ -1,9 +1,7 @@
 # Makefile for smqtutil
 
 # main target
-all: libsmqtutil.a qtutil-test test-qtbdffont test-layout
-
-# TODO: Add explicit ".exe" extensions.
+all: libsmqtutil.a qtutil-test.exe test-qtbdffont.exe test-layout.exe sm-table-widget-test.exe
 
 
 # ------------------- BEGIN: Configuration ---------------------
@@ -113,26 +111,26 @@ libsmqtutil.a: $(OBJS)
 
 # ------------------- qtutil-test -----------------------
 TEST_PROGRAMS :=
-TEST_PROGRAMS += qtutil-test
-qtutil-test: qtutil-test.o qtutil-test.moc.o qtguiutil.o qtutil.o
+TEST_PROGRAMS += qtutil-test.exe
+qtutil-test.exe: qtutil-test.o qtutil-test.moc.o qtguiutil.o qtutil.o
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
 # ------------------ test-qtbdffont ---------------------
-TEST_PROGRAMS += test-qtbdffont
-test-qtbdffont: test-qtbdffont.cc $(OBJS)
+TEST_PROGRAMS += test-qtbdffont.exe
+test-qtbdffont.exe: test-qtbdffont.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) test-qtbdffont.cc $(OBJS) $(LDFLAGS)
 
 
 # -------------------- test-layout ----------------------
-TEST_PROGRAMS += test-layout
-test-layout: test-layout.cc $(OBJS)
+TEST_PROGRAMS += test-layout.exe
+test-layout.exe: test-layout.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) test-layout.cc $(OBJS) $(LDFLAGS)
 
 
 # ------------------------ sm-table-widget-test ------------------------
-TEST_PROGRAMS += sm-table-widget-test
-sm-table-widget-test: sm-table-widget-test.cc $(OBJS)
+TEST_PROGRAMS += sm-table-widget-test.exe
+sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
@@ -141,8 +139,8 @@ clean:
 	$(RM) $(TOCLEAN) $(TEST_PROGRAMS)
 
 check: all $(TEST_PROGRAMS)
-	./qtutil-test
-	./test-qtbdffont
+	./qtutil-test.exe
+	./test-qtbdffont.exe
 	@echo "smqtutil tests PASSED"
 
 # EOF
