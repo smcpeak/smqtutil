@@ -3,6 +3,8 @@
 # main target
 all: libsmqtutil.a qtutil-test test-qtbdffont test-layout
 
+# TODO: Add explicit ".exe" extensions.
+
 
 # ------------------- BEGIN: Configuration ---------------------
 # This is where we set variables that depend on the build or
@@ -96,6 +98,8 @@ OBJS += qtbdffont.o
 OBJS += qtguiutil.o
 OBJS += qtutil.o
 OBJS += sm-line-edit.o
+OBJS += sm-table-widget.moc.o
+OBJS += sm-table-widget.o
 OBJS += timer-event-loop.o
 -include $(OBJS:.o=.d)
 
@@ -124,6 +128,12 @@ test-qtbdffont: test-qtbdffont.cc $(OBJS)
 TEST_PROGRAMS += test-layout
 test-layout: test-layout.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) test-layout.cc $(OBJS) $(LDFLAGS)
+
+
+# ------------------------ sm-table-widget-test ------------------------
+TEST_PROGRAMS += sm-table-widget-test
+sm-table-widget-test: sm-table-widget-test.cc $(OBJS)
+	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
 # ----------------------- misc --------------------------
