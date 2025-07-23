@@ -24,7 +24,11 @@ INIT_TRACE("sm-table-widget");
 
 SMTableWidget::SMTableWidget(QWidget *parent)
   : QTableWidget(parent)
-{}
+{
+  // Pixel granularity scrolling is much smoother than row/col.
+  setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+  setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+}
 
 
 SMTableWidget::~SMTableWidget()
