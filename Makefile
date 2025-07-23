@@ -1,7 +1,7 @@
 # Makefile for smqtutil
 
-# main target
-all: libsmqtutil.a qtutil-test.exe test-qtbdffont.exe test-layout.exe sm-table-widget-test.exe
+# Default target.  (Its prereqs are added below.)
+all:
 
 
 # ------------------- BEGIN: Configuration ---------------------
@@ -62,7 +62,6 @@ TOCLEAN = $(QT_TOCLEAN)
 # Compile .cc to .o .
 # -MMD causes GCC to write .d file.
 # The -MP modifier adds phony targets to deal with removed headers.
-TOCLEAN += *.o *.d
 %.o : %.cc
 	$(CXX) -c -MMD -MP -o $@ $< $(CCFLAGS)
 
@@ -84,9 +83,6 @@ BDFGENSRC += minihex6.bdf.gen.cc
 .PHONY: gensrc
 gensrc: $(BDFGENSRC)
 
-TOCLEAN += $(BDFGENSRC)
-TOCLEAN += $(BDFGENSRC:.cc=.h)
-
 
 # ------------------- main library -------------------
 OBJS :=
@@ -102,7 +98,7 @@ OBJS += timer-event-loop.o
 -include $(OBJS:.o=.d)
 
 
-TOCLEAN += libsmqtutil.a
+all: libsmqtutil.a
 libsmqtutil.a: $(OBJS)
 	$(RM) $@
 	$(AR) -r $@ $(OBJS)
@@ -135,10 +131,12 @@ sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
 
 
 # ----------------------- misc --------------------------
-clean:
-	$(RM) $(TOCLEAN) $(TEST_PROGRAMS)
+all: $(TEST_PROGRAMS)
 
-check: all $(TEST_PROGRAMS)
+clean:
+	$(RM) *.a *.d *.o *.exe *.gen.* $(TOCLEAN)
+
+check: all
 	./qtutil-test.exe
 	./test-qtbdffont.exe
 	@echo "smqtutil tests PASSED"
