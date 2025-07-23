@@ -8,14 +8,18 @@
 
 // smbase
 #include "smbase/exc.h"                // GENERIC_CATCH_BEGIN/END
-#include "smbase/trace.h"              // TRACE
+#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 
 // Qt
+#include <QFontMetrics>
 #include <QKeyEvent>
 #include <QModelIndex>
 
 // libc++
 #include <iostream>                    // std::ostream
+
+
+INIT_TRACE("sm-table-widget");
 
 
 SMTableWidget::SMTableWidget(QWidget *parent)
@@ -43,7 +47,7 @@ void SMTableWidget::keyPressEvent(QKeyEvent *event) NOEXCEPT
 {
   GENERIC_CATCH_BEGIN
 
-  TRACE("SMTableWidget", "keyPressEvent: " << keysString(*event));
+  TRACE1("keyPressEvent: " << keysString(*event));
 
   switch (event->key()) {
     case Qt::Key_N: {
@@ -108,6 +112,22 @@ void SMTableWidget::initializeColumns(ColumnInitInfo const *columnInfo,
   for (int i=0; i < numColumns; i++) {
     setColumnWidth(i, columnInfo[i].initialWidth);
   }
+}
+
+
+void SMTableWidget::setNaturalTextRowHeight(int row)
+{
+  // It doesn't matter what value I use here since the table has a
+  // minimum row height of `verticalHeader()->minimumSectionSize()`,
+  // which is `QFontMetrics(...).height()+8`.
+  //
+  // But I still have to set *some* height, since otherwise I'm stuck
+  // with the default too-large height.
+
+  int height = QFontMetrics(font()).height();
+  setRowHeight(row, height);
+  TRACE2("after setting height of row " << row << " to " << height <<
+         ", it now reports a height of " << rowHeight(row));
 }
 
 

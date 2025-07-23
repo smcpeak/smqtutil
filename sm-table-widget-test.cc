@@ -9,12 +9,11 @@
 #include <QMainWindow>
 #include <QTableWidgetItem>
 
+#include <iostream>                    // std::cout
 
-// Height of each row in pixels.
-//
-// TODO: This hardcoded value is ugly.  I should instead detect and use
-// a value that depends on the font.
-int const ROW_HEIGHT = 20;
+
+#define DIAG(stuff) \
+  std::cout << stuff << "\n" /* user ; */
 
 
 int main(int argc, char *argv[])
@@ -25,6 +24,12 @@ int main(int argc, char *argv[])
 
   SMTableWidget *table = new SMTableWidget(&window);
   table->configureAsListView();
+
+  if (false) {
+    QFont font = table->font();
+    font.setPointSize(30);
+    table->setFont(font);
+  }
 
   // The following code mimics how editor/open-files-dialog.cc populates
   // the table.  I'd like to improve the interface, but first I'll just
@@ -43,10 +48,6 @@ int main(int argc, char *argv[])
     Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
   for (int row = 0; row < 10; ++row) {
-    // Remove the row label.  (The default, a NULL item, renders as a
-    // row number, which isn't useful here.)
-    table->setVerticalHeaderItem(row, new QTableWidgetItem(""));
-
     for (int col = 0; col < TABLESIZE(columns); ++col) {
       QTableWidgetItem *item = new QTableWidgetItem(
         QString("Item %1,%2").arg(row).arg(col));
@@ -58,12 +59,16 @@ int main(int argc, char *argv[])
       }
 
       table->setItem(row, col, item);
-
-      // Apparently I have to set every row's height manually.
-      // QTreeView has a 'uniformRowHeights' property, but QListView
-      // does not.
-      table->setRowHeight(row, ROW_HEIGHT);
     }
+
+    // Remove the row label.  (The default, a NULL item, renders as a
+    // row number, which isn't useful here.)
+    table->setVerticalHeaderItem(row, new QTableWidgetItem(""));
+
+    // Apparently I have to set every row's height manually.
+    // QTreeView has a 'uniformRowHeights' property, but QListView
+    // does not.
+    table->setNaturalTextRowHeight(row);
   }
 
   window.setCentralWidget(table);

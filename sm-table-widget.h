@@ -60,6 +60,11 @@ public:      // funcs
   void initializeColumns(ColumnInitInfo const *columnInfo,
                          int numColumns);
 
+  // Set the height of `row` to the natural text height, including
+  // leading, of the current widget font.  This has to be done for every
+  // row separately each time the table is populated.
+  void setNaturalTextRowHeight(int row);
+
   // Overridden QWidget methods.
   virtual void keyPressEvent(QKeyEvent *event) NOEXCEPT OVERRIDE;
 };
