@@ -119,7 +119,7 @@ void test_flexibility()
 
 // Verify one `resizeAll` call.
 void oneTest_resizeAll(
-  ColumnWidthRules const &rules,
+  ColumnWidthRules &rules,
   std::vector<int> const &initSizes,
   int newTotalSize,
   std::vector<int> const &expectSizes)
@@ -263,62 +263,98 @@ void test_resizeAll()
 void oneTest_evenlyDistribute(
   std::vector<int> const &maxima,
   int totalToDistribute,
-  std::vector<int> const &expect)
+  std::vector<int> const &expect,
+  int inputNextUneven,
+  int expectOutputNextUneven)
 {
-  TEST_CASE_EXPRS("evenlyDistribute", maxima, totalToDistribute);
+  TEST_CASE_EXPRS("evenlyDistribute",
+    maxima, totalToDistribute, inputNextUneven);
 
   std::vector<int> actual(maxima.size(), 0);
-  evenlyDistribute(actual, maxima, totalToDistribute);
+  int nextUneven = inputNextUneven;
+  evenlyDistribute(actual, maxima, totalToDistribute,
+    nextUneven /*INOUT*/);
 
   EXPECT_EQ(toGDValue(actual), toGDValue(expect));
+  EXPECT_EQ(nextUneven, expectOutputNextUneven);
 }
 
 
 void test_evenlyDistribute()
 {
-  // Test cases written by ChatGPT:
+  // Test cases originally written by ChatGPT, but subsequently
+  // modified:
 
   // Basic equal spread
-  oneTest_evenlyDistribute({5, 5, 5}, 6, {2, 2, 2});
+  oneTest_evenlyDistribute({5, 5, 5}, 6, {2, 2, 2}, 0, 0);
 
   // Respect maxima
-  oneTest_evenlyDistribute({1, 5, 5}, 6, {1, 3, 2});
+  oneTest_evenlyDistribute({1, 5, 5}, 6, {1, 3, 2}, 0, 2);
 
   // More to give than maxima allows
-  oneTest_evenlyDistribute({1, 1, 1}, 10, {1, 1, 1});
+  oneTest_evenlyDistribute({1, 1, 1}, 10, {1, 1, 1}, 0, 0);
 
   // Exact fit
-  oneTest_evenlyDistribute({2, 2, 2}, 6, {2, 2, 2});
+  oneTest_evenlyDistribute({2, 2, 2}, 6, {2, 2, 2}, 0, 0);
 
   // Partial last round
-  oneTest_evenlyDistribute({2, 2, 2}, 5, {2, 2, 1});
+  oneTest_evenlyDistribute({2, 2, 2}, 5, {2, 2, 1}, 0, 2);
 
   // Zero total
-  oneTest_evenlyDistribute({2, 2, 2}, 0, {0, 0, 0});
+  oneTest_evenlyDistribute({2, 2, 2}, 0, {0, 0, 0}, 0, 0);
 
   // One slot
-  oneTest_evenlyDistribute({5}, 3, {3});
+  oneTest_evenlyDistribute({5}, 3, {3}, 0, 0);
 
   // Uneven maxima
-  oneTest_evenlyDistribute({1, 2, 3}, 5, {1, 2, 2});
+  oneTest_evenlyDistribute({1, 2, 3}, 5, {1, 2, 2}, 0, 0);
 
   // More by me:
 
   // No slots.
-  oneTest_evenlyDistribute({}, 3, {});
+  oneTest_evenlyDistribute({}, 3, {}, 0, 0);
 
   // All slots are full.
-  oneTest_evenlyDistribute({0, 0, 0}, 3, {0, 0, 0});
+  oneTest_evenlyDistribute({0, 0, 0}, 3, {0, 0, 0}, 0, 0);
 
   // One slot is not full, but gets filled, and there is still more.
-  oneTest_evenlyDistribute({10, 0, 0}, 20, {10, 0, 0});
+  oneTest_evenlyDistribute({10, 0, 0}, 20, {10, 0, 0}, 0, 0);
+
+  // Focus on the `nextUneven` behavior:
+
+  // Series of one-element distributions.
+  oneTest_evenlyDistribute({10, 10, 10}, 1, {1, 0, 0}, 0, 1);
+  oneTest_evenlyDistribute({ 9, 10, 10}, 1, {0, 1, 0}, 1, 2);
+  oneTest_evenlyDistribute({ 9,  9, 10}, 1, {0, 0, 1}, 2, 0);
+  oneTest_evenlyDistribute({ 9,  9,  9}, 1, {1, 0, 0}, 0, 1);
+
+  // Two-element distributions.
+  oneTest_evenlyDistribute({10, 10, 10}, 2, {1, 1, 0}, 0, 2);
+  oneTest_evenlyDistribute({ 9,  9, 10}, 2, {1, 0, 1}, 2, 1);
+  oneTest_evenlyDistribute({ 8,  9,  9}, 2, {0, 1, 1}, 1, 0);
+  oneTest_evenlyDistribute({ 8,  8,  8}, 2, {1, 1, 0}, 0, 2);
+
+  // One-element distributions over different maxima to eventually fill
+  // all of the space.  The final two steps do not change `next` since
+  // its loop does not activate.
+  oneTest_evenlyDistribute({2,  3,  1}, 1, {1, 0, 0}, 0, 1);
+  oneTest_evenlyDistribute({1,  3,  1}, 1, {0, 1, 0}, 1, 2);
+  oneTest_evenlyDistribute({1,  2,  1}, 1, {0, 0, 1}, 2, 0);
+  oneTest_evenlyDistribute({1,  2,  0}, 1, {1, 0, 0}, 0, 1);
+  oneTest_evenlyDistribute({0,  2,  0}, 1, {0, 1, 0}, 1, 1);
+  oneTest_evenlyDistribute({0,  1,  0}, 1, {0, 1, 0}, 1, 1);
+
+  // Clamp the incoming value.
+  oneTest_evenlyDistribute({5,  5,  5}, 1, {0, 1, 0}, 7, 2);
+
 
   // Big numbers.
   int million = 1000000;
   oneTest_evenlyDistribute(
     {million, million, million},
     4*million,
-    {million, million, million});
+    {million, million, million},
+    0, 0);
 }
 
 

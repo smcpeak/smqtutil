@@ -63,6 +63,12 @@ public:      // data
   // Current column specifications.
   std::vector<ColSpec> m_colSpecs;
 
+  // Index to help with uneven distributions.  See comments above the
+  // declaration of `evenlyDistribute`.
+  //
+  // Invariant: Non-negative.
+  int m_nextColumnForUnevenDistribution;
+
 public:      // methods
   ~ColumnWidthRules();
 
@@ -89,9 +95,13 @@ public:      // methods
   // exhausted without achieving `newTotalSize`, it moves to the next
   // lower priority.
   //
+  // This is not `const` due to how `m_nextColumnForUnevenDistribution`
+  // is used.
+  //
   // Return true iff at least one element of `sizes` was changed.
+  //
   bool resizeAll(
-    std::vector<int> /*INOUT*/ &sizes, int newTotalSize) const;
+    std::vector<int> /*INOUT*/ &sizes, int newTotalSize);
 };
 
 
@@ -126,6 +136,16 @@ public:      // methods
   maximum due to `remaining` being less than the number of such
   elements.
 
+  Furthermore, as a refinement, that final iteration should not actually
+  add the final units starting with element 0, but rather starting with
+  element `nextColumnForUnevenDistribution`, modulo `dest.size()`.  The
+  `nextColumn` value will be incremented by the number of uneven units
+  added, such that on subsequent calls, the units will be distributed to
+  successive elements rather than all piling onto the first.  This is
+  important when this function is used to react to window resize events,
+  since the naive approach causes the first element (e.g, table column)
+  to be the only one that changes if the resize is performed slowly.
+
   The vector `dest` is passed by reference, rather than returned,
   because this function is called repeatedly in a loop and we will reuse
   the vector object (and its storage) across iterations.
@@ -136,7 +156,8 @@ public:      // methods
 void evenlyDistribute(
   std::vector<int> /*INOUT*/ &dest,
   std::vector<int> const &maxima,
-  int totalToDistribute);
+  int totalToDistribute,
+  int /*INOUT*/ &nextColumnForUnevenDistribution);
 
 
 #endif // SMQTUTIL_COL_WIDTH_RULES_H

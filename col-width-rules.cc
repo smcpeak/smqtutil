@@ -104,14 +104,16 @@ ColumnWidthRules::~ColumnWidthRules()
 
 
 ColumnWidthRules::ColumnWidthRules()
-  : m_colSpecs()
+  : m_colSpecs(),
+    m_nextColumnForUnevenDistribution(0)
 {
   selfCheck();
 }
 
 
 ColumnWidthRules::ColumnWidthRules(std::vector<ColSpec> &&colSpecs)
-  : IMEMBMFP(colSpecs)
+  : IMEMBMFP(colSpecs),
+    m_nextColumnForUnevenDistribution(0)
 {
   selfCheck();
 }
@@ -122,6 +124,7 @@ void ColumnWidthRules::selfCheck() const
   for (ColSpec const &cs : m_colSpecs) {
     cs.selfCheck();
   }
+  xassert(m_nextColumnForUnevenDistribution >= 0);
 }
 
 
@@ -152,7 +155,7 @@ static void applyFlex(int /*INOUT*/ &value, int delta, bool expand)
 
 
 bool ColumnWidthRules::resizeAll(
-  std::vector<int> /*INOUT*/ &sizes, int newTotalSize) const
+  std::vector<int> /*INOUT*/ &sizes, int newTotalSize)
 {
   xassertPrecondition(sizes.size() == m_colSpecs.size());
   xassertPrecondition(newTotalSize >= 0);
@@ -216,7 +219,8 @@ bool ColumnWidthRules::resizeAll(
     // Distribute `remainingFlex` across the columns with non-zero
     // `flexes`.
     flexToApply.assign(numColumns, 0);
-    evenlyDistribute(flexToApply /*INOUT*/, flexes, remainingFlex);
+    evenlyDistribute(flexToApply /*INOUT*/, flexes, remainingFlex,
+      m_nextColumnForUnevenDistribution /*INOUT*/);
 
     // Use `flexToApply` to update `sizes`, etc.
     for (int i=0; i < numColumns; ++i) {
@@ -236,7 +240,8 @@ bool ColumnWidthRules::resizeAll(
 void evenlyDistribute(
   std::vector<int> /*INOUT*/ &dest,
   std::vector<int> const &maxima,
-  int const totalToDistribute)
+  int const totalToDistribute,
+  int /*INOUT*/ &nextColumnForUnevenDistribution)
 {
   xassertPrecondition(dest.size() == maxima.size());
   xassertPrecondition(totalToDistribute >= 0);
@@ -265,25 +270,22 @@ void evenlyDistribute(
     xassert(numIters++ <= numElements);
 
     // If we ran the naive loop in the specification, what is the
-    // *minimum* number of iterations it could run for?  This
-    // calculation assumes no element hits its maximum; if one does,
-    // then we'll need at least one more iteration of the outer loop.
-    int naiveIterations = remaining / numActive;
-    if (naiveIterations == 0) {
-      // We know we need at one since we're not done.
-      naiveIterations = 1;
-    }
+    // minimum number of iterations it could run for?  We will try to
+    // add this many to each active column.  This calculation assumes no
+    // element hits its maximum; if one does, then we'll need at least
+    // one more iteration of the outer loop.
+    int tryToAdd = remaining / numActive;
 
     for (int i=0; i < numElements && remaining > 0; ++i) {
       // How much can it take?
-      int const available = maxima[i] - dest[i];
-      xassert(available >= 0);
-      if (available == 0) {
+      int const availableSpace = maxima[i] - dest[i];
+      xassert(availableSpace >= 0);
+      if (availableSpace == 0) {
         continue;
       }
 
-      // Give it up to `naiveIterations`.
-      int const toAdd = std::min(available, naiveIterations);
+      // Give it up to `tryToAdd`.
+      int const toAdd = std::min(availableSpace, tryToAdd);
 
       dest[i] += toAdd;
       remaining -= toAdd;
@@ -292,6 +294,37 @@ void evenlyDistribute(
       if (dest[i] == maxima[i]) {
         --numActive;
       }
+    }
+
+    if (0 < remaining && remaining < numActive) {
+      // We still have some pixels to distribute, but we cannot do so
+      // evenly among the active elements.  Distribute them starting
+      // with the persistent `nextColumnForUnevenDistribution`, as
+      // explained in comments above this function's declaration.
+      xassert(nextColumnForUnevenDistribution >= 0);
+
+      for (int j=0; j < numElements && remaining > 0; ++j) {
+        // Use this index instead of the naive `j`.
+        int i = nextColumnForUnevenDistribution % numElements;
+
+        if (dest[i] < maxima[i]) {
+          dest[i] += 1;
+          remaining -= 1;
+
+          if (dest[i] == maxima[i]) {
+            --numActive;
+          }
+        }
+
+        // It's inelegant to do two mod operations, but I want the
+        // process to start with index 0 (so I need a mod after the
+        // increment), and I want to clamp the incoming `nextColumn`
+        // since the number of columns could have changed, so I need one
+        // before the increment too.
+        nextColumnForUnevenDistribution = (i+1) % numElements;
+      }
+
+      xassert(remaining == 0);
     }
   }
 }
