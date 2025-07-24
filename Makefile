@@ -58,6 +58,12 @@ LDFLAGS += $(EXTRA_LDFLAGS)
 TOCLEAN = $(QT_TOCLEAN)
 
 
+# Run whatever command follows with a timeout.
+TIMEOUT_PROGRAM = timeout
+TIMEOUT_VALUE = 10
+RUN_WITH_TIMEOUT = $(TIMEOUT_PROGRAM) $(TIMEOUT_VALUE)
+
+
 # ---------------- pattern rules --------------------
 # Compile .cc to .o .
 # -MMD causes GCC to write .d file.
@@ -87,6 +93,7 @@ gensrc: $(BDFGENSRC)
 # ------------------- main library -------------------
 OBJS :=
 OBJS += $(BDFGENSRC:.cc=.o)
+OBJS += col-width-rules.o
 OBJS += qhboxframe.o
 OBJS += qtbdffont.o
 OBJS += qtguiutil.o
@@ -130,6 +137,12 @@ sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
+# ------------------------ col-width-rules-test ------------------------
+TEST_PROGRAMS += col-width-rules-test.exe
+col-width-rules-test.exe: col-width-rules-test.cc $(OBJS)
+	$(CXX) -o $@ $(CCFLAGS) col-width-rules-test.cc $(OBJS) $(LDFLAGS)
+
+
 # ----------------------- misc --------------------------
 all: $(TEST_PROGRAMS)
 
@@ -137,8 +150,9 @@ clean:
 	$(RM) *.a *.d *.o *.exe *.gen.* $(TOCLEAN)
 
 check: all
-	./qtutil-test.exe
-	./test-qtbdffont.exe
+	$(RUN_WITH_TIMEOUT) ./qtutil-test.exe
+	$(RUN_WITH_TIMEOUT) ./test-qtbdffont.exe
+	$(RUN_WITH_TIMEOUT) ./col-width-rules-test.exe
 	@echo "smqtutil tests PASSED"
 
 # EOF

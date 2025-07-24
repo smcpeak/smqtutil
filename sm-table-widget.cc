@@ -1,23 +1,30 @@
 // sm-table-widget.cc
 // code for sm-table-widget.h
 
+#include "smbase/gdvalue-vector-fwd.h" // gdv::GDValue(std::vector)
+
 #include "sm-table-widget.h"           // this module
 
-// smqtutil
+#include "smqtutil/col-width-rules.h"  // ColumnWidthRules
 #include "smqtutil/qtguiutil.h"        // keysString(QKeyEvent)
 
-// smbase
 #include "smbase/exc.h"                // GENERIC_CATCH_BEGIN/END
+#include "smbase/gdvalue-vector.h"     // gdv::GDValue(std::vector)
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/ordered-map-ops.h"    // GDVOrderedMap
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
+#include "smbase/vector-util.h"        // vecSum
 
-// Qt
 #include <QFontMetrics>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QModelIndex>
 
-// libc++
 #include <iostream>                    // std::ostream
+#include <vector>                      // std::vector
+
+
+using namespace gdv;
 
 
 INIT_TRACE("sm-table-widget");
@@ -51,6 +58,20 @@ void SMTableWidget::synthesizeKey(int key, Qt::KeyboardModifiers modifiers)
   // but this seems like the generally right thing to do.
   QKeyEvent release(QEvent::KeyRelease, key, modifiers);
   this->QTableWidget::keyReleaseEvent(&release);
+}
+
+
+std::vector<int> SMTableWidget::getColumnWidths() const
+{
+  QHeaderView const *header = horizontalHeader();
+  int numColumns = header->count();
+
+  std::vector<int> ret(numColumns);
+  for (int i = 0; i < numColumns; ++i) {
+    ret[i] = header->sectionSize(i);
+  }
+
+  return ret;
 }
 
 
@@ -248,50 +269,49 @@ void SMTableWidget::setNaturalTextRowHeight(int row)
 void SMTableWidget::adjustColumnsToFitWidth()
 {
   QHeaderView *header = horizontalHeader();
-  int count = header->count();
-  if (count < 1)
-    return;
 
+  int numColumns = header->count();
+  if (numColumns < 1) {
+    TRACE2("adjustColumns: less than one column");
+    return;
+  }
+
+  // Minimum column size, in pixels.
   int minSize = header->minimumSectionSize();
-
-  int totalWidth = viewport()->width();
-
-  QVector<int> sizes(count);
-  for (int i = 0; i < count; ++i) {
-    sizes[i] = header->sectionSize(i);
+  if (minSize < 0) {
+    minSize = 0;
   }
 
-  int currentTotal = 0;
-  for (int size : sizes)
-    currentTotal += size;
+  // Width of the area inside any scrollbars.
+  int viewWidth = viewport()->width();
 
-  if (currentTotal == totalWidth)
-    return;
-
-  // Scale all columns proportionally, but respect min size.
-  int diff = totalWidth - currentTotal;
-
-  int adjustableColumns = count;
-  for (int i = 0; i < count; ++i) {
-    if (sizes[i] <= minSize && diff < 0)
-      adjustableColumns--;
+  // Temporary: Make a new `ColumnWidthRules` each time.  Long term I
+  // want the client to specify this.
+  std::vector<ColumnWidthRules::ColSpec> colSpecs;
+  for (int i=0; i < numColumns; ++i) {
+    colSpecs.emplace_back(minSize, std::nullopt, 0 /*prio*/);
   }
+  ColumnWidthRules cwRules(std::move(colSpecs));
 
-  if (adjustableColumns <= 0)
-    return;
+  // Start with current sizes.
+  std::vector<int> curSizes = getColumnWidths();
 
-  int deltaPerCol = diff / adjustableColumns;
-
-  header->blockSignals(true);
-
-  for (int i = 0; i < count; ++i) {
-    int newSize = sizes[i] + deltaPerCol;
-    if (newSize < minSize)
-      newSize = minSize;
-    header->resizeSection(i, newSize);
+  // Choose new sizes.
+  std::vector<int> newSizes = curSizes;
+  if (cwRules.resizeAll(newSizes, viewWidth)) {
+    header->blockSignals(true);
+    for (int i=0; i < numColumns; ++i) {
+      if (newSizes[i] != curSizes[i]) {
+        TRACE2("changed column " << i << " width from " <<
+               curSizes[i] << " to " << newSizes[i]);
+        header->resizeSection(i, newSizes[i]);
+      }
+    }
+    header->blockSignals(false);
   }
-
-  header->blockSignals(false);
+  else {
+    TRACE2("adjustColumns: already have proper width");
+  }
 }
 
 

@@ -7,6 +7,7 @@
 // smbase
 #include "smbase/sm-noexcept.h"        // NOEXCEPT
 #include "smbase/sm-override.h"        // OVERRIDE
+#include "smbase/std-vector-fwd.h"     // stdfwd::vector
 
 // qt
 #include <QString>
@@ -47,6 +48,9 @@ public:      // data
 private:     // funcs
   // Synthesize a keypress for the underlying QTableView.
   void synthesizeKey(int key, Qt::KeyboardModifiers modifiers);
+
+  // Get the sequence of column widths, in pixels.
+  stdfwd::vector<int> getColumnWidths() const;
 
 protected Q_SLOTS:
   // React to column resize signals sent by the horizontal header.
