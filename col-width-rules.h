@@ -57,6 +57,10 @@ public:      // types
     // allowed range for this column, returning a 0 flexibility in that
     // case.
     int flexibility(int curSize, bool expand, int maxFlex) const;
+
+    // Return the value closest to `size` that satisfies the size
+    // constraints.
+    int clampSize(int size) const;
   };
 
 public:      // data
@@ -85,9 +89,13 @@ public:      // methods
   // Get the number of columns per `m_colSpecs`.
   int numColumns() const;
 
+  // Return the value closest to `size` that is within the specified
+  // bounds for the indicated column.
+  int clampColumnSize(int columnIndex, int size) const;
+
   // Given `sizes`, the current column sizes, modify it so their total
-  // size is `newTotalWidth`, or as close to that as possible while
-  // respecting the column limits.
+  // size is `newTotalWidth` (which can be negative), or as close to
+  // that as possible while respecting the column limits.
   //
   // The algorithm operates one priority level at a time, in descending
   // order, using `evenlyDistribute` (below) to either expand or
@@ -102,6 +110,13 @@ public:      // methods
   //
   bool resizeAll(
     std::vector<int> /*INOUT*/ &sizes, int newTotalSize);
+
+  // Same as `resizeAll`, but only operate on the columns starting with
+  // `startColumn`.
+  bool resizeSome(
+    int startColumn,
+    std::vector<int> /*INOUT*/ &sizes,
+    int newTotalSize);
 };
 
 

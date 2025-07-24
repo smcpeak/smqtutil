@@ -15,7 +15,7 @@
 #include "smbase/vector-util.h"                  // vecSum
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
 
-#include <algorithm>                             // std::min
+#include <algorithm>                             // std::{min, max}
 #include <cstdlib>                               // std::abs
 #include <map>                                   // std::map
 #include <optional>                              // std::optional
@@ -98,6 +98,18 @@ int ColumnWidthRules::ColSpec::flexibility(
 }
 
 
+int ColumnWidthRules::ColSpec::clampSize(int size) const
+{
+  size = std::max(size, m_minimumSize);
+
+  if (m_maximumSize) {
+    size = std::min(size, *m_maximumSize);
+  }
+
+  return size;
+}
+
+
 // ------------------------- ColumnWidthRules --------------------------
 ColumnWidthRules::~ColumnWidthRules()
 {}
@@ -142,6 +154,12 @@ int ColumnWidthRules::numColumns() const
 }
 
 
+int ColumnWidthRules::clampColumnSize(int columnIndex, int size) const
+{
+  return m_colSpecs.at(columnIndex).clampSize(size);
+}
+
+
 // Increase or decrease (per `expand`) `value` by `delta`.
 static void applyFlex(int /*INOUT*/ &value, int delta, bool expand)
 {
@@ -157,10 +175,19 @@ static void applyFlex(int /*INOUT*/ &value, int delta, bool expand)
 bool ColumnWidthRules::resizeAll(
   std::vector<int> /*INOUT*/ &sizes, int newTotalSize)
 {
-  xassertPrecondition(sizes.size() == m_colSpecs.size());
-  xassertPrecondition(newTotalSize >= 0);
+  return resizeSome(0, sizes, newTotalSize);
+}
 
-  int const numColumns = safeToInt(m_colSpecs.size());
+
+bool ColumnWidthRules::resizeSome(
+  int startColumnIndex,
+  std::vector<int> /*INOUT*/ &sizes,
+  int newTotalSize)
+{
+  xassertPrecondition(startColumnIndex + sizes.size() == m_colSpecs.size());
+
+  // Number of columns that are in scope for resizing.
+  int const numColumns = safeToInt(sizes.size());
 
   // We need to add this many pixels total to the column widths in order
   // to match the viewport width.
@@ -180,23 +207,30 @@ bool ColumnWidthRules::resizeAll(
   std::vector<int> const zeroes(numColumns, 0);
 
   // Map from priority value to sequence of column flexibilities,
-  // which are nonzero only for columns that have that priorty.
+  // which are nonzero only for columns that have that priority.
   std::map<int, std::vector<int>> prioToFlex;
 
-  // For each column, calculate how much it could adjust in the
-  // desired direction.
+  // For each column from among those in scope, calculate how much it
+  // could adjust in the desired direction.
   {
-    int columnIndex = 0;
+    // This is an absolute index, i.e., it indexes `m_colSpecs`.
+    int absColumnIndex = 0;
+
     for (ColSpec const &cs : m_colSpecs) {
-      // Get the vector for this priority.
-      auto it = prioToFlex.try_emplace(cs.m_expansionPriority, zeroes).first;
+      // Index relative to `startColumnIndex`, hence it indexes `sizes`.
+      int relColumnIndex = absColumnIndex - startColumnIndex;
 
-      // Compute the column flexibility and store that in the vector
-      // for its priority.
-      (*it).second[columnIndex] =
-        cs.flexibility(sizes.at(columnIndex), expand, totalNeededFlex);
+      if (relColumnIndex >= 0) {
+        // Get the vector for this priority.
+        auto it = prioToFlex.try_emplace(cs.m_expansionPriority, zeroes).first;
 
-      ++columnIndex;
+        // Compute the column flexibility and store that in the vector
+        // for its priority.  The vector is indexed by a relative index.
+        (*it).second[relColumnIndex] =
+          cs.flexibility(sizes.at(relColumnIndex), expand, totalNeededFlex);
+      }
+
+      ++absColumnIndex;
     }
   }
 

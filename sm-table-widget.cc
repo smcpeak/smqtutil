@@ -111,80 +111,181 @@ std::vector<int> SMTableWidget::getColumnWidths() const
 }
 
 
-void SMTableWidget::on_columnResized(int logicalIndex, int oldSize, int newSize) NOEXCEPT
+// Return the sum of the elements in [startIndex,
+// startIndex+numElements-1].
+//
+// TODO: Move to `vector-util`.
+template <typename T, typename A>
+T vecSumSlice(
+  std::vector<T,A> const &vec,
+  std::size_t startIndex,
+  std::size_t numElements)
+{
+  xassertPrecondition(startIndex <= vec.size());
+  xassertPrecondition(startIndex+numElements <= vec.size());
+
+  return std::accumulate(
+    vec.begin() + startIndex,
+    vec.begin() + startIndex + numElements,
+    T());
+}
+
+
+// Return the vector consisting of the elements in [startIndex,
+// startIndex+numElements-1].
+//
+// TODO: Move to `vector-util`.
+template <typename T, typename A>
+std::vector<T,A> vecSlice(
+  std::vector<T,A> const &vec,
+  std::size_t startIndex,
+  std::size_t numElements)
+{
+  xassertPrecondition(startIndex <= vec.size());
+  xassertPrecondition(startIndex+numElements <= vec.size());
+
+  std::vector<T,A> ret;
+  ret.reserve(numElements);
+
+  for (std::size_t i = startIndex; i < startIndex+numElements; ++i) {
+    ret.push_back(vec.at(i));
+  }
+
+  return ret;
+}
+
+
+// Return the vector consisting of the elements in [startIndex,
+// vec.size()-1].
+//
+// TODO: Move to `vector-util`.
+template <typename T, typename A>
+std::vector<T,A> vecSlice(
+  std::vector<T,A> const &vec,
+  std::size_t startIndex)
+{
+  return vecSlice(vec, startIndex, vec.size() - startIndex);
+}
+
+
+void SMTableWidget::forceLastColumnToViewportEdge()
+{
+  QHeaderView * const header = horizontalHeader();
+  int const numColumns = header->count();
+  int const lastColumnIndex = numColumns - 1;
+
+  std::vector<int> const sizes = getColumnWidths();
+  int const beforeColumnsSize = vecSumSlice(sizes, 0, lastColumnIndex);
+
+  int const availSpaceTotal = viewport()->width();
+  int newColumnSize =
+    m_colRules.clampColumnSize(lastColumnIndex,
+      availSpaceTotal - beforeColumnsSize);
+
+  TRACE2("  forcing last column to edge with size " << newColumnSize);
+
+  QSignalBlocker blocker(header);
+  header->resizeSection(lastColumnIndex, newColumnSize);
+}
+
+
+void SMTableWidget::on_columnResized(
+  int const primaryColumnIndex,
+  int const oldPrimarySize,
+  int const newPrimarySize) NOEXCEPT
 {
   GENERIC_CATCH_BEGIN
 
-  TRACE2("on_columnResized: column=" << logicalIndex <<
-         " oldSize=" << oldSize <<
-         " newSize=" << newSize);
+  TRACE2("on_columnResized: column=" << primaryColumnIndex <<
+         " oldSize=" << oldPrimarySize <<
+         " newSize=" << newPrimarySize);
 
   if (!m_columnsFillWidth) {
     // Use default column sizing behavior.
     return;
   }
 
-  QHeaderView *header = horizontalHeader();
-  int columnCount = header->count();
-  xassert(m_colRules.numColumns() == columnCount);
+  QHeaderView * const header = horizontalHeader();
+  int const numColumns = header->count();
 
-  if (logicalIndex < 0 || logicalIndex >= columnCount - 1)
-    return; // Only handle resizing for A and B
+  xassert(0 <= primaryColumnIndex && primaryColumnIndex < numColumns);
+  xassert(m_colRules.numColumns() == numColumns);
 
-  int nextIndex = logicalIndex + 1;
-
-  // The following logic is more convoluted than necessary.  The
-  // net effect is that resizing one column always changes the
-  // neighbor to the right by the opposite amount, clamping both
-  // to a minimum pixel size.
-  //
-  // TODO: Improve this.
-
-  int minSize = header->minimumSectionSize();
-  int nextSize = header->sectionSize(nextIndex);
-
-  int totalWidth = viewport()->width();
-
-  int otherTotal = 0;
-  for (int i = 0; i < columnCount; ++i) {
-    if (i != nextIndex && i != logicalIndex) {
-      otherTotal += header->sectionSize(i);
-    }
-  }
-
-  // The resized section can be at most:
-  int maxThisSectionSize = totalWidth - otherTotal - minSize;
-
-  // Clamp if too big
-  if (newSize > maxThisSectionSize) {
-    QSignalBlocker blocker(header);
-    TRACE2("  clamping; setting this section " << logicalIndex <<
-           " to size " << maxThisSectionSize <<
-           " and next section " << nextIndex <<
-           " to size " << minSize);
-    header->resizeSection(logicalIndex, maxThisSectionSize);
-    header->resizeSection(nextIndex, minSize);
+  if (primaryColumnIndex == numColumns-1) {
+    // It is possible for the user to click and drag the right edge of
+    // the last column.  Force its edge to stay with the viewport right
+    // edge.
+    forceLastColumnToViewportEdge();
     return;
   }
 
-  // Otherwise adjust neighbor
-  int newNextSize = totalWidth - otherTotal - newSize;
-  if (newNextSize < minSize) {
-    newNextSize = minSize;
-    int adjustedThis = totalWidth - otherTotal - minSize;
+  // Get current sizes.  This already reflects `newPrimarySize`.
+  std::vector<int> const sizes = getColumnWidths();
+  xassert(sizes[primaryColumnIndex] == newPrimarySize);
+
+  // Adjust `newPrimarySize` to the declared column bounds.
+  int /*not const*/ adjNewPrimarySize =
+    m_colRules.clampColumnSize(primaryColumnIndex, newPrimarySize);
+
+  // Get the later columns' widths into a separate vector.
+  int const nextColumnIndex = primaryColumnIndex+1;
+  std::vector<int> /*not const*/ afterSizes =
+    vecSlice(sizes, nextColumnIndex);
+
+  // Space used by the columns before `primaryColumnIndex`.
+  int const beforeColumnsSize = vecSumSlice(sizes, 0, primaryColumnIndex);
+
+  // How much space is there for columns after `primaryColumnIndex`?
+  int const availSpaceTotal = viewport()->width();
+  int const availSpaceAfter =
+    availSpaceTotal - beforeColumnsSize - adjNewPrimarySize;
+
+  // Adjust the after columns' sizes to fit.
+  m_colRules.resizeSome(
+    nextColumnIndex, afterSizes /*INOUT*/, availSpaceAfter);
+
+  // New total size of the after columns.
+  int const afterColumnsSize = vecSum(afterSizes);
+
+  if (beforeColumnsSize + adjNewPrimarySize + afterColumnsSize >
+                                                      availSpaceTotal) {
+    // Don't allow the primary to push the others out of range.
+    adjNewPrimarySize =
+      m_colRules.clampColumnSize(primaryColumnIndex,
+        availSpaceTotal - beforeColumnsSize - afterColumnsSize);
+  }
+
+  TRACE3(GDValue(GDVOrderedMap{
+    GDV_SKV_EXPR(sizes),
+    GDV_SKV_EXPR(adjNewPrimarySize),
+    GDV_SKV_EXPR(afterSizes),
+    GDV_SKV_EXPR(beforeColumnsSize),
+    GDV_SKV_EXPR(availSpaceTotal),
+    GDV_SKV_EXPR(availSpaceAfter),
+    GDV_SKV_EXPR(afterColumnsSize),
+  }).asIndentedString());
+
+  // Apply the changes.
+  {
     QSignalBlocker blocker(header);
-    TRACE2("  adj both; setting this section " << logicalIndex <<
-           " to size " << adjustedThis <<
-           " and next section " << nextIndex <<
-           " to size " << minSize);
-    header->resizeSection(logicalIndex, adjustedThis);
-    header->resizeSection(nextIndex, minSize);
-  } else {
-    if (newNextSize != nextSize) {
-      QSignalBlocker blocker(header);
-      TRACE2("  setting next section " << nextIndex <<
-             " to size " << newNextSize);
-      header->resizeSection(nextIndex, newNextSize);
+
+    // First, the primary column.
+    if (adjNewPrimarySize != newPrimarySize) {
+      TRACE2("  changed focus column " << primaryColumnIndex <<
+             " from " << newPrimarySize <<
+             " to " << adjNewPrimarySize);
+      header->resizeSection(primaryColumnIndex, adjNewPrimarySize);
+    }
+
+    // Then the columns that come after.
+    for (int i = nextColumnIndex; i < numColumns; ++i) {
+      int const computedSize = afterSizes.at(i - nextColumnIndex);
+      if (computedSize != sizes.at(i)) {
+        TRACE2("  changed after column " << i <<
+               " from " << sizes.at(i) <<
+               " to " << computedSize);
+        header->resizeSection(i, computedSize);
+      }
     }
   }
 
@@ -261,6 +362,10 @@ void SMTableWidget::setColumnsFillWidth(bool b)
   m_columnsFillWidth = b;
   if (m_columnsFillWidth) {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // Turn off all column minimum sizes.
+    QHeaderView * const header = horizontalHeader();
+    header->setMinimumSectionSize(0);
   }
 }
 

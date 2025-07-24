@@ -136,6 +136,29 @@ void oneTest_resizeAll(
 }
 
 
+// Verify one `resizeSome` call.
+void oneTest_resizeSome(
+  ColumnWidthRules &rules,
+  int startColumnIndex,
+  std::vector<int> const &initSizes,
+  int newTotalSize,
+  std::vector<int> const &expectSizes)
+{
+  TEST_CASE_EXPRS("resizeSome",
+    startColumnIndex, rules, initSizes, newTotalSize);
+
+  std::vector<int> actualSizes(initSizes);
+
+  bool changed =
+    rules.resizeSome(startColumnIndex, actualSizes, newTotalSize);
+
+  xassert(changed == (initSizes != actualSizes));
+
+  EXPECT_EQ(toGDValue(actualSizes), toGDValue(expectSizes));
+}
+
+
+// This also tests `resizeSome`.
 void test_resizeAll()
 {
   // ChatGPT helped write some of these tests.
@@ -172,6 +195,16 @@ void test_resizeAll()
       { 30, 30, 30 },
       10,
       { 30, 30, 30 });
+
+    oneTest_resizeSome(rules, 1,
+      { 30, 30 },
+      100,
+      { 50, 50 });
+
+    oneTest_resizeSome(rules, 2,
+      { 30 },
+      100,
+      { 100 });
   }
 
   {
@@ -186,6 +219,12 @@ void test_resizeAll()
     oneTest_resizeAll(rules,
       { 200, 100, 100 },
       200,
+      { 150, 30, 30 });
+
+    // Negative total -> minima.
+    oneTest_resizeAll(rules,
+      { 200, 100, 100 },
+      -1000,
       { 150, 30, 30 });
   }
 
@@ -242,6 +281,18 @@ void test_resizeAll()
       { 100, 100, 100 },
       180,
       { 30, 50, 100 });
+
+    // Test with negative `newTotalSize`.  Effect is to set all to their
+    // minima.
+    oneTest_resizeAll(rules,
+      { 100, 100, 100 },
+      -1,
+      { 30, 30, 30 });
+
+    oneTest_resizeSome(rules, 1,
+      { 100, 100 },
+      300,
+      { 200, 100 });
   }
 
   // Expansion with multiple columns of same priority.
@@ -252,10 +303,11 @@ void test_resizeAll()
       ColSpec(30, {}, 1),
     });
 
+    // Even distribution at same priority.
     oneTest_resizeAll(rules,
       { 100, 100, 100 },
       400,
-      { 134, 133, 133 }); // Even distribution at same priority.
+      { 134, 133, 133 });
   }
 }
 
