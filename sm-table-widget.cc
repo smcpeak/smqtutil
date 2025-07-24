@@ -21,6 +21,7 @@
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QModelIndex>
+#include <QSignalBlocker>
 
 #include <iostream>                    // std::ostream
 #include <vector>                      // std::vector
@@ -156,14 +157,13 @@ void SMTableWidget::on_columnResized(int logicalIndex, int oldSize, int newSize)
 
   // Clamp if too big
   if (newSize > maxThisSectionSize) {
-    header->blockSignals(true);
+    QSignalBlocker blocker(header);
     TRACE2("  clamping; setting this section " << logicalIndex <<
            " to size " << maxThisSectionSize <<
            " and next section " << nextIndex <<
            " to size " << minSize);
     header->resizeSection(logicalIndex, maxThisSectionSize);
     header->resizeSection(nextIndex, minSize);
-    header->blockSignals(false);
     return;
   }
 
@@ -172,21 +172,19 @@ void SMTableWidget::on_columnResized(int logicalIndex, int oldSize, int newSize)
   if (newNextSize < minSize) {
     newNextSize = minSize;
     int adjustedThis = totalWidth - otherTotal - minSize;
-    header->blockSignals(true);
+    QSignalBlocker blocker(header);
     TRACE2("  adj both; setting this section " << logicalIndex <<
            " to size " << adjustedThis <<
            " and next section " << nextIndex <<
            " to size " << minSize);
     header->resizeSection(logicalIndex, adjustedThis);
     header->resizeSection(nextIndex, minSize);
-    header->blockSignals(false);
   } else {
     if (newNextSize != nextSize) {
-      header->blockSignals(true);
+      QSignalBlocker blocker(header);
       TRACE2("  setting next section " << nextIndex <<
              " to size " << newNextSize);
       header->resizeSection(nextIndex, newNextSize);
-      header->blockSignals(false);
     }
   }
 
@@ -329,8 +327,7 @@ void SMTableWidget::adjustColumnsToFitWidth()
   // Choose new sizes.
   std::vector<int> newSizes = curSizes;
   if (m_colRules.resizeAll(newSizes, viewWidth)) {
-    // TODO: Make a class to block/unblock.
-    header->blockSignals(true);
+    QSignalBlocker blocker(header);
     for (int i=0; i < numColumns; ++i) {
       if (newSizes[i] != curSizes[i]) {
         TRACE2("changed column " << i << " width from " <<
@@ -338,7 +335,6 @@ void SMTableWidget::adjustColumnsToFitWidth()
         header->resizeSection(i, newSizes[i]);
       }
     }
-    header->blockSignals(false);
   }
   else {
     TRACE2("adjustColumns: already have proper width");
