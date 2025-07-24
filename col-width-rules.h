@@ -35,6 +35,9 @@ public:      // types
     int m_expansionPriority;
 
   public:      // methods
+    // Set defaults: 0 min size, no max size, priority 1.
+    ColSpec();
+
     ColSpec(
       int minimumSize,
       std::optional<int> maximumSize,
@@ -62,12 +65,19 @@ public:      // data
 
 public:      // methods
   ~ColumnWidthRules();
-  ColumnWidthRules(std::vector<ColSpec> &&colSpecs);
+
+  // Empty sequence of columns.
+  explicit ColumnWidthRules();
+
+  explicit ColumnWidthRules(std::vector<ColSpec> &&colSpecs);
 
   // Check invariants.
   void selfCheck() const;
 
   operator gdv::GDValue() const;
+
+  // Get the number of columns per `m_colSpecs`.
+  int numColumns() const;
 
   // Given `sizes`, the current column sizes, modify it so their total
   // size is `newTotalWidth`, or as close to that as possible while

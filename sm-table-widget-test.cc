@@ -35,15 +35,14 @@ int main(int argc, char *argv[])
   // the table.  I'd like to improve the interface, but first I'll just
   // transfer the existing interface into smqtutil.
 
-  SMTableWidget::ColumnInitInfo columns[] = {
-    { "A", 200 },
-    { "B", 100 },
-    { "C", 100 },
+  std::vector<SMTableWidget::ColumnInfo> columns = {
+    { "A", 200, 100 },
+    { "B", 100, 30 },
+    { "C", 100, 30 },
   };
-  table->initializeColumns(columns, TABLESIZE(columns));
-  table->setRowCount(10);
+  table->setColumnInfo(columns);
 
-  table->setMinimumColumnWidth(30);
+  table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   table->setColumnsFillWidth(true);
 
@@ -52,7 +51,7 @@ int main(int argc, char *argv[])
     Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
   for (int row = 0; row < 10; ++row) {
-    for (int col = 0; col < TABLESIZE(columns); ++col) {
+    for (int col = 0; col < static_cast<int>(columns.size()); ++col) {
       QTableWidgetItem *item = new QTableWidgetItem(
         QString("Item %1,%2").arg(row).arg(col));
 

@@ -1,17 +1,19 @@
 // sm-table-widget.cc
 // code for sm-table-widget.h
 
-#include "smbase/gdvalue-vector-fwd.h" // gdv::GDValue(std::vector)
+#include "smbase/gdvalue-vector-fwd.h" // gdv::toGDValue(std::vector)
 
 #include "sm-table-widget.h"           // this module
 
 #include "smqtutil/col-width-rules.h"  // ColumnWidthRules
+#include "smqtutil/gdvalue-qstring.h"  // gdv::toGDValue(QString)
 #include "smqtutil/qtguiutil.h"        // keysString(QKeyEvent)
 
 #include "smbase/exc.h"                // GENERIC_CATCH_BEGIN/END
-#include "smbase/gdvalue-vector.h"     // gdv::GDValue(std::vector)
+#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/ordered-map-ops.h"    // GDVOrderedMap
+#include "smbase/sm-macros.h"          // IMEMBFP
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/vector-util.h"        // vecSum
 
@@ -30,6 +32,39 @@ using namespace gdv;
 INIT_TRACE("sm-table-widget");
 
 
+// ---------------------------- ColumnInfo -----------------------------
+SMTableWidget::ColumnInfo::~ColumnInfo()
+{}
+
+
+SMTableWidget::ColumnInfo::ColumnInfo(
+  QString const &name,
+  int initialSize,
+  int minimumSize,
+  std::optional<int> maximumSize,
+  int expansionPriority)
+  : ColumnWidthRules::ColSpec(
+      minimumSize,
+      maximumSize,
+      expansionPriority),
+    IMEMBFP(name),
+    IMEMBFP(initialSize)
+{
+  selfCheck();
+}
+
+
+SMTableWidget::ColumnInfo::operator gdv::GDValue() const
+{
+  GDValue m = ColumnWidthRules::ColSpec::operator GDValue();
+  m.taggedContainerSetTag("ColumnInfo"_sym);
+  GDV_WRITE_MEMBER_SYM(m_name);
+  GDV_WRITE_MEMBER_SYM(m_initialSize);
+  return m;
+}
+
+
+// --------------------------- SMTableWidget ---------------------------
 SMTableWidget::SMTableWidget(QWidget *parent)
   : QTableWidget(parent),
     m_columnsFillWidth(false)
@@ -90,6 +125,7 @@ void SMTableWidget::on_columnResized(int logicalIndex, int oldSize, int newSize)
 
   QHeaderView *header = horizontalHeader();
   int columnCount = header->count();
+  xassert(m_colRules.numColumns() == columnCount);
 
   if (logicalIndex < 0 || logicalIndex >= columnCount - 1)
     return; // Only handle resizing for A and B
@@ -231,21 +267,28 @@ void SMTableWidget::setColumnsFillWidth(bool b)
 }
 
 
-void SMTableWidget::initializeColumns(ColumnInitInfo const *columnInfo,
-                                      int numColumns)
+void SMTableWidget::setColumnInfo(
+  std::vector<ColumnInfo> const &columnInfo)
 {
+  int const numColumns = safeToInt(columnInfo.size());
   setColumnCount(numColumns);
 
   // Header labels.
   QStringList columnLabels;
   for (int i=0; i < numColumns; i++) {
-    columnLabels << columnInfo[i].name;
+    columnLabels << columnInfo.at(i).m_name;
   }
   setHorizontalHeaderLabels(columnLabels);
 
   // Column widths.
   for (int i=0; i < numColumns; i++) {
-    setColumnWidth(i, columnInfo[i].initialWidth);
+    setColumnWidth(i, columnInfo.at(i).m_initialSize);
+  }
+
+  // Resize behavior.
+  m_colRules.m_colSpecs.clear();
+  for (int i=0; i < numColumns; i++) {
+    m_colRules.m_colSpecs.push_back(columnInfo.at(i));
   }
 }
 
@@ -275,30 +318,18 @@ void SMTableWidget::adjustColumnsToFitWidth()
     TRACE2("adjustColumns: less than one column");
     return;
   }
-
-  // Minimum column size, in pixels.
-  int minSize = header->minimumSectionSize();
-  if (minSize < 0) {
-    minSize = 0;
-  }
+  xassert(numColumns == m_colRules.numColumns());
 
   // Width of the area inside any scrollbars.
   int viewWidth = viewport()->width();
-
-  // Temporary: Make a new `ColumnWidthRules` each time.  Long term I
-  // want the client to specify this.
-  std::vector<ColumnWidthRules::ColSpec> colSpecs;
-  for (int i=0; i < numColumns; ++i) {
-    colSpecs.emplace_back(minSize, std::nullopt, 0 /*prio*/);
-  }
-  ColumnWidthRules cwRules(std::move(colSpecs));
 
   // Start with current sizes.
   std::vector<int> curSizes = getColumnWidths();
 
   // Choose new sizes.
   std::vector<int> newSizes = curSizes;
-  if (cwRules.resizeAll(newSizes, viewWidth)) {
+  if (m_colRules.resizeAll(newSizes, viewWidth)) {
+    // TODO: Make a class to block/unblock.
     header->blockSignals(true);
     for (int i=0; i < numColumns; ++i) {
       if (newSizes[i] != curSizes[i]) {
@@ -312,12 +343,6 @@ void SMTableWidget::adjustColumnsToFitWidth()
   else {
     TRACE2("adjustColumns: already have proper width");
   }
-}
-
-
-void SMTableWidget::setMinimumColumnWidth(int width)
-{
-  horizontalHeader()->setMinimumSectionSize(width);
 }
 
 

@@ -30,6 +30,15 @@ INIT_TRACE("col-width-rules");
 
 
 // ------------------------------ ColSpec ------------------------------
+ColumnWidthRules::ColSpec::ColSpec()
+  : m_minimumSize(0),
+    m_maximumSize(),
+    m_expansionPriority(1)
+{
+  selfCheck();
+}
+
+
 ColumnWidthRules::ColSpec::ColSpec(
   int minimumSize,
   std::optional<int> maximumSize,
@@ -94,6 +103,13 @@ ColumnWidthRules::~ColumnWidthRules()
 {}
 
 
+ColumnWidthRules::ColumnWidthRules()
+  : m_colSpecs()
+{
+  selfCheck();
+}
+
+
 ColumnWidthRules::ColumnWidthRules(std::vector<ColSpec> &&colSpecs)
   : IMEMBMFP(colSpecs)
 {
@@ -114,6 +130,12 @@ ColumnWidthRules::operator gdv::GDValue() const
   GDValue m(GDVK_TAGGED_ORDERED_MAP, "ColumnWidthRules"_sym);
   GDV_WRITE_MEMBER_SYM(m_colSpecs);
   return m;
+}
+
+
+int ColumnWidthRules::numColumns() const
+{
+  return safeToInt(m_colSpecs.size());
 }
 
 

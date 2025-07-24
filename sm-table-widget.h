@@ -4,6 +4,8 @@
 #ifndef SMQTUTIL_SM_TABLE_WIDGET_H
 #define SMQTUTIL_SM_TABLE_WIDGET_H
 
+#include "smqtutil/col-width-rules.h"  // ColumnWidthRules
+
 // smbase
 #include "smbase/sm-noexcept.h"        // NOEXCEPT
 #include "smbase/sm-override.h"        // OVERRIDE
@@ -26,17 +28,33 @@ class QModelIndex;
 // * I treat the N and P keys like Down and Up arrow keys for easier
 //   keyboard navigation.
 //
-// * TODO: The column sizes are constrained to fill the available
+// * The column sizes are optionally constrained to fill the available
 //   horizontal space and respect a set minimum width.
 //
 class SMTableWidget : public QTableWidget {
   Q_OBJECT
 
 public:      // types
-  // Data for initializing a column.
-  struct ColumnInitInfo {
-    QString name;            // User-visible column name.
-    int initialWidth;        // Initial column width in pixels.
+  // Data for initializing a column and specifying its resize behavior.
+  class ColumnInfo : public ColumnWidthRules::ColSpec {
+  public:      // data
+    // User-visible column name.
+    QString m_name;
+
+    // Initial column width in pixels.
+    int m_initialSize;
+
+  public:      // methods
+    ~ColumnInfo();
+
+    ColumnInfo(
+      QString const &name,
+      int initialSize = 100,
+      int minimumSize = 0,
+      std::optional<int> maximumSize = std::nullopt,
+      int expansionPriority = 1);
+
+    operator gdv::GDValue() const;
   };
 
 public:      // data
@@ -44,6 +62,11 @@ public:      // data
   // during resize events, the sizes of other columns are adjusted to
   // compensate.  Initially false.
   bool m_columnsFillWidth;
+
+  // If `m_columnsFillWidth`, this is used to calculate column widths
+  // during resize events and when the user resizes a column.  Its size
+  // should be the same as the number of columns.
+  ColumnWidthRules m_colRules;
 
 private:     // funcs
   // Synthesize a keypress for the underlying QTableView.
@@ -61,8 +84,8 @@ protected:   // funcs
   virtual void resizeEvent(QResizeEvent *event) OVERRIDE;
 
 public:      // funcs
-  SMTableWidget(QWidget *parent);
   ~SMTableWidget();
+  explicit SMTableWidget(QWidget *parent);
 
   // Configure the table as a list view (items in rows) rather than a
   // control where each cell is separately editable.  Specifically:
@@ -77,10 +100,8 @@ public:      // funcs
   // the horizontal scrollbar.
   void setColumnsFillWidth(bool b);
 
-  // Set the column names and initial widths from 'columnInfo', an array
-  // of size 'numColumns'.
-  void initializeColumns(ColumnInitInfo const *columnInfo,
-                         int numColumns);
+  // Set the column details.
+  void setColumnInfo(stdfwd::vector<ColumnInfo> const &columnInfo);
 
   // Set the height of `row` to the natural text height, including
   // leading, of the current widget font.  This has to be done for every
@@ -91,9 +112,6 @@ public:      // funcs
   // automatically if `m_columnsFillWidth`, but could be done explicitly
   // without that flag.
   void adjustColumnsToFitWidth();
-
-  // Set the minimum column width, in pixels.
-  void setMinimumColumnWidth(int width);
 
   // Overridden QWidget methods.
   virtual void keyPressEvent(QKeyEvent *event) NOEXCEPT OVERRIDE;
