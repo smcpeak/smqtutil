@@ -10,54 +10,14 @@
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/gdvalue-optional.h"             // gdv::toGDValue(std::optional)
 #include "smbase/gdvalue-vector.h"               // gdv::toGDValue(std::vector)
-#include "smbase/ordered-map-ops.h"              // GDVOrderedMap
-#include "smbase/sm-pp-util.h"                   // SM_PP_MAP
+#include "smbase/ordered-map-ops.h"              // GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"                      // DIAG, EXPECT_EQ
+#include "smbase/sm-test.h"                      // DIAG, EXPECT_EQ, TEST_CASE_EXPRS
 
 #include <iostream>                              // std::cout (h)
 #include <optional>                              // std::optional
 
 using namespace gdv;
-
-
-/*
-  Print `stuff` in verbose mode, and push it onto the exception context
-  stack.
-
-  When combined with the `gdvalue` module, it can be used like this:
-
-    TEST_CASE("resizeAll: " << GDValue(GDVOrderedMap{
-      GDV_SKV_EXPR(rules),
-      GDV_SKV_EXPR(initSizes),
-      GDV_SKV_EXPR(newTotalSize),
-    }).asIndentedString());
-
-  to nicely format several pieces of structured data.
-
-  This is a candidate to move to sm-test.h.
-*/
-#define TEST_CASE(stuff) \
-  DIAG(stuff);           \
-  EXN_CONTEXT(stuff) /* user ; */
-
-
-/*
-  Print/context each of several argument expressions.
-
-  Use it like:
-
-    TEST_CASE_EXPRS("resizeAll", rules, initSizes, newTotalSize);
-
-  which expands to what is shown in the example above.
-
-  This is a candidate to move to sm-test.h.
-*/
-#define TEST_CASE_EXPRS(label, ...)                        \
-  TEST_CASE(label ": " << gdv::GDValue(gdv::GDVOrderedMap{ \
-    SM_PP_COMMA_MAP(GDV_SKV_EXPR, __VA_ARGS__)             \
-  }).asIndentedString()) /* user ; */
-
 
 
 OPEN_ANONYMOUS_NAMESPACE
