@@ -4,6 +4,8 @@
 #ifndef SMQTUTIL_SM_TABLE_WIDGET_H
 #define SMQTUTIL_SM_TABLE_WIDGET_H
 
+#include "sm-table-widget-fwd.h"       // fwds for this module
+
 #include "smqtutil/col-width-rules.h"  // ColumnWidthRules
 
 // smbase
