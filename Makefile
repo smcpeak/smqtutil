@@ -135,16 +135,11 @@ GUI_TEST_OBJS :=
 GUI_TEST_OBJS += gui-tests.o
 GUI_TEST_OBJS += layout-gui-test.o
 GUI_TEST_OBJS += qtbdffont-gui-test.o
+GUI_TEST_OBJS += sm-table-widget-gui-test.o
 
 TEST_PROGRAMS += gui-tests.exe
 gui-tests.exe: $(GUI_TEST_OBJS) libsmqtutil.a
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
-
-
-# ------------------------ sm-table-widget-test ------------------------
-TEST_PROGRAMS += sm-table-widget-test.exe
-sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
-	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
 # ------------------------------- check --------------------------------
@@ -159,6 +154,7 @@ check: all
 gui-check: gui-tests.exe
 	./gui-tests.exe layout
 	./gui-tests.exe qtbdffont
+	./gui-tests.exe sm_table_widget
 
 
 # ----------------------- misc --------------------------

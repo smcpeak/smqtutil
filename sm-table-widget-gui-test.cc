@@ -1,4 +1,4 @@
-// sm-table-widget-test.cc
+// sm-table-widget-gui-test.cc
 // Test program for `sm-table-widget`.
 
 #include "sm-table-widget.h"           // module under test
@@ -12,13 +12,12 @@
 #include <iostream>                    // std::cout
 
 
-#define DIAG(stuff) \
-  std::cout << stuff << "\n" /* user ; */
-
-
-int main(int argc, char *argv[])
+// Called from gui-tests.cc.
+int gui_test_sm_table_widget(QApplication &app, bool nogui)
 {
-  QApplication app(argc, argv);
+  if (nogui) {
+    return 0;
+  }
 
   QMainWindow window;
 
@@ -30,10 +29,6 @@ int main(int argc, char *argv[])
     font.setPointSize(30);
     table->setFont(font);
   }
-
-  // The following code mimics how editor/open-files-dialog.cc populates
-  // the table.  I'd like to improve the interface, but first I'll just
-  // transfer the existing interface into smqtutil.
 
   std::vector<SMTableWidget::ColumnInfo> columns = {
     { "A", 200, 100 },

@@ -85,6 +85,7 @@ static void entry(int argc, char **argv)
 
   RUN_TEST(layout);
   RUN_TEST(qtbdffont);
+  RUN_TEST(sm_table_widget);
 
   #undef RUN_TEST
 
