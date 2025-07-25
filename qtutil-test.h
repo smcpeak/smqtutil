@@ -7,6 +7,11 @@
 #include <QObject>
 
 
+// I cannot use my `OPEN_NAMESPACE` macro because `moc` cannot see into
+// it.
+namespace qtutil_test {
+
+
 // An object that can send a signal.
 class Sender : public QObject {
   Q_OBJECT
@@ -35,6 +40,9 @@ public:      // methods
 public Q_SLOTS:
   void on_sig1() noexcept;
 };
+
+
+} // namespace qtutil_test
 
 
 #endif // SMQTUTIL_QTUTIL_TEST_H

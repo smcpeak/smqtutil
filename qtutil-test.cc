@@ -9,7 +9,7 @@
 // smbase
 #include "smbase/exc.h"                // smbase::XFormat
 #include "smbase/sm-iostream.h"        // cout, etc.
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/sm-test.h"            // DIAG, EXPECT_EQ
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/strutil.h"            // hasSubstring
 #include "smbase/xassert.h"            // xfailure_stringbc
@@ -27,6 +27,9 @@
 
 
 using namespace smbase;
+
+
+OPEN_NAMESPACE(qtutil_test)
 
 
 // ------------------------------- Sender ------------------------------
@@ -61,37 +64,37 @@ void Receiver::on_sig1() noexcept
 // ------------------------------- tests -------------------------------
 static void testMouseButtonsToString()
 {
-  cout << "testMouseButtonsToString" << endl;
+  DIAG("testMouseButtonsToString");
 
   Qt::MouseButtons b;
-  cout << "empty: " << toString(b) << endl;
+  DIAG("empty: " << toString(b));
 
   b |= Qt::LeftButton;
-  cout << "left: " << toString(b) << endl;
+  DIAG("left: " << toString(b));
 
   b |= Qt::RightButton;
-  cout << "left and right: " << toString(b) << endl;
+  DIAG("left and right: " << toString(b));
 
   b |= Qt::AllButtons;
-  cout << "all: " << toString(b) << endl;
+  DIAG("all: " << toString(b));
 }
 
 
 static void testKeyboardModifiersToString()
 {
-  cout << "testKeyboardModifiersToString" << endl;
+  DIAG("testKeyboardModifiersToString");
 
   Qt::KeyboardModifiers k;
-  cout << "empty: " << toString(k) << endl;
+  DIAG("empty: " << toString(k));
 
   k |= Qt::AltModifier;
-  cout << "alt: " << toString(k) << endl;
+  DIAG("alt: " << toString(k));
 
   k |= Qt::ShiftModifier;
-  cout << "alt and shift: " << toString(k) << endl;
+  DIAG("alt and shift: " << toString(k));
 
   k |= Qt::KeyboardModifier(0x7fffffff);
-  cout << "all: " << toString(k) << endl;
+  DIAG("all: " << toString(k));
 }
 
 
@@ -112,21 +115,14 @@ static void testKeyboardModifierToString()
   testRTKeyboardModifier(Qt::KeypadModifier);
   testRTKeyboardModifier(Qt::GroupSwitchModifier);
 
-  try {
-    cout << "will throw:" << endl;
-    getKeyboardModifierFromString("blah");
-    xfailure("should have failed");
-  }
-  catch (XFormat &x) {
-    cout << "as expected: " << x.why() << endl;
-  }
+  EXPECT_EXN(getKeyboardModifierFromString("blah"), XFormat);
 }
 
 
 static void testRTKeySequence(QKeySequence const &kseq)
 {
   string keyString(toString(kseq.toString()));
-  cout << "keyString: " << doubleQuote(keyString) << endl;
+  DIAG("keyString: " << doubleQuote(keyString));
 
   QKeySequence actual = parseKeySequence(keyString);
   xassert(actual == kseq);
@@ -135,25 +131,15 @@ static void testRTKeySequence(QKeySequence const &kseq)
 static void testInvalidKeySequenceString(
   string const &keys, string const &error)
 {
-  cout << "testing invalid keys: " << doubleQuote(keys) << endl;
-  try {
-    parseKeySequence(keys);
-    xfailure("should have failed!");
-  }
-  catch (XFormat &x) {
-    if (hasSubstring(x.cond(), error)) {
-      cout << "as expected: " << x.cond() << endl;
-    }
-    else {
-      xfailure_stringbc("wrong error: " << x.cond());
-    }
-  }
+  DIAG("testing invalid keys: " << doubleQuote(keys));
+  EXPECT_EXN_SUBSTR(parseKeySequence(keys),
+    XFormat, error.c_str());
 }
 
 static void testInvalidKeySequence(QKeySequence const &kseq)
 {
   string keyString(toString(kseq.toString()));
-  cout << "testing invalid key sequence: " << doubleQuote(keyString) << endl;
+  DIAG("testing invalid key sequence: " << doubleQuote(keyString));
 
   testInvalidKeySequenceString(keyString, "unrecognized");
 }
@@ -161,7 +147,7 @@ static void testInvalidKeySequence(QKeySequence const &kseq)
 
 static void testParseKeySequence()
 {
-  cout << "testParseKeySequence" << endl;
+  DIAG("testParseKeySequence");
 
   testRTKeySequence(QKeySequence(
     Qt::Key_A));
@@ -209,7 +195,7 @@ static void testRTKeyEvent(QKeyEvent const &ev, bool quiet=false)
 {
   string evString(keysString(ev));
   if (!quiet) {
-    cout << "ev: " << doubleQuote(evString) << endl;
+    DIAG("ev: " << doubleQuote(evString));
   }
 
   QKeyEvent *ev2 = getKeyPressEventFromString(evString, ev.text());
@@ -219,7 +205,7 @@ static void testRTKeyEvent(QKeyEvent const &ev, bool quiet=false)
 
 static void testKeyPressEventToString()
 {
-  cout << "testKeyPressEventToString" << endl;
+  DIAG("testKeyPressEventToString");
 
   testRTKeyEvent(
     QKeyEvent(QEvent::KeyPress, Qt::Key_Escape,
@@ -246,7 +232,7 @@ static void testKeyPressEventToString()
     QKeyEvent(QEvent::KeyPress, Qt::Key_Shift,
               Qt::KeyboardModifiers(Qt::ControlModifier)));
 
-  cout << "Exhaustive..." << endl;
+  DIAG("Exhaustive...");
   for (int keyIndex=0; keyIndex < g_qtKeyNames.m_size; keyIndex++) {
     Qt::Key key = g_qtKeyNames.m_names[keyIndex].m_value;
     for (int modsIndex=0; modsIndex < 8; modsIndex++) {
@@ -270,7 +256,7 @@ static void testKeyPressEventToString()
 static void testRTShortcutEvent(QShortcutEvent const &ev)
 {
   string evString(toString(ev.key().toString()));
-  cout << "ev: " << evString << endl;
+  DIAG("ev: " << evString);
 
   QShortcutEvent *ev2 = getShortcutEventFromString(evString);
   xassert(evString == toString(ev2->key().toString()));
@@ -279,7 +265,7 @@ static void testRTShortcutEvent(QShortcutEvent const &ev)
 
 static void testShortcutEventToString()
 {
-  cout << "testShortcutEventToString" << endl;
+  DIAG("testShortcutEventToString");
 
   testRTShortcutEvent(QShortcutEvent(Qt::Key_X, 0));
   testRTShortcutEvent(QShortcutEvent(Qt::SHIFT+Qt::Key_Y, 0));
@@ -289,6 +275,13 @@ static void testShortcutEventToString()
 
 static void testPrintQByteArray()
 {
+  if (!verbose) {
+    // The function being tested cannot write to an arbitrary stream, so
+    // I can't use `EXPECT_EQ`.  It's also not very important.  So, just
+    // skip this test if we are not in verbose mode.
+    return;
+  }
+
   QByteArray ba;
   printQByteArray(ba, "empty");
 
@@ -312,14 +305,7 @@ static void testQSizeFromString()
   testRTQSizeFromString(QSize(3,4));
   testRTQSizeFromString(QSize(1234567890,1029384756));
 
-  try {
-    cout << "should throw:" << endl;
-    qSizeFromString("x");
-    xfailure("should have failed");
-  }
-  catch (XFormat &x) {
-    cout << "as expected: " << x.why() << endl;
-  }
+  EXPECT_EXN(qSizeFromString("x"), XFormat);
 }
 
 
@@ -409,8 +395,13 @@ static void testStringConversion()
 }
 
 
+CLOSE_NAMESPACE(qtutil_test)
+
+
 void test_qtutil()
 {
+  using namespace qtutil_test;
+
   testMouseButtonsToString();
   testKeyboardModifiersToString();
   testKeyboardModifierToString();
@@ -423,10 +414,10 @@ void test_qtutil()
   testDisconnectSignals();
   testStringConversion();
 
-  cout << "QString: " << toString(qstringb("ab" << 'c')) << endl;
-  cout << "QRect: " << toString(QRect(10,20,30,40)) << endl;
+  DIAG("QString: " << toString(qstringb("ab" << 'c')));
+  DIAG("QRect: " << toString(QRect(10,20,30,40)));
 
-  cout << "qtutil-test: PASSED" << endl;
+  DIAG("qtutil-test: PASSED");
 }
 
 
