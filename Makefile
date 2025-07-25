@@ -132,18 +132,13 @@ unit-tests.exe: $(UNIT_TEST_OBJS) libsmqtutil.a
 
 # ----------------------------- gui-tests ------------------------------
 GUI_TEST_OBJS :=
-GUI_TEST_OBJS += qtbdffont-gui-test.o
 GUI_TEST_OBJS += gui-tests.o
+GUI_TEST_OBJS += layout-gui-test.o
+GUI_TEST_OBJS += qtbdffont-gui-test.o
 
 TEST_PROGRAMS += gui-tests.exe
 gui-tests.exe: $(GUI_TEST_OBJS) libsmqtutil.a
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
-
-
-# -------------------- test-layout ----------------------
-TEST_PROGRAMS += test-layout.exe
-test-layout.exe: test-layout.cc $(OBJS)
-	$(CXX) -o $@ $(CCFLAGS) test-layout.cc $(OBJS) $(LDFLAGS)
 
 
 # ------------------------ sm-table-widget-test ------------------------
@@ -152,16 +147,24 @@ sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
+# ------------------------------- check --------------------------------
+check: all
+	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
+	$(RUN_WITH_TIMEOUT) ./gui-tests.exe -nogui
+	@echo "smqtutil non-interactive tests PASSED"
+	@echo "Consider running \"make gui-check\" interactive tests."
+
+# Run all the interactive tests in sequence.  The user just has to
+# close each window as it pops up.
+gui-check: gui-tests.exe
+	./gui-tests.exe layout
+	./gui-tests.exe qtbdffont
+
+
 # ----------------------- misc --------------------------
 all: $(TEST_PROGRAMS)
 
 clean:
 	$(RM) *.a *.d *.o *.exe *.gen.* $(TOCLEAN)
-
-check: all
-	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
-	$(RUN_WITH_TIMEOUT) ./gui-tests.exe -nogui
-	@echo "smqtutil non-interactive tests PASSED"
-	@echo "Consider running ./gui-tests interactive tests."
 
 # EOF

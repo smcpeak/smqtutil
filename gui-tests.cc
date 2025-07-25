@@ -9,7 +9,7 @@
 
 #include <QApplication>
 
-#include <cstdlib>                     // std::getenv
+#include <cstdlib>                     // std::{exit, getenv}
 #include <exception>                   // std::exception
 
 using namespace smbase;
@@ -34,7 +34,7 @@ static void entry(int argc, char **argv)
 
   // We create the `QApplication` here for all tests, but for a GUI
   // test, the individual test function is responsible for calling
-  // `app.exec()`.
+  // `app.exec()` and returning its exit code.
   QApplication app(argc, argv);
 
   bool nogui = false;
@@ -63,23 +63,27 @@ static void entry(int argc, char **argv)
   std::vector<std::string> moduleNames;
 
   // Run the test if it is enabled.
-  #define RUN_TEST(name)                                          \
-    if (printUsage) {                                             \
-      moduleNames.push_back(#name);                               \
-    }                                                             \
-    else if (testName == NULL || streq(testName, #name)) {        \
-      if (nogui) {                                                \
-        std::cout << "---- " #name " ----" << std::endl;          \
-      }                                                           \
-      extern void gui_test_##name(QApplication &app, bool nogui); \
-      gui_test_##name(app, nogui);                                \
-      /* Flush all output streams so that the output */           \
-      /* from different tests cannot get mixed up. */             \
-      std::cout.flush();                                          \
-      std::cerr.flush();                                          \
-      ranOne = true;                                              \
+  #define RUN_TEST(name)                                         \
+    if (printUsage) {                                            \
+      moduleNames.push_back(#name);                              \
+    }                                                            \
+    else if (testName == NULL || streq(testName, #name)) {       \
+      if (nogui) {                                               \
+        std::cout << "---- " #name " ----" << std::endl;         \
+      }                                                          \
+      extern int gui_test_##name(QApplication &app, bool nogui); \
+      if (int exitCode = gui_test_##name(app, nogui)) {          \
+        std::cout << #name " exit code " << exitCode << "\n";    \
+        std::exit(exitCode);                                     \
+      }                                                          \
+      /* Flush all output streams so that the output */          \
+      /* from different tests cannot get mixed up. */            \
+      std::cout.flush();                                         \
+      std::cerr.flush();                                         \
+      ranOne = true;                                             \
     }
 
+  RUN_TEST(layout);
   RUN_TEST(qtbdffont);
 
   #undef RUN_TEST

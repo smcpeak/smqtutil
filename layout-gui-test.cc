@@ -1,4 +1,4 @@
-// test-layout.cc
+// layout-gui-test.cc
 // Experiment with some aspects of Qt layout.
 
 #include "qhboxframe.h"                // QHBoxFrame
@@ -10,9 +10,14 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-int main(int argc, char **argv)
+
+// Called from gui-tests.cc.
+int gui_test_layout(QApplication &app, bool nogui)
 {
-  QApplication app(argc, argv);
+  if (nogui) {
+    // This test doesn't have a non-interactive aspect.
+    return 0;
+  }
 
   QWidget w;
   w.resize(400, 300);

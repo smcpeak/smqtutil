@@ -187,7 +187,7 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
 
 
 // Called from gui-tests.cc.
-void gui_test_qtbdffont(QApplication &app, bool nogui)
+int gui_test_qtbdffont(QApplication &app, bool nogui)
 {
   BDFFont font;
   parseBDFString(font, bdfFontData_editor14r);
@@ -208,7 +208,7 @@ void gui_test_qtbdffont(QApplication &app, bool nogui)
 
   // This is the end of the non-interactive tests.
   if (nogui) {
-    return;
+    return 0;
   }
 
   // use different colors for onscreen drawing
@@ -367,7 +367,7 @@ void gui_test_qtbdffont(QApplication &app, bool nogui)
 
   widget.show();
 
-  app.exec();
+  return app.exec();
 }
 
 // EOF
