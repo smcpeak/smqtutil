@@ -91,7 +91,7 @@ protected:   // funcs
 
 public:      // funcs
   ~SMTableWidget();
-  explicit SMTableWidget(QWidget *parent);
+  explicit SMTableWidget(QWidget *parent = nullptr);
 
   // Configure the table as a list view (items in rows) rather than a
   // control where each cell is separately editable.  Specifically:
