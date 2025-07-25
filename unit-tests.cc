@@ -17,6 +17,9 @@ using namespace smbase;
 // of the `extern` declarations inside it.
 static void entry(int argc, char **argv)
 {
+  // Console-only Qt apps use `QCoreApplication`, which does not need
+  // any access to a Windowing API.  This is particularly relevant on
+  // unix, where X11 may or may not be available.
   QCoreApplication app(argc, argv);
 
   char const *testName = NULL;
@@ -40,6 +43,7 @@ static void entry(int argc, char **argv)
     }
 
   RUN_TEST(col_width_rules);
+  RUN_TEST(qtbdffont);
   RUN_TEST(qtutil);
 
   #undef RUN_TEST

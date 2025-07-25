@@ -413,6 +413,7 @@ void test_evenlyDistribute()
 CLOSE_ANONYMOUS_NAMESPACE
 
 
+// Called from unit-tests.cc.
 void test_col_width_rules()
 {
   test_evenlyDistribute();

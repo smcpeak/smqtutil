@@ -398,6 +398,7 @@ static void testStringConversion()
 CLOSE_NAMESPACE(qtutil_test)
 
 
+// Called from unit-tests.cc.
 void test_qtutil()
 {
   using namespace qtutil_test;

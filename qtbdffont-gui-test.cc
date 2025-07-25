@@ -1,5 +1,5 @@
-// test-qtbdffont.cc
-// Tests for qtbdffont module.
+// qtbdffont-gui-test.cc
+// GUI tests for qtbdffont module.
 
 #include "qtbdffont.h"                 // module to test
 
@@ -16,7 +16,7 @@
 #include "smbase/exc.h"                // smbase::XBase
 #include "smbase/nonport.h"            // getMilliseconds
 #include "smbase/sm-file-util.h"       // SMFileUtil
-#include "smbase/sm-test.h"            // DEBUG_PVAL, ARGS_MAIN
+#include "smbase/sm-test.h"            // DEBUG_PVAL, DIAG
 #include "smbase/strtokp.h"            // StrtokParse
 #include "smbase/xassert.h"            // xfailure_stringbc
 
@@ -30,9 +30,6 @@
 #include <stdlib.h>                    // getenv
 
 using namespace smbase;
-
-
-ARGS_MAIN
 
 
 // Test whether 'qfont' has the same information as 'font'.  Throw
@@ -185,26 +182,15 @@ static void compare(BDFFont const &font, QtBDFFont &qfont)
     #undef CHECK_EQUAL
   } // loop over 'charIndex'
 
-  cout << "successfully compared " << glyphCount << " glyphs\n";
+  DIAG("successfully compared " << glyphCount << " glyphs");
 }
 
 
-void entry(int argc, char **argv)
+// Called from gui-tests.cc.
+void gui_test_qtbdffont(QApplication &app, bool nogui)
 {
   BDFFont font;
   parseBDFString(font, bdfFontData_editor14r);
-
-  // This is a really ugly way to detect a dependence on X11, and is
-  // wrong on Mac OS/X.  But I sunk at least half an hour trying to
-  // figure out the proper placement for Q_WS_X11 in Qt5 and could not!
-  if (!SMFileUtil().windowsPathSemantics() &&
-      !getenv("DISPLAY")) {
-    cout << "Running on non-Windows platform, DISPLAY not set.\n";
-    cout << "Set DISPLAY in order to run the rest of this test.\n";
-    return;
-  }
-
-  QApplication app(argc, argv);
 
   // first compare with transparent drawing
   QtBDFFont qfont(font);
@@ -220,12 +206,8 @@ void entry(int argc, char **argv)
   qfont.setTransparent(false);
   compare(font, qfont);
 
-  cout << "test-qtbdffont console tests passed\n";
-  if (argc >= 2 && 0==strcmp(argv[1], "gui")) {
-    cout << "Running gui tests..." << endl;
-  }
-  else {
-    cout << "Run with \"gui\" argument to test rendering to a window.\n";
+  // This is the end of the non-interactive tests.
+  if (nogui) {
     return;
   }
 

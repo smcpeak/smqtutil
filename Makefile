@@ -64,6 +64,10 @@ TIMEOUT_VALUE = 10
 RUN_WITH_TIMEOUT = $(TIMEOUT_PROGRAM) $(TIMEOUT_VALUE)
 
 
+# List of executables that are for testing.
+TEST_PROGRAMS :=
+
+
 # ---------------- pattern rules --------------------
 # Compile .cc to .o .
 # -MMD causes GCC to write .d file.
@@ -116,20 +120,24 @@ libsmqtutil.a: $(OBJS)
 # ----------------------------- unit-tests -----------------------------
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += col-width-rules-test.o
+UNIT_TEST_OBJS += qtbdffont-test.o
 UNIT_TEST_OBJS += qtutil-test.moc.o
 UNIT_TEST_OBJS += qtutil-test.o
 UNIT_TEST_OBJS += unit-tests.o
 
-TEST_PROGRAMS :=
 TEST_PROGRAMS += unit-tests.exe
 unit-tests.exe: $(UNIT_TEST_OBJS) libsmqtutil.a
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
-# ------------------ test-qtbdffont ---------------------
-TEST_PROGRAMS += test-qtbdffont.exe
-test-qtbdffont.exe: test-qtbdffont.cc $(OBJS)
-	$(CXX) -o $@ $(CCFLAGS) test-qtbdffont.cc $(OBJS) $(LDFLAGS)
+# ----------------------------- gui-tests ------------------------------
+GUI_TEST_OBJS :=
+GUI_TEST_OBJS += qtbdffont-gui-test.o
+GUI_TEST_OBJS += gui-tests.o
+
+TEST_PROGRAMS += gui-tests.exe
+gui-tests.exe: $(GUI_TEST_OBJS) libsmqtutil.a
+	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
 # -------------------- test-layout ----------------------
@@ -152,7 +160,8 @@ clean:
 
 check: all
 	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
-	$(RUN_WITH_TIMEOUT) ./test-qtbdffont.exe
-	@echo "smqtutil tests PASSED"
+	$(RUN_WITH_TIMEOUT) ./gui-tests.exe -nogui
+	@echo "smqtutil non-interactive tests PASSED"
+	@echo "Consider running ./gui-tests interactive tests."
 
 # EOF
