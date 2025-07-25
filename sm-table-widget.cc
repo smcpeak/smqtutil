@@ -15,7 +15,7 @@
 #include "smbase/ordered-map-ops.h"    // GDVOrderedMap
 #include "smbase/sm-macros.h"          // IMEMBFP
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
-#include "smbase/vector-util.h"        // vecSum
+#include "smbase/vector-util.h"        // vecSum, vecSlice, vecSumSlice
 
 #include <QFontMetrics>
 #include <QHeaderView>
@@ -108,63 +108,6 @@ std::vector<int> SMTableWidget::getColumnWidths() const
   }
 
   return ret;
-}
-
-
-// Return the sum of the elements in [startIndex,
-// startIndex+numElements-1].
-//
-// TODO: Move to `vector-util`.
-template <typename T, typename A>
-T vecSumSlice(
-  std::vector<T,A> const &vec,
-  std::size_t startIndex,
-  std::size_t numElements)
-{
-  xassertPrecondition(startIndex <= vec.size());
-  xassertPrecondition(startIndex+numElements <= vec.size());
-
-  return std::accumulate(
-    vec.begin() + startIndex,
-    vec.begin() + startIndex + numElements,
-    T());
-}
-
-
-// Return the vector consisting of the elements in [startIndex,
-// startIndex+numElements-1].
-//
-// TODO: Move to `vector-util`.
-template <typename T, typename A>
-std::vector<T,A> vecSlice(
-  std::vector<T,A> const &vec,
-  std::size_t startIndex,
-  std::size_t numElements)
-{
-  xassertPrecondition(startIndex <= vec.size());
-  xassertPrecondition(startIndex+numElements <= vec.size());
-
-  std::vector<T,A> ret;
-  ret.reserve(numElements);
-
-  for (std::size_t i = startIndex; i < startIndex+numElements; ++i) {
-    ret.push_back(vec.at(i));
-  }
-
-  return ret;
-}
-
-
-// Return the vector consisting of the elements in [startIndex,
-// vec.size()-1].
-//
-// TODO: Move to `vector-util`.
-template <typename T, typename A>
-std::vector<T,A> vecSlice(
-  std::vector<T,A> const &vec,
-  std::size_t startIndex)
-{
-  return vecSlice(vec, startIndex, vec.size() - startIndex);
 }
 
 
