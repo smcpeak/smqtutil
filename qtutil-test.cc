@@ -409,10 +409,8 @@ static void testStringConversion()
 }
 
 
-static void entry(int argc, char **argv)
+void test_qtutil()
 {
-  QCoreApplication app(argc, argv);
-
   testMouseButtonsToString();
   testKeyboardModifiersToString();
   testKeyboardModifierToString();
@@ -430,8 +428,6 @@ static void entry(int argc, char **argv)
 
   cout << "qtutil-test: PASSED" << endl;
 }
-
-ARGS_TEST_MAIN
 
 
 // EOF

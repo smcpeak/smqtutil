@@ -113,10 +113,15 @@ libsmqtutil.a: $(OBJS)
 	-$(RANLIB) $@
 
 
-# ------------------- qtutil-test -----------------------
+# ----------------------------- unit-tests -----------------------------
+UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += qtutil-test.moc.o
+UNIT_TEST_OBJS += qtutil-test.o
+UNIT_TEST_OBJS += unit-tests.o
+
 TEST_PROGRAMS :=
-TEST_PROGRAMS += qtutil-test.exe
-qtutil-test.exe: qtutil-test.o qtutil-test.moc.o qtguiutil.o qtutil.o
+TEST_PROGRAMS += unit-tests.exe
+unit-tests.exe: $(UNIT_TEST_OBJS) libsmqtutil.a
 	$(CXX) -o $@ $(CCFLAGS) $^ $(LDFLAGS)
 
 
@@ -151,7 +156,7 @@ clean:
 	$(RM) *.a *.d *.o *.exe *.gen.* $(TOCLEAN)
 
 check: all
-	$(RUN_WITH_TIMEOUT) ./qtutil-test.exe
+	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
 	$(RUN_WITH_TIMEOUT) ./test-qtbdffont.exe
 	$(RUN_WITH_TIMEOUT) ./col-width-rules-test.exe
 	@echo "smqtutil tests PASSED"
