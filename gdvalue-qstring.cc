@@ -6,21 +6,16 @@
 #include "smqtutil/qtutil.h"           // toString(QString)
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <QString>
 
-
-OPEN_NAMESPACE(gdv)
+using namespace gdv;
 
 
 gdv::GDValue toGDValue(QString const &str)
 {
   return GDValue(toString(str));
 }
-
-
-CLOSE_NAMESPACE(gdv)
 
 
 // EOF
