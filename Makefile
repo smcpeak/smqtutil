@@ -145,16 +145,14 @@ gui-tests.exe: $(GUI_TEST_OBJS) libsmqtutil.a
 # ------------------------------- check --------------------------------
 check: all
 	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
-	$(RUN_WITH_TIMEOUT) ./gui-tests.exe -nogui
+	$(RUN_WITH_TIMEOUT) ./gui-tests.exe -all -nogui
 	@echo "smqtutil non-interactive tests PASSED"
 	@echo "Consider running \"make gui-check\" interactive tests."
 
 # Run all the interactive tests in sequence.  The user just has to
 # close each window as it pops up.
 gui-check: gui-tests.exe
-	./gui-tests.exe layout
-	./gui-tests.exe qtbdffont
-	./gui-tests.exe sm_table_widget
+	./gui-tests.exe -all
 
 
 # ----------------------- misc --------------------------

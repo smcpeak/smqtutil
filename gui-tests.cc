@@ -38,24 +38,37 @@ static void entry(int argc, char **argv)
   QApplication app(argc, argv);
 
   bool nogui = false;
+  bool all = false;
   char const *testName = NULL;
 
   for (int i=1; i < argc; ++i) {
-    if (streq(argv[i], "-nogui")) {
+    char const *arg = argv[i];
+
+    if (streq(arg, "-nogui")) {
       nogui = true;
+    }
+    else if (streq(arg, "-all")) {
+      all = true;
+    }
+    else if (arg[0] == '-') {
+      xmessage(stringb("Unknown option: " << doubleQuote(arg)));
     }
     else {
       if (testName) {
         xmessage(stringb(
-          "Bad argument " << doubleQuote(argv[i]) <<
+          "Bad argument " << doubleQuote(arg) <<
           ": test name " << doubleQuote(testName) <<
           " already specified."));
       }
-      testName = argv[i];
+      testName = arg;
     }
   }
 
-  bool printUsage = !testName && !nogui;
+  if (testName && all) {
+    xmessage("Cannot combine -all with a module name.");
+  }
+
+  bool printUsage = !testName && !all;
 
   bool ranOne = false;
 
@@ -67,7 +80,7 @@ static void entry(int argc, char **argv)
     if (printUsage) {                                            \
       moduleNames.push_back(#name);                              \
     }                                                            \
-    else if (testName == NULL || streq(testName, #name)) {       \
+    else if (all || streq(testName, #name)) {                    \
       if (nogui) {                                               \
         std::cout << "---- " #name " ----" << std::endl;         \
       }                                                          \
@@ -92,25 +105,22 @@ static void entry(int argc, char **argv)
   if (printUsage) {
     std::cout << R"(Usage:
 
-  ./gui-tests
+  ./gui-tests [-all] [-nogui] [<module>]
 
-    Print usage.
+    Without arguments, print usage (this message).
 
-  ./gui-tests -nogui
+    -all: Run all tests.  Otherwise, exactly one <module> must be
+    specified.
 
-    Runs all nogui tests.
+    -nogui: Run only the non-interactive, non-GUI parts of the specified
+    test(s).  Although these tests are not interactive, they still only
+    do something useful if Qt can interact with the platform's Windowing
+    API (such as X11 on unix).
 
-  ./gui-tests -nogui <module>
+    <module>: Run the specified test.
 
-    Run the nogui tests for <module>.  A "nogui" test is one that is
-    not interactive, but still calls functions that are only
-    available if Qt can interact with the platform's GUI-capable API
-    (such as X11 on unix).
-
-  ./gui-tests <module>
-
-    Run the GUI tests for <module>.  This will pop up something that
-    requires user interaction.
+  Without -nogui, this program will pop up a window (one for each
+  test, if -all) that at least requires the user to close it.
 
 Module names:
 
@@ -124,7 +134,7 @@ Module names:
   }
 
   if (!ranOne) {
-    xmessage(stringb("unrecogized module name: " << testName));
+    xmessage(stringb("unrecogized module name: " << doubleQuote(testName)));
   }
 
   if (nogui) {
