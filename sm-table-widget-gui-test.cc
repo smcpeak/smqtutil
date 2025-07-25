@@ -30,7 +30,11 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     table->setFont(font);
   }
 
-  std::vector<SMTableWidget::ColumnInfo> columns = {
+  // Do this before `setColumnInfo`.  In the past, that would lead to an
+  // assertion failure.
+  table->setColumnsFillWidth(true);
+
+  std::vector<SMTableWidget::ColumnInfo> const columns = {
     { "A", 200, 100 },
     { "B", 100, 30 },
     { "C", 100, 30 },
@@ -39,7 +43,6 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
 
   table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  table->setColumnsFillWidth(true);
 
   // Flags for the items.  The point is to omit Qt::ItemIsEditable.
   Qt::ItemFlags const itemFlags =

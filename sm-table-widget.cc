@@ -317,24 +317,32 @@ void SMTableWidget::setColumnInfo(
   std::vector<ColumnInfo> const &columnInfo)
 {
   int const numColumns = safeToInt(columnInfo.size());
+
+  // Start by copying the column configuration into `m_colRules` so we
+  // are prepared if/when a relevant signal is received.
+  m_colRules.m_colSpecs.clear();
+  for (int i=0; i < numColumns; i++) {
+    m_colRules.m_colSpecs.push_back(columnInfo.at(i));
+  }
+
+  // Set the number of table columns.
   setColumnCount(numColumns);
 
-  // Header labels.
+  // Set header labels.
   QStringList columnLabels;
   for (int i=0; i < numColumns; i++) {
     columnLabels << columnInfo.at(i).m_name;
   }
   setHorizontalHeaderLabels(columnLabels);
 
-  // Column widths.
-  for (int i=0; i < numColumns; i++) {
-    setColumnWidth(i, columnInfo.at(i).m_initialSize);
-  }
+  // Set column widths to their initial values.
+  {
+    // Don't react to these size updates.
+    QSignalBlocker blocker(horizontalHeader());
 
-  // Resize behavior.
-  m_colRules.m_colSpecs.clear();
-  for (int i=0; i < numColumns; i++) {
-    m_colRules.m_colSpecs.push_back(columnInfo.at(i));
+    for (int i=0; i < numColumns; i++) {
+      setColumnWidth(i, columnInfo.at(i).m_initialSize);
+    }
   }
 }
 
