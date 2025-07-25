@@ -39,6 +39,7 @@ static void entry(int argc, char **argv)
       ranOne = true;                                    \
     }
 
+  RUN_TEST(col_width_rules);
   RUN_TEST(qtutil);
 
   #undef RUN_TEST

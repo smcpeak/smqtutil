@@ -115,6 +115,7 @@ libsmqtutil.a: $(OBJS)
 
 # ----------------------------- unit-tests -----------------------------
 UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += col-width-rules-test.o
 UNIT_TEST_OBJS += qtutil-test.moc.o
 UNIT_TEST_OBJS += qtutil-test.o
 UNIT_TEST_OBJS += unit-tests.o
@@ -143,12 +144,6 @@ sm-table-widget-test.exe: sm-table-widget-test.cc $(OBJS)
 	$(CXX) -o $@ $(CCFLAGS) sm-table-widget-test.cc $(OBJS) $(LDFLAGS)
 
 
-# ------------------------ col-width-rules-test ------------------------
-TEST_PROGRAMS += col-width-rules-test.exe
-col-width-rules-test.exe: col-width-rules-test.cc $(OBJS)
-	$(CXX) -o $@ $(CCFLAGS) col-width-rules-test.cc $(OBJS) $(LDFLAGS)
-
-
 # ----------------------- misc --------------------------
 all: $(TEST_PROGRAMS)
 
@@ -158,7 +153,6 @@ clean:
 check: all
 	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
 	$(RUN_WITH_TIMEOUT) ./test-qtbdffont.exe
-	$(RUN_WITH_TIMEOUT) ./col-width-rules-test.exe
 	@echo "smqtutil tests PASSED"
 
 # EOF

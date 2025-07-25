@@ -13,7 +13,7 @@
 #include "smbase/ordered-map-ops.h"              // GDVOrderedMap
 #include "smbase/sm-pp-util.h"                   // SM_PP_MAP
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"                      // USUAL_TEST_MAIN, DIAG, EXPECT_EQ
+#include "smbase/sm-test.h"                      // DIAG, EXPECT_EQ
 
 #include <iostream>                              // std::cout (h)
 #include <optional>                              // std::optional
@@ -410,18 +410,15 @@ void test_evenlyDistribute()
 }
 
 
-void entry()
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+void test_col_width_rules()
 {
   test_evenlyDistribute();
   test_flexibility();
   test_resizeAll();
 }
-
-
-CLOSE_ANONYMOUS_NAMESPACE
-
-
-USUAL_TEST_MAIN
 
 
 // EOF
