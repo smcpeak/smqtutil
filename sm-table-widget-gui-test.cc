@@ -35,9 +35,11 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   table->setColumnsFillWidth(true);
 
   std::vector<SMTableWidget::ColumnInfo> const columns = {
-    { "A", 200, 100 },
-    { "B", 100, 30 },
-    { "C", 100, 30 },
+    // name init  min  max
+    { "A",   200, 100 },
+    { "B",   100,  30 },
+    { "C",   100,  30 },
+    { "D",    50,  50, 100 },
   };
   table->setColumnInfo(columns);
 

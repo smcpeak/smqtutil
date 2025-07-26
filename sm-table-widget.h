@@ -77,10 +77,6 @@ private:     // funcs
   // Get the sequence of column widths, in pixels.
   stdfwd::vector<int> getColumnWidths() const;
 
-  // Resize the last column to try to ensure its right edge lines up
-  // with the edge of the viewport.
-  void forceLastColumnToViewportEdge();
-
 protected Q_SLOTS:
   // React to column resize signals sent by the horizontal header.
   void on_columnResized(int logicalIndex, int oldSize, int newSize) NOEXCEPT;

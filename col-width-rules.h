@@ -56,9 +56,9 @@ public:      // types
     // case.
     int flexibility(int curSize, bool expand, int maxFlex) const;
 
-    // Return the value closest to `size` that satisfies the size
-    // constraints.
-    int clampSize(int size) const;
+    // Set `size` to the closest value that satisfies the size
+    // constraints.  Return true iff it was changed.
+    bool clampSize(int &size /*INOUT*/) const;
   };
 
 public:      // data
@@ -87,9 +87,9 @@ public:      // methods
   // Get the number of columns per `m_colSpecs`.
   int numColumns() const;
 
-  // Return the value closest to `size` that is within the specified
-  // bounds for the indicated column.
-  int clampColumnSize(int columnIndex, int size) const;
+  // Set `size` to the closest value that is within the specified bounds
+  // for the indicated column.  Return true iff it was changed.
+  bool clampColumnSize(int columnIndex, int &size /*INOUT*/) const;
 
   // Given `sizes`, the current column sizes, modify it so their total
   // size is `newTotalWidth` (which can be negative), or as close to
@@ -107,28 +107,62 @@ public:      // methods
   // Return true iff at least one element of `sizes` was changed.
   //
   bool resizeAll(
-    smbase::Span<int> sizes, int newTotalSize);
+    smbase::Span<int> sizes /*INOUT*/, int newTotalSize);
 
   // Same as `resizeAll`, but only operate on the columns starting with
-  // `startColumn`.
+  // `startColumn`.  Here, `changeableSizes` holds only the sizes of the
+  // columns that can change, so `startColumn + changeableSizes.size()
+  // == m_colSpecs.size()`; and `newTotalChangeableSize` refers to the
+  // desired size of just those columns.
   bool resizeSome(
     int startColumn,
-    smbase::Span<int> sizes,
-    int newTotalSize);
+    smbase::Span<int> changeableSizes /*INOUT*/,
+    int newTotalChangeableSize);
+
+  /* The user has just resized `focusColumn`.  The size as specified by
+     the user is reflected in `sizes`.  Make adjustments to `sizes` to
+     keep all columns within their specified bounds and get the total
+     width as close to `desiredTotalSize` as possible.
+
+     Requires:
+
+       sizes.size() == m_colSpecs.size()
+       0 <= focusColumn < sizes.size()
+
+     The steps are:
+
+     * Confine `focusColumn` to its min/max bounds.
+
+     * Adjust columns after `focusColumn` to meet total size, respecting
+       their min/max bounds.
+
+     * If total not met, adjust `focusColumn` itself to meet total size.
+
+     * It total not met, adjust everything using `resizeAll`.
+
+     Return true iff at least one element of `sizes` was changed.
+  */
+  bool resizeOne(
+    int focusColumn,
+    smbase::Span<int> sizes /*INOUT*/,
+    int desiredTotalSize);
 };
 
 
 /*
   Given:
 
-  * dest: A vector of initially all zeroes.
+  * dest: A span of initially all zeroes that is updated by this
+    function.
 
-  * maxima: A vector of the same size containing non-negative
-    values that specify the maximum value to write into the
-    corresponding element of `dest`.
+  * maxima: A span of the same size containing non-negative values that
+    specify the maximum value to write into the corresponding element of
+    `dest`.
 
   * totalToDistribute: A non-negative integer specifying the desired
     total value of elements in `dest` at the end.
+
+  * nextColumnForUnevenDistribution: See below.
 
   This function efficiently populates `dest` as if by the following
   (inefficient) algorithm:
@@ -159,18 +193,14 @@ public:      // methods
   since the naive approach causes the first element (e.g, table column)
   to be the only one that changes if the resize is performed slowly.
 
-  The vector `dest` is passed by reference, rather than returned,
-  because this function is called repeatedly in a loop and we will reuse
-  the vector object (and its storage) across iterations.
-
   This function is only intended to be used internally by this module,
-  but exposed in the interface to allow direct unit testing.
+  but is exposed in the interface to allow direct unit testing.
 */
 void evenlyDistribute(
-  smbase::Span<int> dest,
+  smbase::Span<int> dest /*INOUT*/,
   smbase::Span<int const> maxima,
   int totalToDistribute,
-  int /*INOUT*/ &nextColumnForUnevenDistribution);
+  int &nextColumnForUnevenDistribution /*INOUT*/);
 
 
 #endif // SMQTUTIL_COL_WIDTH_RULES_H

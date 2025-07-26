@@ -273,6 +273,93 @@ void test_resizeAll()
 }
 
 
+// Verify one `resizeOne` call.
+void oneTest_resizeOne(
+  ColumnWidthRules &rules,
+  int focusColumn,
+  std::vector<int> const &initSizes,
+  int desiredTotalSize,
+  std::vector<int> const &expectSizes)
+{
+  TEST_CASE_EXPRS("resizeOne",
+    focusColumn, rules, initSizes, desiredTotalSize);
+
+  std::vector<int> actualSizes(initSizes);
+
+  bool changed =
+    rules.resizeOne(focusColumn, actualSizes, desiredTotalSize);
+
+  xassert(changed == (initSizes != actualSizes));
+
+  EXPECT_EQ(toGDValue(actualSizes), toGDValue(expectSizes));
+}
+
+
+void test_resizeOne()
+{
+  // Normally, resizing the middle column causes the rightmost to adjust
+  // to take remaining space.
+  {
+    ColumnWidthRules rules({
+      { 30, {} },
+      { 30, {} },
+      { 30, {} },
+    });
+
+    // This input corresponds to the user trying to change the size of
+    // the middle column to 100.
+    oneTest_resizeOne(rules, 1,
+      { 100, 100, 30 },
+      300,
+      { 100, 100, 100 });
+  }
+
+  // But if the rightmost has a maximum size, we need to expand the
+  // middle column as well.
+  {
+    ColumnWidthRules rules({
+      { 30, {} },
+      { 30, {} },
+      { 30, 50 },
+    });
+
+    oneTest_resizeOne(rules, 1,
+      { 100, 100, 30 },
+      300,
+      { 100, 150, 50 });
+  }
+
+  // And if the middle has a max as well, then left expands.
+  {
+    ColumnWidthRules rules({
+      { 30, {} },
+      { 30, 50 },
+      { 30, 50 },
+    });
+
+    oneTest_resizeOne(rules, 1,
+      { 100, 100, 30 },
+      300,
+      { 200, 50, 50 });
+  }
+
+  // And if the left has a max too, then we max them all out, even
+  // though the size goal is unsatisfied.
+  {
+    ColumnWidthRules rules({
+      { 30, 50 },
+      { 30, 50 },
+      { 30, 50 },
+    });
+
+    oneTest_resizeOne(rules, 1,
+      { 30, 100, 30 },
+      300,
+      { 50, 50, 50 });
+  }
+}
+
+
 void oneTest_evenlyDistribute(
   std::vector<int> const &maxima,
   int totalToDistribute,
@@ -380,6 +467,7 @@ void test_col_width_rules()
   test_evenlyDistribute();
   test_flexibility();
   test_resizeAll();
+  test_resizeOne();
 }
 
 

@@ -92,15 +92,17 @@ int ColumnWidthRules::ColSpec::flexibility(
 }
 
 
-int ColumnWidthRules::ColSpec::clampSize(int size) const
+bool ColumnWidthRules::ColSpec::clampSize(int &size /*INOUT*/) const
 {
+  int const origSize = size;
+
   size = std::max(size, m_minimumSize);
 
   if (m_maximumSize) {
     size = std::min(size, *m_maximumSize);
   }
 
-  return size;
+  return size != origSize;
 }
 
 
@@ -148,14 +150,15 @@ int ColumnWidthRules::numColumns() const
 }
 
 
-int ColumnWidthRules::clampColumnSize(int columnIndex, int size) const
+bool ColumnWidthRules::clampColumnSize(
+  int columnIndex, int &size /*INOUT*/) const
 {
   return m_colSpecs.at(columnIndex).clampSize(size);
 }
 
 
 // Increase or decrease (per `expand`) `value` by `delta`.
-static void applyFlex(int /*INOUT*/ &value, int delta, bool expand)
+static void applyFlex(int &value /*INOUT*/, int delta, bool expand)
 {
   if (expand) {
     value += delta;
@@ -175,17 +178,18 @@ bool ColumnWidthRules::resizeAll(
 
 bool ColumnWidthRules::resizeSome(
   int startColumnIndex,
-  Span<int> sizes,
+  Span<int> changeableSizes,
   int newTotalSize)
 {
-  xassertPrecondition(startColumnIndex + sizes.size() == m_colSpecs.size());
+  xassertPrecondition(
+    startColumnIndex + changeableSizes.size() == m_colSpecs.size());
 
   // Number of columns that are in scope for resizing.
-  int const numColumns = safeToInt(sizes.size());
+  int const numColumns = safeToInt(changeableSizes.size());
 
   // We need to add this many pixels total to the column widths in order
   // to match the viewport width.
-  int const numPixelsToAdd = newTotalSize - spanSum(sizes);
+  int const numPixelsToAdd = newTotalSize - spanSum(changeableSizes);
   if (numPixelsToAdd == 0) {
     return false;
   }
@@ -211,17 +215,19 @@ bool ColumnWidthRules::resizeSome(
     int absColumnIndex = 0;
 
     for (ColSpec const &cs : m_colSpecs) {
-      // Index relative to `startColumnIndex`, hence it indexes `sizes`.
+      // Index relative to `startColumnIndex`, hence it indexes
+      // `changeableSizes`.
       int relColumnIndex = absColumnIndex - startColumnIndex;
 
       if (relColumnIndex >= 0) {
-        // Get the vector for this priority.
+        // Get the vector for this priority, creating it first if needed.
         auto it = prioToFlex.try_emplace(cs.m_expansionPriority, zeroes).first;
 
         // Compute the column flexibility and store that in the vector
         // for its priority.  The vector is indexed by a relative index.
         (*it).second[relColumnIndex] =
-          cs.flexibility(sizes.at(relColumnIndex), expand, totalNeededFlex);
+          cs.flexibility(
+            changeableSizes.at(relColumnIndex), expand, totalNeededFlex);
       }
 
       ++absColumnIndex;
@@ -250,10 +256,10 @@ bool ColumnWidthRules::resizeSome(
     evenlyDistribute(flexToApply /*INOUT*/, flexes, remainingFlex,
       m_nextColumnForUnevenDistribution /*INOUT*/);
 
-    // Use `flexToApply` to update `sizes`, etc.
+    // Use `flexToApply` to update `changeableSizes`, etc.
     for (int i=0; i < numColumns; ++i) {
       if (int colFlex = flexToApply.at(i)) {
-        applyFlex(sizes.at(i) /*INOUT*/, colFlex, expand);
+        applyFlex(changeableSizes.at(i) /*INOUT*/, colFlex, expand);
         remainingFlex -= colFlex;
         changed = true;
       }
@@ -264,12 +270,66 @@ bool ColumnWidthRules::resizeSome(
 }
 
 
+bool ColumnWidthRules::resizeOne(
+  int focusColumn,
+  Span<int> sizes /*INOUT*/,
+  int desiredTotalSize)
+{
+  xassertPrecondition(sizes.size() == m_colSpecs.size());
+  xassertPrecondition(0 <= focusColumn &&
+                           focusColumn < safeToInt(sizes.size()));
+
+  bool changed = false;
+
+  // Confine `focusColumn`.
+  changed |=
+    clampColumnSize(focusColumn, sizes.at(focusColumn) /*INOUT*/);
+
+  // Attempt to satisfy the constraints by only changing the columns
+  // after `focusColumn`.  This corresponds to a user grabbing the
+  // divider between `focusColumn` and `focusColumn+1`, in which the
+  // usual behavior is for the later columns to adjust as necessary.
+  Span<int> leftSizes = sizes.subspan(0, focusColumn+1);
+  Span<int> rightSizes = sizes.subspan(focusColumn+1);
+  changed |=
+    resizeSome(focusColumn+1, rightSizes,
+      desiredTotalSize - spanSum(leftSizes));
+
+  if (desiredTotalSize == spanSum(sizes)) {
+    return changed;
+  }
+
+  // Try again, this time including `focusColumn`.  This has the effect
+  // of restricting the user's ability to resize `focusColumn` when
+  // doing so would cause the rightmost column to separate from the
+  // viewport's right edge.
+  leftSizes = sizes.subspan(0, focusColumn);
+  rightSizes = sizes.subspan(focusColumn);
+  changed |=
+    resizeSome(focusColumn, rightSizes,
+      desiredTotalSize - spanSum(leftSizes));
+
+  if (desiredTotalSize == spanSum(sizes)) {
+    return changed;
+  }
+
+  // Try once more with all columns in scope.  Normally we shouldn't get
+  // here, but if resizing a column to the left will work, it's probably
+  // best to do it now rather than wait for the entire window to be
+  // resized.
+  changed |=
+    resizeAll(sizes, desiredTotalSize);
+
+  return changed;
+}
+
+
 // ChatGPT assisted in writing this function implementation.
 void evenlyDistribute(
   Span<int> const dest,
   Span<int const> const maxima,
   int const totalToDistribute,
-  int /*INOUT*/ &nextColumnForUnevenDistribution)
+  int &nextColumnForUnevenDistribution /*INOUT*/)
 {
   xassertPrecondition(dest.size() == maxima.size());
   xassertPrecondition(totalToDistribute >= 0);

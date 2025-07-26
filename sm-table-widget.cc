@@ -112,27 +112,6 @@ std::vector<int> SMTableWidget::getColumnWidths() const
 }
 
 
-void SMTableWidget::forceLastColumnToViewportEdge()
-{
-  QHeaderView * const header = horizontalHeader();
-  int const numColumns = header->count();
-  int const lastColumnIndex = numColumns - 1;
-
-  std::vector<int> const sizes = getColumnWidths();
-  int const beforeColumnsSize = vecSumSlice(sizes, 0, lastColumnIndex);
-
-  int const availSpaceTotal = viewport()->width();
-  int newColumnSize =
-    m_colRules.clampColumnSize(lastColumnIndex,
-      availSpaceTotal - beforeColumnsSize);
-
-  TRACE2("  forcing last column to edge with size " << newColumnSize);
-
-  QSignalBlocker blocker(header);
-  header->resizeSection(lastColumnIndex, newColumnSize);
-}
-
-
 void SMTableWidget::on_columnResized(
   int const primaryColumnIndex,
   int const oldPrimarySize,
@@ -155,80 +134,26 @@ void SMTableWidget::on_columnResized(
   xassert(0 <= primaryColumnIndex && primaryColumnIndex < numColumns);
   xassert(m_colRules.numColumns() == numColumns);
 
-  if (primaryColumnIndex == numColumns-1) {
-    // It is possible for the user to click and drag the right edge of
-    // the last column.  Force its edge to stay with the viewport right
-    // edge.
-    forceLastColumnToViewportEdge();
-    return;
-  }
-
   // Get current sizes.  This already reflects `newPrimarySize`.
   std::vector<int> const sizes = getColumnWidths();
   xassert(sizes[primaryColumnIndex] == newPrimarySize);
 
-  // Adjust `newPrimarySize` to the declared column bounds.
-  int /*not const*/ adjNewPrimarySize =
-    m_colRules.clampColumnSize(primaryColumnIndex, newPrimarySize);
-
-  // Get the later columns' widths into a separate vector.
-  int const nextColumnIndex = primaryColumnIndex+1;
-  std::vector<int> /*not const*/ afterSizes =
-    vecSlice(sizes, nextColumnIndex);
-
-  // Space used by the columns before `primaryColumnIndex`.
-  int const beforeColumnsSize = vecSumSlice(sizes, 0, primaryColumnIndex);
-
-  // How much space is there for columns after `primaryColumnIndex`?
-  int const availSpaceTotal = viewport()->width();
-  int const availSpaceAfter =
-    availSpaceTotal - beforeColumnsSize - adjNewPrimarySize;
-
-  // Adjust the after columns' sizes to fit.
-  m_colRules.resizeSome(
-    nextColumnIndex, afterSizes /*INOUT*/, availSpaceAfter);
-
-  // New total size of the after columns.
-  int const afterColumnsSize = vecSum(afterSizes);
-
-  if (beforeColumnsSize + adjNewPrimarySize + afterColumnsSize >
-                                                      availSpaceTotal) {
-    // Don't allow the primary to push the others out of range.
-    adjNewPrimarySize =
-      m_colRules.clampColumnSize(primaryColumnIndex,
-        availSpaceTotal - beforeColumnsSize - afterColumnsSize);
-  }
-
-  TRACE3(GDValue(GDVOrderedMap{
-    GDV_SKV_EXPR(sizes),
-    GDV_SKV_EXPR(adjNewPrimarySize),
-    GDV_SKV_EXPR(afterSizes),
-    GDV_SKV_EXPR(beforeColumnsSize),
-    GDV_SKV_EXPR(availSpaceTotal),
-    GDV_SKV_EXPR(availSpaceAfter),
-    GDV_SKV_EXPR(afterColumnsSize),
-  }).asIndentedString());
-
-  // Apply the changes.
+  // Compute new sizes based on `primaryColumnIndex` having been
+  // resized.
+  std::vector<int> newSizes = sizes;
+  if (m_colRules.resizeOne(primaryColumnIndex,
+                           newSizes,
+                           viewport()->width()))
   {
     QSignalBlocker blocker(header);
 
-    // First, the primary column.
-    if (adjNewPrimarySize != newPrimarySize) {
-      TRACE2("  changed focus column " << primaryColumnIndex <<
-             " from " << newPrimarySize <<
-             " to " << adjNewPrimarySize);
-      header->resizeSection(primaryColumnIndex, adjNewPrimarySize);
-    }
-
-    // Then the columns that come after.
-    for (int i = nextColumnIndex; i < numColumns; ++i) {
-      int const computedSize = afterSizes.at(i - nextColumnIndex);
-      if (computedSize != sizes.at(i)) {
-        TRACE2("  changed after column " << i <<
-               " from " << sizes.at(i) <<
-               " to " << computedSize);
-        header->resizeSection(i, computedSize);
+    for (int i = 0; i < numColumns; ++i) {
+      int const newSize = newSizes.at(i);
+      if (newSize != sizes.at(i)) {
+        TRACE2("  changed column " << i <<
+               " width from " << sizes.at(i) <<
+               " to " << newSize);
+        header->resizeSection(i, newSize);
       }
     }
   }
