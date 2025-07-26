@@ -30,13 +30,6 @@ INIT_TRACE("col-width-rules");
 
 
 // ------------------------------ ColSpec ------------------------------
-ColumnWidthRules::ColSpec::ColSpec()
-  : m_minimumSize(0),
-    m_maximumSize(),
-    m_expansionPriority(1)
-{
-  selfCheck();
-}
 
 
 ColumnWidthRules::ColSpec::ColSpec(

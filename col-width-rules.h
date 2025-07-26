@@ -35,13 +35,10 @@ public:      // types
     int m_expansionPriority;
 
   public:      // methods
-    // Set defaults: 0 min size, no max size, priority 1.
-    ColSpec();
-
     ColSpec(
-      int minimumSize,
-      std::optional<int> maximumSize,
-      int expansionPriority);
+      int minimumSize = 0,
+      std::optional<int> maximumSize = std::nullopt,
+      int expansionPriority = 1);
 
     // Check invariants.
     void selfCheck() const;
