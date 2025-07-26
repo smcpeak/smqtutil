@@ -14,6 +14,7 @@
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/ordered-map-ops.h"    // GDVOrderedMap
 #include "smbase/sm-macros.h"          // IMEMBFP
+#include "smbase/sm-span-ops.h"        // smbase::Span
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/vector-util.h"        // vecSum, vecSlice, vecSumSlice
 

@@ -7,6 +7,7 @@
 #define SMQTUTIL_COL_WIDTH_RULES_H
 
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue
+#include "smbase/sm-span-fwd.h"        // smbase::Span
 
 #include <optional>                    // std::optional
 #include <vector>                      // std::vector
@@ -106,13 +107,13 @@ public:      // methods
   // Return true iff at least one element of `sizes` was changed.
   //
   bool resizeAll(
-    std::vector<int> /*INOUT*/ &sizes, int newTotalSize);
+    smbase::Span<int> sizes, int newTotalSize);
 
   // Same as `resizeAll`, but only operate on the columns starting with
   // `startColumn`.
   bool resizeSome(
     int startColumn,
-    std::vector<int> /*INOUT*/ &sizes,
+    smbase::Span<int> sizes,
     int newTotalSize);
 };
 
@@ -166,8 +167,8 @@ public:      // methods
   but exposed in the interface to allow direct unit testing.
 */
 void evenlyDistribute(
-  std::vector<int> /*INOUT*/ &dest,
-  std::vector<int> const &maxima,
+  smbase::Span<int> dest,
+  smbase::Span<int const> maxima,
   int totalToDistribute,
   int /*INOUT*/ &nextColumnForUnevenDistribution);
 

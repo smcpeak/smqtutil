@@ -11,6 +11,8 @@
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/overflow.h"                     // safeToInt
 #include "smbase/sm-macros.h"                    // IMEMBFP, IMEMBMFP
+#include "smbase/sm-span-ops.h"                  // smbase::Span
+#include "smbase/sm-span-util-ops.h"             // smbase::Span
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
 #include "smbase/vector-util.h"                  // vecSum
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
@@ -23,6 +25,7 @@
 #include <vector>                                // std::vector
 
 using namespace gdv;
+using namespace smbase;
 
 
 INIT_TRACE("col-width-rules");
@@ -30,8 +33,6 @@ INIT_TRACE("col-width-rules");
 
 
 // ------------------------------ ColSpec ------------------------------
-
-
 ColumnWidthRules::ColSpec::ColSpec(
   int minimumSize,
   std::optional<int> maximumSize,
@@ -166,7 +167,7 @@ static void applyFlex(int /*INOUT*/ &value, int delta, bool expand)
 
 
 bool ColumnWidthRules::resizeAll(
-  std::vector<int> /*INOUT*/ &sizes, int newTotalSize)
+  Span<int> sizes, int newTotalSize)
 {
   return resizeSome(0, sizes, newTotalSize);
 }
@@ -174,7 +175,7 @@ bool ColumnWidthRules::resizeAll(
 
 bool ColumnWidthRules::resizeSome(
   int startColumnIndex,
-  std::vector<int> /*INOUT*/ &sizes,
+  Span<int> sizes,
   int newTotalSize)
 {
   xassertPrecondition(startColumnIndex + sizes.size() == m_colSpecs.size());
@@ -184,7 +185,7 @@ bool ColumnWidthRules::resizeSome(
 
   // We need to add this many pixels total to the column widths in order
   // to match the viewport width.
-  int const numPixelsToAdd = newTotalSize - vecSum(sizes);
+  int const numPixelsToAdd = newTotalSize - spanSum(sizes);
   if (numPixelsToAdd == 0) {
     return false;
   }
@@ -265,8 +266,8 @@ bool ColumnWidthRules::resizeSome(
 
 // ChatGPT assisted in writing this function implementation.
 void evenlyDistribute(
-  std::vector<int> /*INOUT*/ &dest,
-  std::vector<int> const &maxima,
+  Span<int> const dest,
+  Span<int const> const maxima,
   int const totalToDistribute,
   int /*INOUT*/ &nextColumnForUnevenDistribution)
 {
