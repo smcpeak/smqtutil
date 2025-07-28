@@ -98,6 +98,7 @@ gensrc: $(BDFGENSRC)
 OBJS :=
 OBJS += $(BDFGENSRC:.cc=.o)
 OBJS += col-width-rules.o
+OBJS += gdvalue-qrect.o
 OBJS += gdvalue-qstring.o
 OBJS += qhboxframe.o
 OBJS += qtbdffont.o
