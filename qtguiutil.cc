@@ -12,6 +12,7 @@
 #include "smbase/stringb.h"            // stringb
 
 // Qt
+#include <qtcoreversion.h>             // QTCORE_VERSION
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
@@ -188,6 +189,14 @@ void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow)
   QPoint targetPt =
     targetWindow->pos() + toQPoint(targetWindow->size() / 2);
   windowToMove->move(targetPt - toQPoint(windowToMove->size() / 2));
+}
+
+
+void removeWindowContextHelpButton(QWidget *window)
+{
+#if QTCORE_VERSION >= 0x050900
+  window->setWindowFlag(Qt::WindowContextHelpButtonHint, false /*on*/);
+#endif
 }
 
 

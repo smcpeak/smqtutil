@@ -69,6 +69,12 @@ bool questionBoxYesCancel(QWidget *parent, QString title, QString question);
 void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow);
 
 
+// Remove the "?" button that gets put in the top-right corner of the
+// window frame sometimes.  This is only possible on Qt 5.9 or later;
+// on older versions this function does nothing.
+void removeWindowContextHelpButton(QWidget *window);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data
