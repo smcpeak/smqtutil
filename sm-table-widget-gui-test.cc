@@ -38,21 +38,35 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     table->setShowGrid(true);
   }
 
+  // True to test a configuration where we are showing a very wide table
+  // and intend that the user scroll, rather than keeping it all visible
+  // at once.
+  bool veryWide = envAsBool("WIDE");
+
   // Test doing this before `setColumnInfo`.  In the past, that would
   // lead to an assertion failure.
-  table->setColumnsFillWidth(true);
+  if (!veryWide) {
+    table->setColumnsFillWidth(true);
+  }
 
-  std::vector<SMTableWidget::ColumnInfo> const columns = {
+  std::vector<SMTableWidget::ColumnInfo> columns = {
     // name init  min  max
     { "A",   200, 100 },
     { "B",   100,  30 },
     { "C",   100,  30 },
     { "D",    50,  50, 100 },
   };
+  if (veryWide) {
+    columns.push_back({QString("Wide"), 400});
+  }
   table->setColumnInfo(columns);
 
   table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+  if (veryWide) {
+    table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  }
 
   // Globally disable elision, which allows right-alignment to work the
   // way I want.
@@ -66,6 +80,10 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     for (int col = 0; col < static_cast<int>(columns.size()); ++col) {
       QTableWidgetItem *item = new QTableWidgetItem(
         QString("Item text at %1,%2").arg(row).arg(col));
+
+      if (col == 4) {
+        item->setText(QString("This is a very long message. ").repeated(row+1));
+      }
 
       item->setFlags(itemFlags);
 
@@ -84,6 +102,10 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     // QTreeView has a 'uniformRowHeights' property, but QListView
     // does not.
     table->setNaturalTextRowHeight(row);
+  }
+
+  if (veryWide) {
+    table->resizeColumnToContents(4);
   }
 
   window.setCentralWidget(table);
