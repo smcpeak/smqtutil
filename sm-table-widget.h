@@ -24,6 +24,16 @@
 class QModelIndex;
 
 
+// Choice of minimum or maximum.
+//
+// TODO: This is a candidate to be moved to smbase.
+//
+enum Extremum {
+  EXTREMUM_MINIMUM,
+  EXTREMUM_MAXIMUM
+};
+
+
 // Variant of QTableWidget with some customizations.
 //
 // Specifically:
@@ -120,6 +130,12 @@ public:      // funcs
   // automatically if `m_columnsFillWidth`, but could be done explicitly
   // without that flag.
   void adjustColumnsToFitWidth();
+
+  // Scroll the table horizontally by the specified number of pixels.
+  void scrollTableHorizontallyBy(int delta);
+
+  // Scroll to the left or right end.
+  void scrollTableHorizontallyToExtremum(Extremum ex);
 
   // Overridden QWidget methods.
   virtual void keyPressEvent(QKeyEvent *event) NOEXCEPT OVERRIDE;

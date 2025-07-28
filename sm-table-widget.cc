@@ -22,6 +22,7 @@
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QModelIndex>
+#include <QScrollBar>
 #include <QSignalBlocker>
 
 #include <iostream>                              // std::ostream
@@ -32,6 +33,10 @@ using namespace gdv;
 
 
 INIT_TRACE("sm-table-widget");
+
+
+// By how much do we scroll horizontally per keypress?
+int const HSCROLL_STEP = 100;
 
 
 // ---------------------------- ColumnInfo -----------------------------
@@ -181,20 +186,38 @@ void SMTableWidget::keyPressEvent(QKeyEvent *event) NOEXCEPT
   TRACE1("keyPressEvent: " << keysString(*event));
 
   switch (event->key()) {
-    case Qt::Key_N: {
+    case Qt::Key_N:
       // We pass along the same modifiers so that the user can do, e.g.,
       // Shift+N to extend the selection, etc.
       this->synthesizeKey(Qt::Key_Down, event->modifiers());
-      return;
-    }
+      break;
 
-    case Qt::Key_P: {
+    case Qt::Key_P:
       this->synthesizeKey(Qt::Key_Up, event->modifiers());
-      return;
-    }
-  }
+      break;
 
-  QTableWidget::keyPressEvent(event);
+    case Qt::Key_F:
+    case Qt::Key_Right:
+      scrollTableHorizontallyBy(+HSCROLL_STEP);
+      break;
+
+    case Qt::Key_B:
+    case Qt::Key_Left:
+      scrollTableHorizontallyBy(-HSCROLL_STEP);
+      break;
+
+    case Qt::Key_A:
+      scrollTableHorizontallyToExtremum(EXTREMUM_MINIMUM);
+      break;
+
+    case Qt::Key_E:
+      scrollTableHorizontallyToExtremum(EXTREMUM_MAXIMUM);
+      break;
+
+    default:
+      QTableWidget::keyPressEvent(event);
+      break;
+  }
 
   GENERIC_CATCH_END
 }
@@ -327,6 +350,34 @@ void SMTableWidget::adjustColumnsToFitWidth()
   else {
     TRACE2("adjustColumns: already have proper width");
   }
+}
+
+
+void SMTableWidget::scrollTableHorizontallyBy(int delta)
+{
+  QScrollBar *sb = horizontalScrollBar();
+  sb->setValue(sb->value() + delta);
+}
+
+
+// Get one of the extreme values of `slider`.
+//
+// Note: `QScrollBar` inherits `QAbstractSlider`.
+//
+// TODO: Candidate to move to `qtguiutil` module.
+//
+static int getExtremum(QAbstractSlider const *slider, Extremum ex)
+{
+  return ex==EXTREMUM_MINIMUM?
+    slider->minimum() :
+    slider->maximum();
+}
+
+
+void SMTableWidget::scrollTableHorizontallyToExtremum(Extremum ex)
+{
+  QScrollBar *sb = horizontalScrollBar();
+  sb->setValue(getExtremum(sb, ex));
 }
 
 
