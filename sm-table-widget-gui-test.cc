@@ -27,14 +27,14 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   SMTableWidget *table = new SMTableWidget(&window);
   table->configureAsListView();
 
-  if (envAsBool("BIG_FONT")) {
-    QFont font = table->font();
-    font.setPointSize(30);
-    table->setFont(font);
+  int fontSize = envAsIntOr(12, "FONT_SIZE");
+  QFont font = table->font();
+  font.setPointSize(fontSize);
+  table->setFont(font);
 
-    // With large fonts, I get text in columns B and C merging together.
-    // Add a divider just so I can clearly see where the boundary is
-    // supposed to be.  (This isn't a solution, it's a diagnostic tool.)
+  // `configureAsListView` turns off the grid lines, but sometimes I
+  // want to see them.
+  if (envAsBool("GRID_LINES")) {
     table->setShowGrid(true);
   }
 
