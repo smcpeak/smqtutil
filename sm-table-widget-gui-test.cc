@@ -50,14 +50,13 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     { "D",    50,  50, 100 },
   };
   table->setColumnInfo(columns);
-  table->disableTextElisionForColumn(1);
-
-  if (envAsBool("NO_ELISION")) {
-    table->disableTextElisionForAllColumns();
-  }
 
   table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+  // Globally disable elision, which allows right-alignment to work the
+  // way I want.
+  table->setTextElideMode(Qt::ElideNone);
 
   // Flags for the items.  The point is to omit Qt::ItemIsEditable.
   Qt::ItemFlags const itemFlags =

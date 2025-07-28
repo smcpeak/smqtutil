@@ -7,7 +7,6 @@
 
 #include "smqtutil/col-width-rules.h"            // ColumnWidthRules
 #include "smqtutil/gdvalue-qstring.h"            // gdv::toGDValue(QString)
-#include "smqtutil/no-elide-delegate.h"          // NoElideDelegate
 #include "smqtutil/qtguiutil.h"                  // keysString(QKeyEvent)
 
 #include "smbase/exc.h"                          // GENERIC_CATCH_BEGIN/END
@@ -70,7 +69,6 @@ SMTableWidget::ColumnInfo::operator gdv::GDValue() const
 // --------------------------- SMTableWidget ---------------------------
 SMTableWidget::SMTableWidget(QWidget *parent)
   : QTableWidget(parent),
-    m_noElideDelegate(),
     m_columnsFillWidth(false),
     m_colRules()
 {
@@ -277,24 +275,6 @@ void SMTableWidget::setColumnInfo(
     for (int i=0; i < numColumns; i++) {
       setColumnWidth(i, columnInfo.at(i).m_initialSize);
     }
-  }
-}
-
-
-void SMTableWidget::disableTextElisionForColumn(int columnIndex)
-{
-  if (!m_noElideDelegate) {
-    m_noElideDelegate.reset(new NoElideDelegate(this));
-  }
-
-  setItemDelegateForColumn(columnIndex, m_noElideDelegate.get());
-}
-
-
-void SMTableWidget::disableTextElisionForAllColumns()
-{
-  for (int i=0; i < columnCount(); ++i) {
-    disableTextElisionForColumn(i);
   }
 }
 

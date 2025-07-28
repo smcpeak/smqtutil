@@ -7,7 +7,6 @@
 #include "sm-table-widget-fwd.h"                 // fwds for this module
 
 #include "smqtutil/col-width-rules.h"            // ColumnWidthRules
-#include "smqtutil/no-elide-delegate-fwd.h"      // NoElideDelegate
 
 // smbase
 #include "smbase/sm-noexcept.h"                  // NOEXCEPT
@@ -61,11 +60,6 @@ public:      // types
     operator gdv::GDValue() const;
   };
 
-private:     // data
-  // Item delegate that disables elision.  This is null until the user
-  // calls `disableTextElision`.
-  std::unique_ptr<NoElideDelegate> m_noElideDelegate;
-
 public:      // data
   // If true, the columns (try to) fill the available horizontal width;
   // during resize events, the sizes of other columns are adjusted to
@@ -98,12 +92,16 @@ public:      // funcs
 
   // Configure the table as a list view (items in rows) rather than a
   // control where each cell is separately editable.  Specifically:
+  //
   //   - Use Zebra row colors.
   //   - Select rows and groups of rows.
   //   - Remove the corner button.
   //   - Do not use Tab to move among list elements.
   //   - Remove the grid lines.
   //   - Turn off word wrap within cells.
+  //
+  // You may want to also call `setTextElideMode(Qt::ElideNone)` to
+  // turn off "...", which also allows right alignment to work properly.
   void configureAsListView();
 
   // Set `m_columnsFillWidth` to `b`.  If setting to true, also turn off
@@ -112,16 +110,6 @@ public:      // funcs
 
   // Set the column details.
   void setColumnInfo(stdfwd::vector<ColumnInfo> const &columnInfo);
-
-  // Turn off elision, the process of replacing some text with "...".
-  // Instead, text that is too large will just be cropped.  This has to
-  // be done after `setColumnInfo`.
-  //
-  // Note: If word wrap is enabled then this does not work consistently.
-  // Word wrap is turned off by `configureAsListView` in part due to
-  // this.
-  void disableTextElisionForColumn(int columnIndex);
-  void disableTextElisionForAllColumns();
 
   // Set the height of `row` to the natural text height, including
   // leading, of the current widget font.  This has to be done for every
