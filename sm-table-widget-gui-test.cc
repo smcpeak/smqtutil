@@ -108,6 +108,8 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     table->resizeColumnToContents(4);
   }
 
+  table->selectRow(0);
+
   window.setCentralWidget(table);
   window.resize(600, 400);
   window.show();
