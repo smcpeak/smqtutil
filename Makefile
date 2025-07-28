@@ -76,6 +76,9 @@ TEST_PROGRAMS :=
 	$(CXX) -c -MMD -MP -o $@ $< $(CCFLAGS)
 
 
+-include $(wildcard *.d)
+
+
 # ---------------- default fonts --------------------
 %.bdf.gen.cc %.bdf.gen.h: fonts/%.bdf
 	perl $(SMBASE)/file-to-strlit.pl bdfFontData_$* $^ $*.bdf.gen.h $@
@@ -108,7 +111,6 @@ OBJS += sm-line-edit.o
 OBJS += sm-table-widget.moc.o
 OBJS += sm-table-widget.o
 OBJS += timer-event-loop.o
--include $(OBJS:.o=.d)
 
 
 all: libsmqtutil.a
