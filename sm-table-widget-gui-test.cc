@@ -63,6 +63,11 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     columns.push_back({QString("Wide"), 400});
   }
   table->setColumnInfo(columns);
+  if (veryWide) {
+    // Left-align the label so it is visible without scrolling.
+    table->horizontalHeaderItem(4)->
+      setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  }
 
   table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
