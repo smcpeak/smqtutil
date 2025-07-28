@@ -63,10 +63,18 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     columns.push_back({QString("Wide"), 400});
   }
   table->setColumnInfo(columns);
+
   if (veryWide) {
     // Left-align the label so it is visible without scrolling.
     table->horizontalHeaderItem(4)->
       setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+    // In wide mode, use single-select.
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    // This turns off the annoying behavior that changes the scroll
+    // position when I change the row or click.
+    table->setAutoScroll(false);
   }
 
   table->setRowCount(10);
