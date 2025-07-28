@@ -119,8 +119,8 @@ static void entry(int argc, char **argv)
 
     <module>: Run the specified test.
 
-  Without -nogui, this program will pop up a window (one for each
-  test, if -all) that at least requires the user to close it.
+  Without -nogui, this program will pop up a window (one for each test,
+  if -all) that at least requires the user to close it (press Esc).
 
 Module names:
 

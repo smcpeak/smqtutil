@@ -1,7 +1,8 @@
 // layout-gui-test.cc
 // Experiment with some aspects of Qt layout.
 
-#include "qhboxframe.h"                // QHBoxFrame
+#include "smqtutil/qhboxframe.h"       // QHBoxFrame
+#include "smqtutil/test-main-window.h" // TestMainWindow
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -19,15 +20,17 @@ int gui_test_layout(QApplication &app, bool nogui)
     return 0;
   }
 
-  QWidget w;
-  w.resize(400, 300);
+  TestMainWindow mainWindow;
+  mainWindow.setWindowTitle("layout");
+
+  QWidget *widget = new QWidget(&mainWindow);
 
   // The idea here is to place some buttons in QBoxLayouts using
   // various combinations of stretch factors to observe their effect.
 
   // Incidentally, I believe this code does *not* leak any memory.
   // Both the widgets and the layouts get added to the QObject tree,
-  // which gets cleaned up when 'w' is destroyed.
+  // which gets cleaned up when `mainWindow` is destroyed.
 
   QPushButton *b1 = new QPushButton("One");
   QPushButton *b2 = new QPushButton("Two");
@@ -95,10 +98,13 @@ int gui_test_layout(QApplication &app, bool nogui)
       vb->addWidget(hb);
     }
 
-    w.setLayout(vb);
+    widget->setLayout(vb);
+    widget->show();
   }
 
-  w.show();
+  mainWindow.setCentralWidget(widget);
+  mainWindow.resize(400, 300);
+  mainWindow.show();
   return app.exec();
 }
 

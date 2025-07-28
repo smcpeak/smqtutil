@@ -3,6 +3,8 @@
 
 #include "sm-table-widget.h"           // module under test
 
+#include "smqtutil/test-main-window.h" // TestMainWindow
+
 #include "smbase/sm-env.h"             // smbase::envAsBool
 #include "smbase/sm-macros.h"          // TABLESIZE
 
@@ -22,7 +24,8 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     return 0;
   }
 
-  QMainWindow window;
+  TestMainWindow window;
+  window.setWindowTitle("SMTableWidget");
 
   SMTableWidget *table = new SMTableWidget(&window);
   table->configureAsListView();

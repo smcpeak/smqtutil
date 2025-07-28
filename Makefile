@@ -139,6 +139,7 @@ GUI_TEST_OBJS += gui-tests.o
 GUI_TEST_OBJS += layout-gui-test.o
 GUI_TEST_OBJS += qtbdffont-gui-test.o
 GUI_TEST_OBJS += sm-table-widget-gui-test.o
+GUI_TEST_OBJS += test-main-window.o
 
 TEST_PROGRAMS += gui-tests.exe
 gui-tests.exe: $(GUI_TEST_OBJS) libsmqtutil.a

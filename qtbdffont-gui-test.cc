@@ -1,33 +1,34 @@
 // qtbdffont-gui-test.cc
 // GUI tests for qtbdffont module.
 
-#include "qtbdffont.h"                 // module to test
+#include "qtbdffont.h"                           // module to test
 
 // this directory
-#include "courR24_ISO8859_1.bdf.gen.h" // bdfFontData_courR24_ISO8859_1
-#include "editor14r.bdf.gen.h"         // bdfFontData_editor14r
-#include "lurs12.bdf.gen.h"            // bdfFontData_lurs12
-#include "minihex6.bdf.gen.h"          // bdfFontData_minihex6
-#include "qtutil.h"                    // toString(QRect)
+#include "smqtutil/courR24_ISO8859_1.bdf.gen.h"  // bdfFontData_courR24_ISO8859_1
+#include "smqtutil/editor14r.bdf.gen.h"          // bdfFontData_editor14r
+#include "smqtutil/lurs12.bdf.gen.h"             // bdfFontData_lurs12
+#include "smqtutil/minihex6.bdf.gen.h"           // bdfFontData_minihex6
+#include "smqtutil/qtutil.h"                     // toString(QRect)
+#include "smqtutil/test-main-window.h"           // TestMainWindow
 
 // smbase
-#include "smbase/bdffont.h"            // BDFFont
-#include "smbase/bit2d.h"              // Bit2d::Size
-#include "smbase/exc.h"                // smbase::XBase
-#include "smbase/nonport.h"            // getMilliseconds
-#include "smbase/sm-file-util.h"       // SMFileUtil
-#include "smbase/sm-test.h"            // DEBUG_PVAL, DIAG
-#include "smbase/strtokp.h"            // StrtokParse
-#include "smbase/xassert.h"            // xfailure_stringbc
+#include "smbase/bdffont.h"                      // BDFFont
+#include "smbase/bit2d.h"                        // Bit2d::Size
+#include "smbase/exc.h"                          // smbase::XBase
+#include "smbase/nonport.h"                      // getMilliseconds
+#include "smbase/sm-file-util.h"                 // SMFileUtil
+#include "smbase/sm-test.h"                      // DEBUG_PVAL, DIAG
+#include "smbase/strtokp.h"                      // StrtokParse
+#include "smbase/xassert.h"                      // xfailure_stringbc
 
 // Qt
-#include <qapplication.h>              // QApplication
-#include <qimage.h>                    // QImage
-#include <qlabel.h>                    // QLabel
-#include <qpainter.h>                  // QPainter
+#include <qapplication.h>                        // QApplication
+#include <qimage.h>                              // QImage
+#include <qlabel.h>                              // QLabel
+#include <qpainter.h>                            // QPainter
 
 // libc
-#include <stdlib.h>                    // getenv
+#include <stdlib.h>                              // getenv
 
 using namespace smbase;
 
@@ -220,8 +221,11 @@ int gui_test_qtbdffont(QApplication &app, bool nogui)
   int const windowWidth = 600;
   int const windowHeight = 600;
 
-  QLabel widget(NULL /*parent*/);
-  widget.resize(windowWidth, windowHeight);
+  TestMainWindow mainWindow;
+  mainWindow.setWindowTitle("qtbdffont");
+
+  QLabel *widget = new QLabel(&mainWindow);
+  widget->resize(windowWidth, windowHeight);
 
   QPixmap pixmap(windowWidth, windowHeight);
   pixmap.fill(bg);
@@ -363,9 +367,11 @@ int gui_test_qtbdffont(QApplication &app, bool nogui)
                         "abcdefghijklmnopqrstuvwxyz\n");
   }
 
-  widget.setPixmap(pixmap);
+  widget->setPixmap(pixmap);
 
-  widget.show();
+  mainWindow.setCentralWidget(widget);
+  mainWindow.resize(windowWidth, windowHeight);
+  mainWindow.show();
 
   return app.exec();
 }
