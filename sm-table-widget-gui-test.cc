@@ -3,6 +3,7 @@
 
 #include "sm-table-widget.h"           // module under test
 
+#include "smbase/sm-env.h"             // smbase::envAsBool
 #include "smbase/sm-macros.h"          // TABLESIZE
 
 #include <QApplication>
@@ -10,6 +11,8 @@
 #include <QTableWidgetItem>
 
 #include <iostream>                    // std::cout
+
+using namespace smbase;
 
 
 // Called from gui-tests.cc.
@@ -24,14 +27,19 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   SMTableWidget *table = new SMTableWidget(&window);
   table->configureAsListView();
 
-  if (false) {
+  if (envAsBool("BIG_FONT")) {
     QFont font = table->font();
     font.setPointSize(30);
     table->setFont(font);
+
+    // With large fonts, I get text in columns B and C merging together.
+    // Add a divider just so I can clearly see where the boundary is
+    // supposed to be.  (This isn't a solution, it's a diagnostic tool.)
+    table->setShowGrid(true);
   }
 
-  // Do this before `setColumnInfo`.  In the past, that would lead to an
-  // assertion failure.
+  // Test doing this before `setColumnInfo`.  In the past, that would
+  // lead to an assertion failure.
   table->setColumnsFillWidth(true);
 
   std::vector<SMTableWidget::ColumnInfo> const columns = {
@@ -42,6 +50,11 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     { "D",    50,  50, 100 },
   };
   table->setColumnInfo(columns);
+  table->disableTextElisionForColumn(1);
+
+  if (envAsBool("NO_ELISION")) {
+    table->disableTextElisionForAllColumns();
+  }
 
   table->setRowCount(10);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -53,7 +66,7 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   for (int row = 0; row < 10; ++row) {
     for (int col = 0; col < static_cast<int>(columns.size()); ++col) {
       QTableWidgetItem *item = new QTableWidgetItem(
-        QString("Item %1,%2").arg(row).arg(col));
+        QString("Item text at %1,%2").arg(row).arg(col));
 
       item->setFlags(itemFlags);
 

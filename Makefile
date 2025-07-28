@@ -103,6 +103,7 @@ OBJS += $(BDFGENSRC:.cc=.o)
 OBJS += col-width-rules.o
 OBJS += gdvalue-qrect.o
 OBJS += gdvalue-qstring.o
+OBJS += no-elide-delegate.o
 OBJS += qhboxframe.o
 OBJS += qtbdffont.o
 OBJS += qtguiutil.o

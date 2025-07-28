@@ -1,22 +1,23 @@
 // sm-table-widget.cc
 // code for sm-table-widget.h
 
-#include "smbase/gdvalue-vector-fwd.h" // gdv::toGDValue(std::vector)
+#include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
-#include "sm-table-widget.h"           // this module
+#include "sm-table-widget.h"                     // this module
 
-#include "smqtutil/col-width-rules.h"  // ColumnWidthRules
-#include "smqtutil/gdvalue-qstring.h"  // gdv::toGDValue(QString)
-#include "smqtutil/qtguiutil.h"        // keysString(QKeyEvent)
+#include "smqtutil/col-width-rules.h"            // ColumnWidthRules
+#include "smqtutil/gdvalue-qstring.h"            // gdv::toGDValue(QString)
+#include "smqtutil/no-elide-delegate.h"          // NoElideDelegate
+#include "smqtutil/qtguiutil.h"                  // keysString(QKeyEvent)
 
-#include "smbase/exc.h"                // GENERIC_CATCH_BEGIN/END
-#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
-#include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/ordered-map-ops.h"    // GDVOrderedMap
-#include "smbase/sm-macros.h"          // IMEMBFP
-#include "smbase/sm-span-ops.h"        // smbase::Span
-#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
-#include "smbase/vector-util.h"        // vecSum, vecSlice, vecSumSlice
+#include "smbase/exc.h"                          // GENERIC_CATCH_BEGIN/END
+#include "smbase/gdvalue-vector.h"               // gdv::toGDValue(std::vector)
+#include "smbase/gdvalue.h"                      // gdv::GDValue
+#include "smbase/ordered-map-ops.h"              // GDVOrderedMap
+#include "smbase/sm-macros.h"                    // IMEMBFP
+#include "smbase/sm-span-ops.h"                  // smbase::Span
+#include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
+#include "smbase/vector-util.h"                  // vecSum, vecSlice, vecSumSlice
 
 #include <QFontMetrics>
 #include <QHeaderView>
@@ -24,8 +25,8 @@
 #include <QModelIndex>
 #include <QSignalBlocker>
 
-#include <iostream>                    // std::ostream
-#include <vector>                      // std::vector
+#include <iostream>                              // std::ostream
+#include <vector>                                // std::vector
 
 
 using namespace gdv;
@@ -69,7 +70,9 @@ SMTableWidget::ColumnInfo::operator gdv::GDValue() const
 // --------------------------- SMTableWidget ---------------------------
 SMTableWidget::SMTableWidget(QWidget *parent)
   : QTableWidget(parent),
-    m_columnsFillWidth(false)
+    m_noElideDelegate(),
+    m_columnsFillWidth(false),
+    m_colRules()
 {
   // Pixel granularity scrolling is much smoother than row/col.
   setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -223,6 +226,11 @@ void SMTableWidget::configureAsListView()
 
   // Do not draw grid lines.  They only add visual clutter.
   setShowGrid(false);
+
+  // Turn off word wrap.  (1) I generally don't want it in a list-like
+  // table.  (2) It causes the "no elision" option to not work, at least
+  // for right-aligned cells (Qt bug?).
+  setWordWrap(false);
 }
 
 
@@ -269,6 +277,24 @@ void SMTableWidget::setColumnInfo(
     for (int i=0; i < numColumns; i++) {
       setColumnWidth(i, columnInfo.at(i).m_initialSize);
     }
+  }
+}
+
+
+void SMTableWidget::disableTextElisionForColumn(int columnIndex)
+{
+  if (!m_noElideDelegate) {
+    m_noElideDelegate.reset(new NoElideDelegate(this));
+  }
+
+  setItemDelegateForColumn(columnIndex, m_noElideDelegate.get());
+}
+
+
+void SMTableWidget::disableTextElisionForAllColumns()
+{
+  for (int i=0; i < columnCount(); ++i) {
+    disableTextElisionForColumn(i);
   }
 }
 
