@@ -133,6 +133,8 @@ void test_resizeAll()
       { 30, {}, 0 },
     });
 
+    EXPECT_EQ(rules.numColumns(), 3);
+
     // Simple expansion case.
     oneTest_resizeAll(rules,
       { 200, 100, 100 },
@@ -166,6 +168,10 @@ void test_resizeAll()
       { 30 },
       100,
       { 100 });
+
+    // Exercise `clear`.
+    rules.clear();
+    EXPECT_EQ(rules.numColumns(), 0);
   }
 
   {

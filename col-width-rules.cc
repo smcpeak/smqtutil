@@ -144,6 +144,13 @@ ColumnWidthRules::operator gdv::GDValue() const
 }
 
 
+void ColumnWidthRules::clear()
+{
+  m_colSpecs.clear();
+  m_nextColumnForUnevenDistribution = 0;
+}
+
+
 int ColumnWidthRules::numColumns() const
 {
   return safeToInt(m_colSpecs.size());

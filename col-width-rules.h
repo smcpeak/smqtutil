@@ -84,6 +84,9 @@ public:      // methods
 
   operator gdv::GDValue() const;
 
+  // Reset to the state produced by the default ctor.
+  void clear();
+
   // Get the number of columns per `m_colSpecs`.
   int numColumns() const;
 
