@@ -1,0 +1,284 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 105,
+        "y": 190
+      },
+      "name": "Row 4",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 485,
+        "y": 175
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        25,
+        80
+      ],
+      "size": {
+        "h": 185,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 220
+      },
+      "name": "Row 5",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "fillColor": "Green",
+      "loc": {
+        "x": 105,
+        "y": 250
+      },
+      "name": "Row 6 (selected)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 280
+      },
+      "name": "Row 7",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 310
+      },
+      "name": "Row 8",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 340
+      },
+      "name": "Row 9 (partly below viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 30,
+        "y": 165
+      },
+      "name": "of row 6",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 60
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 160
+      },
+      "name": "Row 3 (partly above viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 130
+      },
+      "name": "Row 2 (above viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 100
+      },
+      "name": "Row 1 (above viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 70
+      },
+      "name": "Row 0 (above viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 370
+      },
+      "name": "Row 10 (below viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 400
+      },
+      "name": "Row 11 (below viewport)",
+      "size": {
+        "h": 30,
+        "w": 380
+      }
+    },
+    {
+      "loc": {
+        "x": 405,
+        "y": 360
+      },
+      "name": "Below viewport",
+      "size": {
+        "h": 70,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 405,
+        "y": 70
+      },
+      "name": "Above viewport",
+      "size": {
+        "h": 105,
+        "w": 100
+      }
+    },
+    {
+      "attributes": " ",
+      "loc": {
+        "x": 20,
+        "y": 30
+      },
+      "name": "Independent of scroll position and viewport size",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 260
+      }
+    },
+    {
+      "attributes": " ",
+      "loc": {
+        "x": 345,
+        "y": 30
+      },
+      "name": "Dependent on scroll position and viewport size",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 260
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [
+    {
+      "end": {"pt": {
+        "x": 515,
+        "y": 360
+      }},
+      "label": "viewportHeight",
+      "start": {
+        "arrowStyle": "AS_FILLED_TRIANGLE",
+        "pt": {
+          "x": 515,
+          "y": 175
+        }
+      }
+    },
+    {
+      "end": {"pt": {
+        "x": 515,
+        "y": 175
+      }},
+      "label": "curScroll",
+      "start": {
+        "arrowStyle": "AS_FILLED_TRIANGLE",
+        "pt": {
+          "x": 515,
+          "y": 70
+        }
+      }
+    },
+    {
+      "end": {"pt": {
+        "x": 95,
+        "y": 70
+      }},
+      "label": "rowPosition",
+      "start": {
+        "arrowStyle": "AS_FILLED_TRIANGLE",
+        "pt": {
+          "x": 95,
+          "y": 250
+        }
+      }
+    },
+    {
+      "end": {"pt": {
+        "x": 95,
+        "y": 250
+      }},
+      "label": "rowHeight",
+      "start": {
+        "arrowStyle": "AS_FILLED_TRIANGLE",
+        "pt": {
+          "x": 95,
+          "y": 280
+        }
+      }
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 32,
+  "windowSize": {
+    "h": 458,
+    "w": 618
+  }
+}

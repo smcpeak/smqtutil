@@ -90,7 +90,11 @@ private:     // funcs
 
 protected Q_SLOTS:
   // React to column resize signals sent by the horizontal header.
-  void on_columnResized(int logicalIndex, int oldSize, int newSize) NOEXCEPT;
+  virtual void on_columnResized(
+    int logicalIndex, int oldSize, int newSize) NOEXCEPT;
+
+  // React to the selected row changing.
+  virtual void on_selectionChanged() NOEXCEPT;
 
 protected:   // funcs
   // If `m_columnsFillWidth`, adjust column widths as needed.
@@ -136,6 +140,13 @@ public:      // funcs
 
   // Scroll to the left or right end.
   void scrollTableHorizontallyToExtremum(Extremum ex);
+
+  // Adjust the vertical scroll position so `row` is visible.  This is
+  // done automatically in response to selection changes, but the client
+  // can also do it explicitly.
+  //
+  // Requires: 0 <= row && row < rowCount()
+  void scrollToRow(int row);
 
   // Overridden QWidget methods.
   virtual void keyPressEvent(QKeyEvent *event) NOEXCEPT OVERRIDE;

@@ -71,10 +71,6 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
 
     // In wide mode, use single-select.
     table->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    // This turns off the annoying behavior that changes the scroll
-    // position when I change the row or click.
-    table->setAutoScroll(false);
   }
 
   int const numRows = envAsIntOr(10, "ROWS");

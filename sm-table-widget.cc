@@ -17,6 +17,7 @@
 #include "smbase/sm-span-ops.h"                  // smbase::Span
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
 #include "smbase/vector-util.h"                  // vecSum, vecSlice, vecSumSlice
+#include "smbase/xassert.h"                      // xassertPrecondition
 
 #include <QFontMetrics>
 #include <QHeaderView>
@@ -81,14 +82,27 @@ SMTableWidget::SMTableWidget(QWidget *parent)
   setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
   setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-  QObject::connect(horizontalHeader(), &QHeaderView::sectionResized,
-                   this, &SMTableWidget::on_columnResized);
+  // I will take care of scrolling on my own.  The main problem with
+  // autoscroll is it also scrolls horizontally, whereas my desired
+  // interaction model is that a *row* is selected, not a single cell.
+  //
+  // TODO: There is a focus rectangle on the selected cell; get rid of
+  // that.
+  setAutoScroll(false);
+
+  QObject::connect(
+    horizontalHeader(), &QHeaderView::sectionResized,
+    this, &SMTableWidget::on_columnResized);
+  QObject::connect(
+    selectionModel(), &QItemSelectionModel::currentRowChanged,
+    this, &SMTableWidget::on_selectionChanged);
 }
 
 
 SMTableWidget::~SMTableWidget()
 {
   QObject::disconnect(horizontalHeader(), nullptr, this, nullptr);
+  QObject::disconnect(selectionModel(), nullptr, this, nullptr);
 }
 
 
@@ -168,6 +182,21 @@ void SMTableWidget::on_columnResized(
 }
 
 
+void SMTableWidget::on_selectionChanged() NOEXCEPT
+{
+  GENERIC_CATCH_BEGIN
+
+  int row = currentRow();
+  if (!( 0 <= row && row < rowCount() )) {
+    return;
+  }
+
+  scrollToRow(row);
+
+  GENERIC_CATCH_END
+}
+
+
 void SMTableWidget::resizeEvent(QResizeEvent *event)
 {
   TRACE2("resizeEvent");
@@ -195,6 +224,8 @@ void SMTableWidget::keyPressEvent(QKeyEvent *event) NOEXCEPT
     case Qt::Key_P:
       this->synthesizeKey(Qt::Key_Up, event->modifiers());
       break;
+
+    // Note: `QTableWidget` handles Up, Down, PageUp, and PageDown.
 
     case Qt::Key_F:
     case Qt::Key_Right:
@@ -378,6 +409,55 @@ void SMTableWidget::scrollTableHorizontallyToExtremum(Extremum ex)
 {
   QScrollBar *sb = horizontalScrollBar();
   sb->setValue(getExtremum(sb, ex));
+}
+
+
+void SMTableWidget::scrollToRow(int row)
+{
+  xassertPrecondition(0 <= row && row < rowCount());
+
+  // The following code started as an adaptation of a part of
+  // `QTableWidget::scrollTo`, but has been heavily modified.  (The
+  // reason I can't just use `scrollTo` is it also scrolls horizontally,
+  // which I do not want.)
+
+  // See diagram in doc/sm-table-widget-scroll.ded.png.
+
+  // Height of the viewport (scrollable area).  This does not include
+  // the height of the column labels, since they do not scroll.
+  int viewportHeight = viewport()->height();
+
+  // Distance in pixels from the top of the first row (even if outside
+  // the viewport) to the first pixel that is visible in the viewport.
+  // This is the current vertical scrollbar value.
+  QHeaderView *vheader = verticalHeader();
+  int curScroll = vheader->offset();
+
+  // Pixels from the top of the first row (even if outside the viewport)
+  // to the first pixel of `row`.  This is its pixel position within the
+  // entire virtual table, independent of scroll position and viewport
+  // size.
+  int rowPosition = vheader->sectionPosition(row);
+
+  // The height of the row, in pixels.
+  //
+  // Note: `QTableWidget::scrollTo` has some code here to deal with row
+  // spans, but I am not using them, so I omitted that.
+  int rowHeight = vheader->sectionSize(row);
+
+  if (rowPosition < curScroll ||       // Row is above the view.
+      rowHeight > viewportHeight) {    // Row is taller than the view.
+    // Scroll so the row is at the top of the viewport.
+    verticalScrollBar()->setValue(rowPosition);
+  }
+  else if (rowPosition + rowHeight > curScroll + viewportHeight) {
+    // Row bottom is below the view.  Scroll to put it at the bottom of
+    // the viewport.
+    verticalScrollBar()->setValue(rowPosition + rowHeight - viewportHeight);
+  }
+  else {
+    // Row is already entirely visible, so no scrolling is required.
+  }
 }
 
 
