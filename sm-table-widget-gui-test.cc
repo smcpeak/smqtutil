@@ -77,7 +77,8 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     table->setAutoScroll(false);
   }
 
-  table->setRowCount(10);
+  int const numRows = envAsIntOr(10, "ROWS");
+  table->setRowCount(numRows);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
   if (veryWide) {
@@ -92,7 +93,7 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   Qt::ItemFlags const itemFlags =
     Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
-  for (int row = 0; row < 10; ++row) {
+  for (int row = 0; row < numRows; ++row) {
     for (int col = 0; col < static_cast<int>(columns.size()); ++col) {
       QTableWidgetItem *item = new QTableWidgetItem(
         QString("Item text at %1,%2").arg(row).arg(col));
