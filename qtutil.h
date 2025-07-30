@@ -6,6 +6,7 @@
 
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/std-vector-fwd.h"               // std::vector
 
 #include <QColor>                                // QRgb
 #include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
@@ -19,6 +20,7 @@ class QPoint;
 class QRect;
 class QSize;
 class QString;
+class QStringList;
 
 
 // The numeric value and name of some enumerator.
@@ -98,6 +100,10 @@ QString toQString(std::string const &s);
 // Also convert `string_view` and `char*`.
 QString toQString(std::string_view sv);
 QString toQString(char const *s);
+
+// Convert `strList` to a `std::vector`.
+std::vector<std::string> qStringListToStringVector(
+  QStringList const &strList);
 
 
 // Return a description of 'obj': either "null", or the pointer

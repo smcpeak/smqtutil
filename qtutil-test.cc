@@ -412,6 +412,16 @@ static void testStringConversion()
 }
 
 
+static void test_qStringListToStringVector()
+{
+  xassert(qStringListToStringVector(QStringList()) ==
+          std::vector<std::string>{});
+
+  xassert(qStringListToStringVector(QStringList() << "one" << "two") ==
+          (std::vector<std::string>{"one", "two"}));
+}
+
+
 CLOSE_NAMESPACE(qtutil_test)
 
 
@@ -431,6 +441,7 @@ void test_qtutil()
   testQObjectPath();
   testDisconnectSignals();
   testStringConversion();
+  test_qStringListToStringVector();
 
   DIAG("QString: " << toString(qstringb("ab" << 'c')));
   DIAG("QRect: " << toString(QRect(10,20,30,40)));

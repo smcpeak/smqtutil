@@ -24,6 +24,7 @@
 #include <sstream>                     // std::ostringstream
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
+#include <vector>                      // std::vector
 
 // libc
 #include <assert.h>                    // assert
@@ -275,6 +276,19 @@ QString toQString(char const *s)
 {
   std::string_view sv(s);
   return toQString(sv);
+}
+
+
+std::vector<std::string> qStringListToStringVector(
+  QStringList const &strList)
+{
+  std::vector<std::string> ret;
+
+  for (QString const &s : strList) {
+    ret.push_back(toString(s));
+  }
+
+  return ret;
 }
 
 
