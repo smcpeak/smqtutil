@@ -1,18 +1,18 @@
 // qtutil.h
-// some miscellaneous utilities for Qt
+// some miscellaneous utilities for Qt.
 
-#ifndef QTUTIL_H
-#define QTUTIL_H
+#ifndef SMQTUTIL_QTUTIL_H
+#define SMQTUTIL_QTUTIL_H
 
-// smbase
 #include "smbase/sm-iostream.h"                  // ostream
+#include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
-#include "smbase/str.h"                          // string, stringBuilder
+#include "smbase/stringb.h"                      // stringb
 
-// Qt
 #include <QColor>                                // QRgb
 #include <QString>                               // QString
 #include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
+
 
 class QByteArray;
 class QObject;
@@ -42,19 +42,19 @@ struct EnumerationNames {
 
 
 // Render various values and objects as a string.
-string toString(Qt::MouseButtons buttons);
-string toString(Qt::KeyboardModifiers kmods);
+std::string toString(Qt::MouseButtons buttons);
+std::string toString(Qt::KeyboardModifiers kmods);
 char const *toString(Qt::Key k);
-string toString(QPoint p);
-string toString(QRect r);
-string qrgbToString(QRgb rgba);
+std::string toString(QPoint p);
+std::string toString(QRect r);
+std::string qrgbToString(QRgb rgba);
 
 
 // Convert QSize to "($width,$height)".
-string toString(QSize s);
+std::string toString(QSize s);
 
 // Convert "($width,$height)" to QSize or throw XFormat.
-QSize qSizeFromString(string const &str);
+QSize qSizeFromString(std::string const &str);
 
 
 // Convert between QSize and QPoint.
@@ -63,11 +63,11 @@ QSize toQSize(QPoint const &point);
 
 
 // Convert a keyboard modifier name back to its number, or throw XFormat.
-Qt::KeyboardModifier getKeyboardModifierFromString(string const &str);
+Qt::KeyboardModifier getKeyboardModifierFromString(std::string const &str);
 
 
 // Convert a key to its number, or throw XFormat.
-Qt::Key getKeyFromString(string const &str);
+Qt::Key getKeyFromString(std::string const &str);
 
 // True if 'key' is (exactly) Qt::Key_Shift, Control, Meta, Alt, or AltGr.
 bool isModifierKey(int key);
@@ -76,25 +76,24 @@ bool isModifierKey(int key);
 extern EnumerationNames<Qt::Key> const g_qtKeyNames;
 
 
-// Convert 'QString' to 'string'.
-string toString(QString const &s);
+// Convert 'QString' to 'std::string'.
+std::string toString(QString const &s);
 
 // Equivalent to 'doubleQuote(toString(s))'.
-string doubleQuote(QString const &s);
+std::string doubleQuote(QString const &s);
 
 
-// Allow inserting QString into stringBuilder and ostream.
+// Allow inserting QString into ostream.
 //
 // For a while I have been avoiding this on safety grounds, instead
 // explicitly calling toString, but that is annoying and the safety
 // benefit seems minimal, particularly as my eventual intent is for
 // 8-bit characters to be UTF-8, and hence this does not lose
 // information.
-stringBuilder& operator<< (stringBuilder& sb, QString const &str);
 ostream& operator<< (ostream &os, QString const &str);
 
 // Convert 'string' to 'QString'.
-QString toQString(string const &s);
+QString toQString(std::string const &s);
 #define qstringb(stuff) toQString(stringb(stuff))
 
 // Also convert `string_view` and `char*`.
@@ -104,7 +103,7 @@ QString toQString(char const *s);
 
 // Return a description of 'obj': either "null", or the pointer
 // value, object name, and class name.
-string qObjectDesc(QObject *obj);
+std::string qObjectDesc(QObject *obj);
 
 // Set the name.
 void setQObjectName(QObject *obj, char const *name);
@@ -126,7 +125,7 @@ void disconnectSignalSender(QObject *sender);
 // this object, like "foo.bar.baz", or "null" if obj is NULL.  Where an
 // object name is empty, the path simply has the empty string in that
 // location, like "foo..bar".
-string qObjectPath(QObject const *obj);
+std::string qObjectPath(QObject const *obj);
 
 
 // Print the contents of 'ba' to stdout with 'label', then flush.
@@ -148,4 +147,4 @@ void printQByteArray(QByteArray const &ba, char const *label);
 void waitForQtEvent();
 
 
-#endif // QTUTIL_H
+#endif // SMQTUTIL_QTUTIL_H

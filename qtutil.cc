@@ -20,6 +20,8 @@
 #include <QSize>
 
 // libc++
+#include <sstream>                     // std::ostringstream
+#include <string>                      // std::string
 #include <string_view>                 // std::string_view
 
 // libc
@@ -30,14 +32,17 @@
 INIT_TRACE("qtutil");
 
 
-// If 'flags' contains 'flag.value', add its name to 'sb' and remove
-// its value from 'flags'.
+// If `flags` contains `flag.value`, increment `ct`, add its name to
+// `sb` and remove its value from `flags`.
 template <class T>
-static void handleFlag(stringBuilder &sb, QFlags<T> &flags,
-                       EnumeratorName<T> const &flag)
+static void handleFlag(
+  int &ct,
+  std::ostringstream &sb,
+  QFlags<T> &flags,
+  EnumeratorName<T> const &flag)
 {
   if (flags & flag.m_value) {
-    if (sb.length() > 0) {
+    if (ct++ > 0) {
       sb << "+";
     }
     sb << flag.m_name;
@@ -48,19 +53,21 @@ static void handleFlag(stringBuilder &sb, QFlags<T> &flags,
 
 // Render 'flags' as a string by using 'definitions' to decode it.
 template <class T>
-static string flagsToString(QFlags<T> flags,
-                            EnumeratorName<T> const *definitions,
-                            int numDefinitions,
-                            char const *noFlagsName)
+static std::string flagsToString(
+  QFlags<T> flags,
+  EnumeratorName<T> const *definitions,
+  int numDefinitions,
+  char const *noFlagsName)
 {
-  stringBuilder sb;
+  std::ostringstream sb;
 
+  int ct = 0;
   for (int i=0; i < numDefinitions; i++) {
-    handleFlag(sb, flags, definitions[i]);
+    handleFlag(ct, sb, flags, definitions[i]);
   }
 
   if (flags) {
-    if (sb.length() > 0) {
+    if (ct > 0) {
       sb << " (plus unknown flags: " << (int)flags << ")";
     }
     else {
@@ -68,17 +75,17 @@ static string flagsToString(QFlags<T> flags,
     }
   }
 
-  if (sb.length() == 0) {
+  if (ct == 0) {
     sb << noFlagsName;
   }
 
-  return sb;
+  return sb.str();
 }
 
 
 // Convert a string back to a flag, or throw XFormat.
 template <class T>
-static T stringToFlag(string const &str,
+static T stringToFlag(std::string const &str,
                       EnumeratorName<T> const *definitions,
                       int numDefinitions,
                       char const *typeName)
@@ -107,7 +114,7 @@ static EnumeratorName<Qt::MouseButton> const mouseButtonDefinitions[] = {
   // ExtraButtons up to 24 are defined, but I'll stop here.
 };
 
-string toString(Qt::MouseButtons buttons)
+std::string toString(Qt::MouseButtons buttons)
 {
   return flagsToString<Qt::MouseButton>(
     buttons,
@@ -130,7 +137,7 @@ static EnumeratorName<Qt::KeyboardModifier> const keyboardModifierDefinitions[] 
 };
 
 
-string toString(Qt::KeyboardModifiers kmods)
+std::string toString(Qt::KeyboardModifiers kmods)
 {
   return flagsToString<Qt::KeyboardModifier>(
     kmods,
@@ -141,7 +148,7 @@ string toString(Qt::KeyboardModifiers kmods)
 
 
 
-Qt::KeyboardModifier getKeyboardModifierFromString(string const &str)
+Qt::KeyboardModifier getKeyboardModifierFromString(std::string const &str)
 {
   return stringToFlag<Qt::KeyboardModifier>(
     str,
@@ -151,35 +158,35 @@ Qt::KeyboardModifier getKeyboardModifierFromString(string const &str)
 }
 
 
-string toString(QPoint p)
+std::string toString(QPoint p)
 {
   return stringb('(' << p.x() << ',' << p.y() << ')');
 }
 
 
-string toString(QRect r)
+std::string toString(QRect r)
 {
   return stringb('[' << toString(r.topLeft()) << '+' <<
                  toString(r.size()) << ']');
 }
 
 
-string qrgbToString(QRgb rgba)
+std::string qrgbToString(QRgb rgba)
 {
   char tmp[10];
   int n = sprintf(tmp, "#%08X", (unsigned int)rgba);
   assert(n < TABLESIZE(tmp));
-  return string(tmp);
+  return std::string(tmp);
 }
 
 
-string toString(QSize s)
+std::string toString(QSize s)
 {
   return stringb('(' << s.width() << ',' << s.height() << ')');
 }
 
 
-QSize qSizeFromString(string const &str)
+QSize qSizeFromString(std::string const &str)
 {
   ParseString ps(str);
   ps.parseByte('(');
@@ -232,22 +239,16 @@ EnumerationNames<Qt::Key> const g_qtKeyNames = {
 };
 
 
-string toString(QString const &s)
+std::string toString(QString const &s)
 {
   QByteArray utf8(s.toUtf8());
-  return string(utf8.constData(), utf8.length());
+  return std::string(utf8.constData(), utf8.length());
 }
 
 
-string doubleQuote(QString const &s)
+std::string doubleQuote(QString const &s)
 {
   return doubleQuote(toString(s));
-}
-
-
-stringBuilder& operator<< (stringBuilder& sb, QString const &str)
-{
-  return sb << toString(str);
 }
 
 
@@ -257,7 +258,7 @@ ostream& operator<< (ostream &os, QString const &str)
 }
 
 
-QString toQString(string const &s)
+QString toQString(std::string const &s)
 {
   return QString::fromUtf8(s.data(), safeToInt(s.size()));
 }
@@ -276,7 +277,7 @@ QString toQString(char const *s)
 }
 
 
-string qObjectDesc(QObject *obj)
+std::string qObjectDesc(QObject *obj)
 {
   if (obj) {
     return stringb(
@@ -303,7 +304,7 @@ void disconnectSignalSender(QObject *sender)
 }
 
 
-string qObjectPath(QObject const *obj)
+std::string qObjectPath(QObject const *obj)
 {
   if (!obj) {
     return "null";
@@ -314,7 +315,7 @@ string qObjectPath(QObject const *obj)
     return toString(obj->objectName());
   }
   else {
-    stringBuilder sb;
+    std::ostringstream sb;
     sb << qObjectPath(obj->parent()) << '.';
     if (obj->objectName().isEmpty()) {
       // I need a pointer to non-const to invoke 'indexOf'.  Of course
@@ -355,7 +356,7 @@ char const *toString(Qt::Key k)
 }
 
 
-Qt::Key getKeyFromString(string const &str)
+Qt::Key getKeyFromString(std::string const &str)
 {
   // This is very inefficient.  I doubt it matters.
   #define HANDLE_KEY(key) \

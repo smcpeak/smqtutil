@@ -67,16 +67,25 @@ static void testMouseButtonsToString()
   DIAG("testMouseButtonsToString");
 
   Qt::MouseButtons b;
-  DIAG("empty: " << toString(b));
+  EXPECT_EQ(toString(b), "NoButton");
 
   b |= Qt::LeftButton;
-  DIAG("left: " << toString(b));
+  EXPECT_EQ(toString(b), "LeftButton");
 
   b |= Qt::RightButton;
-  DIAG("left and right: " << toString(b));
+  EXPECT_EQ(toString(b), "LeftButton+RightButton");
 
   b |= Qt::AllButtons;
-  DIAG("all: " << toString(b));
+  EXPECT_EQ(toString(b),
+    "LeftButton+"
+    "RightButton+"
+    "MiddleButton+"
+    "BackButton+"
+    "ForwardButton+"
+    "TaskButton+"
+    "ExtraButton4+"
+    "ExtraButton5 "
+    "(plus unknown flags: 134217472)");
 }
 
 
@@ -85,16 +94,23 @@ static void testKeyboardModifiersToString()
   DIAG("testKeyboardModifiersToString");
 
   Qt::KeyboardModifiers k;
-  DIAG("empty: " << toString(k));
+  EXPECT_EQ(toString(k), "NoModifier");
 
   k |= Qt::AltModifier;
-  DIAG("alt: " << toString(k));
+  EXPECT_EQ(toString(k), "Alt");
 
   k |= Qt::ShiftModifier;
-  DIAG("alt and shift: " << toString(k));
+  EXPECT_EQ(toString(k), "Shift+Alt");
 
   k |= Qt::KeyboardModifier(0x7fffffff);
-  DIAG("all: " << toString(k));
+  EXPECT_EQ(toString(k),
+    "Shift+"
+    "Ctrl+"
+    "Alt+"
+    "Meta+"
+    "Keypad+"
+    "GroupSwitch "
+    "(plus unknown flags: 33554431)");
 }
 
 
