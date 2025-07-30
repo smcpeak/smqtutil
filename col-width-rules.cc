@@ -11,7 +11,7 @@
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/overflow.h"                     // safeToInt
 #include "smbase/sm-macros.h"                    // IMEMBFP, IMEMBMFP
-#include "smbase/sm-span-ops.h"                  // smbase::Span
+#include "smbase/sm-span.h"                      // smbase::Span
 #include "smbase/sm-span-util-ops.h"             // smbase::Span
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
 #include "smbase/vector-util.h"                  // vecSum

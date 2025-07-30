@@ -12,7 +12,7 @@
 #include "smbase/gdvalue-vector.h"               // gdv::toGDValue(std::vector)
 #include "smbase/ordered-map-ops.h"              // GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-span-ops.h"                  // smbase::Span
+#include "smbase/sm-span.h"                      // smbase::Span
 #include "smbase/sm-test.h"                      // DIAG, EXPECT_EQ, TEST_CASE_EXPRS
 
 #include <iostream>                              // std::cout (h)
