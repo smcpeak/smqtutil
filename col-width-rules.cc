@@ -12,7 +12,7 @@
 #include "smbase/overflow.h"                     // safeToInt
 #include "smbase/sm-macros.h"                    // IMEMBFP, IMEMBMFP
 #include "smbase/sm-span.h"                      // smbase::Span
-#include "smbase/sm-span-util-ops.h"             // smbase::Span
+#include "smbase/sm-span-util.h"                 // smbase::spanSum
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
 #include "smbase/vector-util.h"                  // vecSum
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
