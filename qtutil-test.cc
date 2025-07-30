@@ -6,6 +6,8 @@
 #include "qtutil.h"                    // module to test
 #include "qtguiutil.h"                 // module to test
 
+#include "smqtutil/qstringb.h"         // qstringb
+
 // smbase
 #include "smbase/exc.h"                // smbase::XFormat
 #include "smbase/sm-test.h"            // DIAG, EXPECT_EQ

@@ -6,10 +6,8 @@
 
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
-#include "smbase/stringb.h"                      // stringb
 
 #include <QColor>                                // QRgb
-#include <QString>                               // QString
 #include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
 
 #include <iosfwd>                                // std::ostream
@@ -20,6 +18,7 @@ class QObject;
 class QPoint;
 class QRect;
 class QSize;
+class QString;
 
 
 // The numeric value and name of some enumerator.
@@ -95,7 +94,6 @@ std::ostream& operator<< (std::ostream &os, QString const &str);
 
 // Convert 'string' to 'QString'.
 QString toQString(std::string const &s);
-#define qstringb(stuff) toQString(stringb(stuff))
 
 // Also convert `string_view` and `char*`.
 QString toQString(std::string_view sv);

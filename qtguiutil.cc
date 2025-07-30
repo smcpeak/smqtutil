@@ -4,7 +4,8 @@
 #include "qtguiutil.h"                 // this module
 
 // smqtutil
-#include "qtutil.h"                    // toString for Key and Modifiers, qstringb
+#include "smqtutil/qstringb.h"         // qstringb
+#include "smqtutil/qtutil.h"           // toString for Key and Modifiers
 
 // smbase
 #include "smbase/exc.h"                // smbase::{xformat, XBase}
