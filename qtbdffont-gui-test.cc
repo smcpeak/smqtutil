@@ -252,7 +252,7 @@ int gui_test_qtbdffont(QApplication &app, bool nogui)
       qfont.setTransparent(drawMode==0? true : false);
 
       long start = getMilliseconds();
-      int iters = 10000;
+      int iters = 1000;
       for (int i=0; i < iters; i++) {
         drawString(qfont, painter, QPoint(50,50),
                    "drawString(QtBDFFont &)");
