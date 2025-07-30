@@ -8,7 +8,6 @@
 
 // smbase
 #include "smbase/exc.h"                // smbase::XFormat
-#include "smbase/sm-iostream.h"        // cout, etc.
 #include "smbase/sm-test.h"            // DIAG, EXPECT_EQ
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/strutil.h"            // hasSubstring

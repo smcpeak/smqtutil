@@ -4,7 +4,6 @@
 #ifndef SMQTUTIL_QTUTIL_H
 #define SMQTUTIL_QTUTIL_H
 
-#include "smbase/sm-iostream.h"                  // ostream
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 #include "smbase/stringb.h"                      // stringb
@@ -12,6 +11,8 @@
 #include <QColor>                                // QRgb
 #include <QString>                               // QString
 #include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
+
+#include <iosfwd>                                // std::ostream
 
 
 class QByteArray;
@@ -83,14 +84,14 @@ std::string toString(QString const &s);
 std::string doubleQuote(QString const &s);
 
 
-// Allow inserting QString into ostream.
+// Allow inserting QString into std::ostream.
 //
 // For a while I have been avoiding this on safety grounds, instead
 // explicitly calling toString, but that is annoying and the safety
 // benefit seems minimal, particularly as my eventual intent is for
 // 8-bit characters to be UTF-8, and hence this does not lose
 // information.
-ostream& operator<< (ostream &os, QString const &str);
+std::ostream& operator<< (std::ostream &os, QString const &str);
 
 // Convert 'string' to 'QString'.
 QString toQString(std::string const &s);

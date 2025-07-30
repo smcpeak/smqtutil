@@ -20,6 +20,7 @@
 #include <QSize>
 
 // libc++
+#include <iostream>                    // std::ostream
 #include <sstream>                     // std::ostringstream
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
@@ -252,7 +253,7 @@ std::string doubleQuote(QString const &s)
 }
 
 
-ostream& operator<< (ostream &os, QString const &str)
+std::ostream& operator<< (std::ostream &os, QString const &str)
 {
   return os << toString(str);
 }
