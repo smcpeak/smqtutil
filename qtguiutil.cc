@@ -200,6 +200,25 @@ void removeWindowContextHelpButton(QWidget *window)
 }
 
 
+void showRaiseAndActivateWindow(QWidget *window)
+{
+  // See related discussion in:
+  // https://stackoverflow.com/questions/7817334/qt-correct-way-to-show-display-raise-window
+
+  // Visible.
+  window->show();
+
+  // Un-minimize.
+  window->showNormal();
+
+  // Bring it to the front.
+  window->raise();
+
+  // Give it focus.
+  window->activateWindow();
+}
+
+
 // ------------------------- CursorSetRestore --------------------------
 CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
   : m_widget(w),

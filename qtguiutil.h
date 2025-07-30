@@ -75,6 +75,11 @@ void centerWindowOnWindow(QWidget *windowToMove, QWidget *targetWindow);
 void removeWindowContextHelpButton(QWidget *window);
 
 
+// Show, raise, restore (if minimized) and activate (give focus to) a
+// window, thus making it the thing the user will interact with.
+void showRaiseAndActivateWindow(QWidget *window);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data
