@@ -204,11 +204,22 @@ QtBDFFont::QtBDFFont(BDFFont const &font)
 
   // Associate it as the mask due to 'transparent'.
   colorPixmap.setMask(glyphMask);
+
+  selfCheck();
 }
 
 
 QtBDFFont::~QtBDFFont()
 {}
+
+
+void QtBDFFont::selfCheck() const
+{
+  // TODO: Check invariants.
+  //
+  // I created this method just to have a uniform interface for clients
+  // to do self-checking.  It is just a placeholder.
+}
 
 
 int QtBDFFont::maxValidChar() const

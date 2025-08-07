@@ -171,6 +171,9 @@ public:      // funcs
   QtBDFFont(BDFFont const &font);
   ~QtBDFFont();
 
+  // Assert invariants.
+  void selfCheck() const;
+
   // Return the maximum valid character index, or -1 if there are no
   // valid indices.
   int maxValidChar() const;
