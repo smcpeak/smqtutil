@@ -1,6 +1,8 @@
 // smqtutil/gui-tests.cc
 // GUI tests for `smqtutil`.
 
+#include "smqtutil/qtutil.h"           // installSMQtUtilMessageHandler
+
 #include "smbase/dev-warning.h"        // g_abortUponDevWarning
 #include "smbase/exc.h"                // xmessage, smbase::XBase
 #include "smbase/sm-file-util.h"       // SMFileUtil
@@ -31,6 +33,10 @@ static void entry(int argc, char **argv)
     // try to detect when the test can run.
     return;
   }
+
+  // Suppress "Unable to set geometry" warning.  Without this, the
+  // `input_dialog` GUI test would provoke it.
+  installSMQtUtilMessageHandler();
 
   // We create the `QApplication` here for all tests, but for a GUI
   // test, the individual test function is responsible for calling
@@ -96,6 +102,7 @@ static void entry(int argc, char **argv)
       ranOne = true;                                             \
     }
 
+  RUN_TEST(input_dialog);
   RUN_TEST(layout);
   RUN_TEST(qtbdffont);
   RUN_TEST(sm_table_widget);

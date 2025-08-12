@@ -152,4 +152,12 @@ void printQByteArray(QByteArray const &ba, char const *label);
 void waitForQtEvent();
 
 
+// Install a global message handler that (1) suppresses a certain
+// useless warning message that can't otherwise be avoided, and (2)
+// explains what to do about a common Qt startup complaint.  This should
+// be called once during startup, before the `QApplication` object is
+// created.
+void installSMQtUtilMessageHandler();
+
+
 #endif // SMQTUTIL_QTUTIL_H

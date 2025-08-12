@@ -136,6 +136,7 @@ unit-tests.exe: $(UNIT_TEST_OBJS) libsmqtutil.a
 # ----------------------------- gui-tests ------------------------------
 GUI_TEST_OBJS :=
 GUI_TEST_OBJS += gui-tests.o
+GUI_TEST_OBJS += input-dialog-gui-test.o
 GUI_TEST_OBJS += layout-gui-test.o
 GUI_TEST_OBJS += qtbdffont-gui-test.o
 GUI_TEST_OBJS += sm-table-widget-gui-test.o

@@ -13,14 +13,15 @@
 
 // Qt
 #include <QByteArray>
-#include <QCoreApplication>
+#include <QCoreApplication>            // + qInstallMessageHandler
+#include <QLibraryInfo>
 #include <QObject>
 #include <QPoint>
 #include <QRect>
 #include <QSize>
 
 // libc++
-#include <iostream>                    // std::ostream
+#include <iostream>                    // std::{ostream, cerr, endl}
 #include <sstream>                     // std::ostringstream
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
@@ -406,6 +407,74 @@ void waitForQtEvent()
   QCoreApplication::sendPostedEvents();
 
   TRACE2("waitForQtEvent: end");
+}
+
+
+// Map a QtMsgType to a string for use when printing out a message that
+// was sent with that type.
+static char const *toString(QtMsgType mtype)
+{
+  switch (mtype) {
+    case QtDebugMsg:         return "debug";
+    case QtInfoMsg:          return "info";
+    case QtWarningMsg:       return "warning";
+    case QtCriticalMsg:      return "critical";
+    case QtFatalMsg:         return "fatal";
+    default:                 return "error";
+  }
+}
+
+
+static void customMessageHandler(
+  QtMsgType mtype,
+  QMessageLogContext const &,
+  QString const &message)
+{
+  if (message.indexOf("setGeometry: Unable to set geometry") >= 0) {
+    // This message is generated anytime I use (e.g.) Alt+G to go to a
+    // line, which uses 'QInputDialog::getText'.  It is caused by a bug
+    // in Qt:
+    //
+    //   https://bugreports.qt.io/browse/QTBUG-73258
+    //   https://stackoverflow.com/questions/54307407/why-am-i-getting-qwindowswindowsetgeometry-unable-to-set-geometry-warning-wit
+    //
+    // Apparently the only solution is to suppress the message.
+    return;
+  }
+
+  // Print the message.
+  std::cerr << toString(mtype) << ": " << message << std::endl;
+
+  // Provide additional advice about the plugin error.
+  if (message.indexOf("platform plugin") >= 0) {
+    QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
+    QString execPath = QCoreApplication::applicationDirPath();
+
+    std::cerr <<
+"\n"
+"hint: When Qt complains about the \"platform plugin\", it means it is\n"
+"looking for a file called \"platforms/q<platform>.{dll,so}\", where\n"
+"<platform> is the name of that platform.\n"
+"\n"
+"By default, it looks in: " << pluginsPath << "\n"
+"as well as relative to the program executable: " << execPath << "\n"
+"\n"
+"One way to fix this is to set QT_PLUGIN_PATH to point at a directory\n"
+"containing the needed file.  On Windows, this might look like:\n"
+"\n"
+"  $ QT_PLUGIN_PATH=$(cygpath -m $HOME/opt/qt-5.9.9/plugins) " << execPath << "\n"
+"\n"
+"Another way might be to change PATH (on Windows) or LD_LIBRARY_PATH\n"
+"(on Linux) to point at a different set of Qt DLLs, since the plugin\n"
+"path is embedded in those DLLs.\n"
+         << std::endl;
+  }
+}
+
+
+void installSMQtUtilMessageHandler()
+{
+  qInstallMessageHandler(customMessageHandler);
 }
 
 
