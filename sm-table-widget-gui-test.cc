@@ -68,8 +68,10 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     // Left-align the label so it is visible without scrolling.
     table->horizontalHeaderItem(4)->
       setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  }
 
-    // In wide mode, use single-select.
+  if (envAsBool("SINGLE")) {
+    // Use single-select mode.
     table->setSelectionMode(QAbstractItemView::SingleSelection);
   }
 
