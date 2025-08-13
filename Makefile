@@ -110,6 +110,7 @@ OBJS += qtutil.o
 OBJS += sm-line-edit.o
 OBJS += sm-table-widget.moc.o
 OBJS += sm-table-widget.o
+OBJS += sync-wait.o
 OBJS += timer-event-loop.o
 
 
@@ -140,6 +141,7 @@ GUI_TEST_OBJS += input-dialog-gui-test.o
 GUI_TEST_OBJS += layout-gui-test.o
 GUI_TEST_OBJS += qtbdffont-gui-test.o
 GUI_TEST_OBJS += sm-table-widget-gui-test.o
+GUI_TEST_OBJS += sync-wait-gui-test.o
 GUI_TEST_OBJS += test-main-window.o
 
 TEST_PROGRAMS += gui-tests.exe

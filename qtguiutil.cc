@@ -14,6 +14,7 @@
 
 // Qt
 #include <qtcoreversion.h>             // QTCORE_VERSION
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
@@ -231,6 +232,19 @@ CursorSetRestore::CursorSetRestore(QWidget *w, QCursor const &newCursor)
 CursorSetRestore::~CursorSetRestore()
 {
   m_widget->setCursor(m_previousCursor);
+}
+
+
+// --------------------- OverrideCursorSetRestore ----------------------
+OverrideCursorSetRestore::OverrideCursorSetRestore(QCursor const &newCursor)
+{
+  QGuiApplication::setOverrideCursor(newCursor);
+}
+
+
+OverrideCursorSetRestore::~OverrideCursorSetRestore()
+{
+  QGuiApplication::restoreOverrideCursor();
 }
 
 

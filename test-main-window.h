@@ -17,6 +17,9 @@
 class TestMainWindow : public QMainWindow {
 protected:   // methods
   virtual void keyPressEvent(QKeyEvent *event) override;
+
+public:      // methods
+  explicit TestMainWindow(char const *title);
 };
 
 

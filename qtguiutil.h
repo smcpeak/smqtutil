@@ -92,6 +92,14 @@ public:      // funcs
 };
 
 
+// Set the entire app override cursor temporarily.
+class OverrideCursorSetRestore {
+public:      // data
+  explicit OverrideCursorSetRestore(QCursor const &newCursor);
+  ~OverrideCursorSetRestore();
+};
+
+
 // Save the `QPainter` state, then restore it on scope exit.
 class QPainterSaveRestore {
   NO_OBJECT_COPIES(QPainterSaveRestore);

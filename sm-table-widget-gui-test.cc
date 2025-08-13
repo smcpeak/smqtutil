@@ -24,16 +24,10 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
     return 0;
   }
 
-  TestMainWindow window;
-  window.setWindowTitle("SMTableWidget");
+  TestMainWindow window("SMTableWidget");
 
   SMTableWidget *table = new SMTableWidget(&window);
   table->configureAsListView();
-
-  int fontSize = envAsIntOr(12, "FONT_SIZE");
-  QFont font = table->font();
-  font.setPointSize(fontSize);
-  table->setFont(font);
 
   // `configureAsListView` turns off the grid lines, but sometimes I
   // want to see them.

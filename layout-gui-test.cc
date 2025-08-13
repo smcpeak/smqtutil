@@ -20,8 +20,7 @@ int gui_test_layout(QApplication &app, bool nogui)
     return 0;
   }
 
-  TestMainWindow mainWindow;
-  mainWindow.setWindowTitle("layout");
+  TestMainWindow mainWindow("layout");
 
   QWidget *widget = new QWidget(&mainWindow);
 

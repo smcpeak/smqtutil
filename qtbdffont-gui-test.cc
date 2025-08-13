@@ -221,8 +221,7 @@ int gui_test_qtbdffont(QApplication &app, bool nogui)
   int const windowWidth = 600;
   int const windowHeight = 600;
 
-  TestMainWindow mainWindow;
-  mainWindow.setWindowTitle("qtbdffont");
+  TestMainWindow mainWindow("qtbdffont");
 
   QLabel *widget = new QLabel(&mainWindow);
   widget->resize(windowWidth, windowHeight);

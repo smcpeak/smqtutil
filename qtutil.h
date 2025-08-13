@@ -138,24 +138,35 @@ std::string qObjectPath(QObject const *obj);
 void printQByteArray(QByteArray const &ba, char const *label);
 
 
-// Block until an event happens (e.g., IPC, or timer expiring), then
-// process that event and return.  If at least one event is already
-// pending, process the pending events and return.
-//
-// The idea is you can write synchronous interactions on top of
-// asynchronous interfaces like:
-//
-//   while (!someCondition()) {
-//     waitForQtEvent();
-//   }
-//
-void waitForQtEvent();
+/* Block until an event happens (e.g., IPC, or timer expiring), then
+   process that event and return.  If at least one event is already
+   pending, process the pending events and return.
+
+   The idea is you can write synchronous interactions on top of
+   asynchronous interfaces like:
+
+     while (!someCondition()) {
+       waitForQtEvent();
+     }
+
+   If `!processInputEvents`, user input (mouse and keyboard) events are
+   deferred until after this wait period.
+
+   Note that while the above construction is not a busy-wait loop, it is
+   also not especially efficient, typically consuming around 1-2% of a
+   CPU core due to the background event load.  It's generally preferable
+   to use a proper signal and slot arrangement to wait, but when that is
+   challenging architecturally, this is often adequate so long as the
+   expected time spent waiting is not excessive (i.e., seconds, not
+   hours).
+*/
+void waitForQtEvent(bool processInputEvents = true);
 
 
-// Install a global message handler that (1) suppresses a certain
-// useless warning message that can't otherwise be avoided, and (2)
-// explains what to do about a common Qt startup complaint.  This should
-// be called once during startup, before the `QApplication` object is
+// Install a global message handler that (1) suppresses certain useless
+// warning messages that can't otherwise be avoided, and (2) explains
+// what to do about a common Qt startup complaint.  This should be
+// called once during startup, before the `QApplication` object is
 // created.
 void installSMQtUtilMessageHandler();
 

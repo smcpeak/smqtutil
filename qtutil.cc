@@ -385,12 +385,18 @@ Qt::Key getKeyFromString(std::string const &str)
 }
 
 
-void waitForQtEvent()
+void waitForQtEvent(bool processInputEvents)
 {
+  QEventLoop::ProcessEventsFlags flags = QEventLoop::WaitForMoreEvents;
+  if (!processInputEvents) {
+    flags |= QEventLoop::ExcludeUserInputEvents;
+  }
+
   // If no event is pending, block until one is.  Then process all
   // pending events.
-  TRACE2("waitForQtEvent: start: calling processEvents");
-  QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+  TRACE2("waitForQtEvent(input=" << processInputEvents <<
+         "): start: calling processEvents");
+  QCoreApplication::processEvents(flags);
 
   // At least on Windows, `processEvents` begins by calling
   // `sendPostedEvents` (which does not report on whether it did
@@ -403,10 +409,11 @@ void waitForQtEvent()
   //
   // This seems like a bug in Qt...
   //
-  TRACE2("waitForQtEvent: middle: calling sendPostedEvents");
+  TRACE2("waitForQtEvent(input=" << processInputEvents <<
+         "): middle: calling sendPostedEvents");
   QCoreApplication::sendPostedEvents();
 
-  TRACE2("waitForQtEvent: end");
+  TRACE2("waitForQtEvent(input=" << processInputEvents << "): end");
 }
 
 
