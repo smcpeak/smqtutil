@@ -8,6 +8,7 @@
 #include "smqtutil/col-width-rules.h"            // ColumnWidthRules
 #include "smqtutil/gdvalue-qstring.h"            // gdv::toGDValue(QString)
 #include "smqtutil/qtguiutil.h"                  // keysString(QKeyEvent)
+#include "smqtutil/qtutil.h"                     // toString(Qt::KeyboardModifiers)
 
 #include "smbase/exc.h"                          // GENERIC_CATCH_BEGIN/END
 #include "smbase/gdvalue-vector.h"               // gdv::toGDValue(std::vector)
@@ -212,42 +213,50 @@ void SMTableWidget::keyPressEvent(QKeyEvent *event) NOEXCEPT
 {
   GENERIC_CATCH_BEGIN
 
-  TRACE1("keyPressEvent: " << keysString(*event));
+  Qt::KeyboardModifiers modifiers = event->modifiers();
+  TRACE1("keyPressEvent: " << keysString(*event) <<
+         " (modifiers: " << toString(modifiers) << ")");
 
-  switch (event->key()) {
-    case Qt::Key_N:
-      // We pass along the same modifiers so that the user can do, e.g.,
-      // Shift+N to extend the selection, etc.
-      this->synthesizeKey(Qt::Key_Down, event->modifiers());
-      break;
+  if (modifiers == Qt::NoModifier) {
+    switch (event->key()) {
+      case Qt::Key_N:
+        // We pass along the same modifiers so that the user can do, e.g.,
+        // Shift+N to extend the selection, etc.
+        this->synthesizeKey(Qt::Key_Down, event->modifiers());
+        break;
 
-    case Qt::Key_P:
-      this->synthesizeKey(Qt::Key_Up, event->modifiers());
-      break;
+      case Qt::Key_P:
+        this->synthesizeKey(Qt::Key_Up, event->modifiers());
+        break;
 
-    // Note: `QTableWidget` handles Up, Down, PageUp, and PageDown.
+      // Note: `QTableWidget` handles Up, Down, PageUp, and PageDown.
 
-    case Qt::Key_F:
-    case Qt::Key_Right:
-      scrollTableHorizontallyBy(+HSCROLL_STEP);
-      break;
+      case Qt::Key_F:
+      case Qt::Key_Right:
+        scrollTableHorizontallyBy(+HSCROLL_STEP);
+        break;
 
-    case Qt::Key_B:
-    case Qt::Key_Left:
-      scrollTableHorizontallyBy(-HSCROLL_STEP);
-      break;
+      case Qt::Key_B:
+      case Qt::Key_Left:
+        scrollTableHorizontallyBy(-HSCROLL_STEP);
+        break;
 
-    case Qt::Key_A:
-      scrollTableHorizontallyToExtremum(EXTREMUM_MINIMUM);
-      break;
+      case Qt::Key_A:
+        scrollTableHorizontallyToExtremum(EXTREMUM_MINIMUM);
+        break;
 
-    case Qt::Key_E:
-      scrollTableHorizontallyToExtremum(EXTREMUM_MAXIMUM);
-      break;
+      case Qt::Key_E:
+        scrollTableHorizontallyToExtremum(EXTREMUM_MAXIMUM);
+        break;
 
-    default:
-      QTableWidget::keyPressEvent(event);
-      break;
+      default:
+        QTableWidget::keyPressEvent(event);
+        break;
+    }
+  }
+
+  else {
+    QTableWidget::keyPressEvent(event);
   }
 
   GENERIC_CATCH_END
