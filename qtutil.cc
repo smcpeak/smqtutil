@@ -442,6 +442,28 @@ static void customMessageHandler(
     return;
   }
 
+  /* Similar to the preceding case, this is a useless (to me) warning.
+     This is a relatively informative discussion:
+
+       https://github.com/flatpak/flatpak/issues/3397
+
+     Among other things, it links to the change that introduced the
+     check in Qt 5.13:
+
+       https://codereview.qt-project.org/c/qt/qtbase/+/256521
+
+     As I am using WSL, it seems likely the reason the permissions are
+     wrong is that WSL has a bug (that Microsoft deems unimportant):
+
+       https://github.com/microsoft/WSL/issues/10896
+
+     In any case, my programs are not using /run/user, so I'm simply
+     going to swallow the warning.
+  */
+  if (message.indexOf("QStandardPaths: wrong permissions on runtime directory") >= 0) {
+    return;
+  }
+
   // Print the message.
   std::cerr << toString(mtype) << ": " << message << std::endl;
 
