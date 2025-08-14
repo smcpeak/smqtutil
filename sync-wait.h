@@ -6,6 +6,8 @@
 #ifndef SMQTUTIL_SYNC_WAIT_H
 #define SMQTUTIL_SYNC_WAIT_H
 
+#include "smbase/std-string-fwd.h"     // std::string
+
 #include <functional>                  // std::function
 
 class QWidget;
@@ -28,8 +30,8 @@ bool synchronouslyWaitUntil(
   QWidget *widget,
   std::function<bool()> condition,
   int activityDialogDelayMS,
-  char const *activityDialogTitle,
-  char const *activityDialogMessage);
+  std::string const &activityDialogTitle,
+  std::string const &activityDialogMessage);
 
 
 #endif // SMQTUTIL_SYNC_WAIT_H

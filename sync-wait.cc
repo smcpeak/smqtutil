@@ -9,6 +9,7 @@
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 
 #include <functional>                  // std::function
+#include <string>                      // std::string
 
 #include <QApplication>
 #include <QCursor>
@@ -27,8 +28,8 @@ bool synchronouslyWaitUntil(
   QWidget *widget,
   std::function<bool()> condition,
   int activityDialogDelayMS,
-  char const *activityDialogTitle,
-  char const *activityDialogMessage)
+  std::string const &activityDialogTitle,
+  std::string const &activityDialogMessage)
 {
   TRACE1("synchronouslyWaitUntil starting, title: " <<
          activityDialogTitle);
