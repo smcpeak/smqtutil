@@ -4,16 +4,22 @@
 #include "qtguiutil.h"                 // this module
 
 // smqtutil
+#include "smqtutil/gdvalue-qrect.h"    // toGDValue({QRect,QPoint})
 #include "smqtutil/qstringb.h"         // qstringb
 #include "smqtutil/qtutil.h"           // toString for Key and Modifiers
 
 // smbase
+#include "smbase/gdvalue.h"            // gdv::toGDValue for TRACE1_GDVN_EXPRS
 #include "smbase/exc.h"                // smbase::{xformat, XBase}
+#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
+#include "smbase/sm-windows.h"         // RECT, GetWindowRect
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/stringb.h"            // stringb
+#include "smbase/syserr.h"             // xsyserror
 
 // Qt
 #include <qtcoreversion.h>             // QTCORE_VERSION
+#include <QApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
@@ -27,7 +33,11 @@
 // libc
 #include <string.h>                    // memcmp
 
+using namespace gdv;
 using namespace smbase;
+
+
+INIT_TRACE("qtguiutil");
 
 
 string keysString(QKeyEvent const &k)
@@ -218,6 +228,94 @@ void showRaiseAndActivateWindow(QWidget *window)
 
   // Give it focus.
   window->activateWindow();
+}
+
+
+QRect getTrueFrameGeometry(QWidget *window)
+{
+  xassertPrecondition(window != nullptr);
+  xassertPrecondition(window->isWindow());
+
+  if (PLATFORM_IS_WINDOWS) {
+    HWND hwnd = reinterpret_cast<HWND>(window->winId());
+    RECT r;
+    if (GetWindowRect(hwnd, &r)) {
+      // The rectangle returned has its `right` and `bottom` as the
+      // pixel just *outside* the window, so subtracting them yields the
+      // correct number of pixels for the width and height.
+      return QRect(
+        r.left,
+        r.top,
+        r.right - r.left,
+        r.bottom - r.top);
+    }
+    else {
+      xsyserror("GetWindowRect");
+    }
+  }
+  else {
+    // I don't know if the Qt functions work correctly on other
+    // platforms.
+  }
+
+  // With the Windows theme I am using, this fails to account for the
+  // thick (~7 pixel) window frames.  It also seems very confused
+  // regarding the window height, omitting both the title bar height and
+  // the bottom frame.
+  return window->frameGeometry();
+}
+
+
+void trueMoveWindow(QWidget *window, QPoint desiredTopLeft)
+{
+  xassertPrecondition(window != nullptr);
+  xassertPrecondition(window->isWindow());
+
+  // How much we needed to adjust last time.
+  static QPoint savedCorrection(0,0);
+
+  // Copy that into a local just in case this ends up being used from
+  // multiple threads (in which case this is not sufficient, but better
+  // than reading it multiple times).
+  QPoint const prevCorrection = savedCorrection;
+
+  // Try using the same correction.
+  window->move(desiredTopLeft + prevCorrection);
+
+  // Where did it end up?
+  QRect const actual = getTrueFrameGeometry(window);
+
+  // How far does it need to move to get to the right spot?
+  QPoint const additionalCorrection = desiredTopLeft - actual.topLeft();
+
+  if (!additionalCorrection.isNull()) {
+    // Adjust the overall correction.
+    QPoint const newCorrection = prevCorrection + additionalCorrection;
+
+    // Apply the correction.
+    window->move(desiredTopLeft + newCorrection);
+
+    // I would like to confirm this worked, but for some reason calling
+    // `getTrueFrameGeometry` a second time does not work, and just
+    // returns the same thing as on the previous call, even when the
+    // window *has* now moved to the correct position.
+
+    TRACE1_GDVN_EXPRS("trueMoveWindow used one adjustment",
+      desiredTopLeft,
+      prevCorrection,
+      actual,
+      additionalCorrection,
+      newCorrection);
+
+    // Remember the updated correction value.
+    savedCorrection = newCorrection;
+  }
+  else {
+    TRACE1_GDVN_EXPRS("trueMoveWindow worked using saved adjustment",
+      desiredTopLeft,
+      prevCorrection,
+      actual);
+  }
 }
 
 

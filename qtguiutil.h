@@ -18,6 +18,8 @@
 class QKeyEvent;
 class QKeySequence;
 class QPainter;
+class QPoint;
+class QRect;
 class QShortcutEvent;
 class QString;
 class QWidget;
@@ -78,6 +80,19 @@ void removeWindowContextHelpButton(QWidget *window);
 // Show, raise, restore (if minimized) and activate (give focus to) a
 // window, thus making it the thing the user will interact with.
 void showRaiseAndActivateWindow(QWidget *window);
+
+
+// Get the rectangle that bounds top-level `window`, including the title
+// bar and the window manager frame.  This is what
+// `window->frameGeometry()` claims to do, but does not do accurately on
+// Windows.
+QRect getTrueFrameGeometry(QWidget *window);
+
+
+// Move top-level `window` so that the top-left corner of its window
+// manager frame is at `desiredTopLeft`.  This is what `window->move()`
+// claims to do, but does not do so accurately on Windows.
+void trueMoveWindow(QWidget *window, QPoint desiredTopLeft);
 
 
 // Set a widget mouse cursor, then restore it on scope exit.
