@@ -5,9 +5,19 @@
 
 #include "smbase/gdvalue.h"           // gdv::GDValue
 
+#include <QPoint>
 #include <QRect>
 
 using namespace gdv;
+
+
+gdv::GDValue toGDValue(QPoint const &p)
+{
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "QPoint"_sym);
+  m.mapSetValueAtSym("x", p.x());
+  m.mapSetValueAtSym("y", p.y());
+  return m;
+}
 
 
 gdv::GDValue toGDValue(QRect const &r)
