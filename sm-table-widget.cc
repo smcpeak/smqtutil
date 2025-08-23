@@ -38,7 +38,7 @@ INIT_TRACE("sm-table-widget");
 
 
 // By how much do we scroll horizontally per keypress?
-int const HSCROLL_STEP = 100;
+static int const HSCROLL_STEP = 100;
 
 
 // ---------------------------- ColumnInfo -----------------------------
