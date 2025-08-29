@@ -89,6 +89,11 @@ void showRaiseAndActivateWindow(QWidget *window);
 QRect getTrueFrameGeometry(QWidget *window);
 
 
+// Set the frame geometry accurately.
+void setTrueFrameGeometry(
+  QWidget *window, QRect const &desiredFrameRect);
+
+
 // Move top-level `window` so that the top-left corner of its window
 // manager frame is at `desiredTopLeft`.  This is what `window->move()`
 // claims to do, but does not do so accurately on Windows.

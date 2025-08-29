@@ -266,6 +266,37 @@ QRect getTrueFrameGeometry(QWidget *window)
 }
 
 
+void setTrueFrameGeometry(
+  QWidget *window, QRect const &desiredFrameRect)
+{
+  // Get the frame and interior geometries.
+  QRect frameRect = getTrueFrameGeometry(window);
+  QRect innerRect = window->geometry();
+
+  // "inner - frame" is how to get to "inner" from "frame".  So add that
+  // to the desired frame rect to get the desired inner rect.
+  QRect desiredInnerRect(
+    desiredFrameRect.topLeft() +
+      (innerRect.topLeft() - frameRect.topLeft()),
+    desiredFrameRect.bottomRight() +
+      (innerRect.bottomRight() - frameRect.bottomRight()));
+
+  window->setGeometry(desiredInnerRect);
+
+  // Try to see if it worked.  This call only gets accurate info if the
+  // window is currently visible, but the preceding calls appear to work
+  // regardless.
+  QRect actualFrameRect = getTrueFrameGeometry(window);
+
+  TRACE1_GDVN_EXPRS("setTrueFrameGeometry",
+    desiredFrameRect,
+    frameRect,
+    innerRect,
+    desiredInnerRect,
+    actualFrameRect);
+}
+
+
 void trueMoveWindow(QWidget *window, QPoint desiredTopLeft)
 {
   xassertPrecondition(window != nullptr);
