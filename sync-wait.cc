@@ -25,7 +25,7 @@ INIT_TRACE("sync-wait");
 // would be ideal to have an alternative interface that uses a signal
 // instead of the "wait for" loop.
 bool synchronouslyWaitUntil(
-  QWidget *widget,
+  QWidget * NULLABLE widget,
   std::function<bool()> condition,
   int activityDialogDelayMS,
   std::string const &activityDialogTitle,

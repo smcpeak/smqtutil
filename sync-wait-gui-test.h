@@ -10,6 +10,7 @@
 
 #include <QTimer>
 
+class QCheckBox;
 class QLabel;
 class QLineEdit;
 class QWidget;
@@ -25,6 +26,9 @@ public:      // data
 
   // Time until completion.
   QLineEdit *m_completionTimeMS;
+
+  // Check to enable passing the widget pointer.
+  QCheckBox *m_widgetPointer;
 
   // Result of the most recent wait session.
   QLabel *m_resultLabel;

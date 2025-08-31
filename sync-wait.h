@@ -6,6 +6,7 @@
 #ifndef SMQTUTIL_SYNC_WAIT_H
 #define SMQTUTIL_SYNC_WAIT_H
 
+#include "smbase/sm-macros.h"          // NULLABLE
 #include "smbase/std-string-fwd.h"     // std::string
 
 #include <functional>                  // std::function
@@ -25,9 +26,12 @@ class QWidget;
    a Cancel button.  During this time, if the condition becomes true,
    close the dialog and return true.  If the user presses Cancel, close
    the dialog and return false.
+
+   If `widget` is non-null, then user input to its window is disabled
+   for the duration of this function.
 */
 bool synchronouslyWaitUntil(
-  QWidget *widget,
+  QWidget * NULLABLE widget,
   std::function<bool()> condition,
   int activityDialogDelayMS,
   std::string const &activityDialogTitle,

@@ -9,6 +9,7 @@
 #include "smbase/exc.h"                // GENERIC_CATCH_BEGIN
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -24,6 +25,7 @@ SyncWaitTestWindow::SyncWaitTestWindow()
     m_centralWidget(nullptr),
     m_dialogDelayMS(nullptr),
     m_completionTimeMS(nullptr),
+    m_widgetPointer(nullptr),
     m_resultLabel(nullptr),
     m_timer(),
     m_timesChecked(0),
@@ -59,6 +61,11 @@ SyncWaitTestWindow::SyncWaitTestWindow()
 
     vbox->addLayout(hbox);
   }
+
+  m_widgetPointer = new QCheckBox(
+    "Pass widget pointer (otherwise pass nullptr)");
+  m_widgetPointer->setChecked(true);
+  vbox->addWidget(m_widgetPointer);
 
   m_resultLabel = new QLabel("Result: none yet");
   vbox->addWidget(m_resultLabel);
@@ -96,8 +103,18 @@ void SyncWaitTestWindow::slot_start() noexcept
   int delayMS = m_dialogDelayMS->text().toInt();
   int completionMS = m_completionTimeMS->text().toInt();
 
+  // Experimentally, the effect of this is, when true, to prevent
+  // interaction with the main window while the activity dialog is open.
+  //
+  // When false, not only can the user interact with the window while
+  // the dialog is open, but any UI actions attempted during the first
+  // phase (no dialog) get delivered to the main window once the second
+  // phase (the dialog is open) starts.
+  bool widgetPointer = m_widgetPointer->isChecked();
+
   std::cout << "pressed: delayMS=" << delayMS
-            << ", completionMS=" << completionMS << "\n";
+            << ", completionMS=" << completionMS
+            << ", widgetPointer=" << widgetPointer << "\n";
 
   m_timer.setSingleShot(true);
   m_timer.start(completionMS);
@@ -105,7 +122,7 @@ void SyncWaitTestWindow::slot_start() noexcept
   m_waiting = true;
 
   bool completed = synchronouslyWaitUntil(
-    m_centralWidget,
+    (widgetPointer? m_centralWidget : nullptr),
     [this]() -> bool { return this->waitCondition(); },
     delayMS /*ms*/,
     "Activity Title",
