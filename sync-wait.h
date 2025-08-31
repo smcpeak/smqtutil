@@ -6,10 +6,13 @@
 #ifndef SMQTUTIL_SYNC_WAIT_H
 #define SMQTUTIL_SYNC_WAIT_H
 
+#include "sync-wait-fwd.h"             // fwds for this module
+
 #include "smbase/sm-macros.h"          // NULLABLE
 #include "smbase/std-string-fwd.h"     // std::string
 
 #include <functional>                  // std::function
+#include <optional>                    // std::{nullopt, optional}
 
 class QWidget;
 
@@ -36,6 +39,49 @@ bool synchronouslyWaitUntil(
   int activityDialogDelayMS,
   std::string const &activityDialogTitle,
   std::string const &activityDialogMessage);
+
+
+// Interface to a synchronous wait capability.
+class SynchronousWaiter {
+public:      // data
+  // The widget whose window will have input blocked while we wait, if
+  // any.
+  QWidget * NULLABLE m_widget;
+
+public:      // methods
+  explicit SynchronousWaiter(QWidget *widget = nullptr);
+
+  // Call `synchronouslyWaitUntil`, returning its result.
+  //
+  // However, this is meant to be overridden for testing purposes.
+  virtual bool waitUntil(
+    std::function<bool()> condition,
+    int activityDialogDelayMS,
+    std::string const &activityDialogTitle,
+    std::string const &activityDialogMessage);
+};
+
+
+// A mock waiter for testing.  It does not show any UI.
+class TestSynchronousWaiter : public SynchronousWaiter {
+public:      // data
+  // If set, then if this is 0, we will immediately return false from
+  // `waitUntil`, simulating a canceled wait.  Otherwise we decrement
+  // it and wait.  If it is not set, we just wait.
+  std::optional<int> m_cancelCountdown;
+
+public:      // methods
+  explicit TestSynchronousWaiter(
+    std::optional<int> cancelCountdown = std::nullopt);
+
+  // This ignores everything but `condition`, waiting indefinitely for
+  // it to become false.
+  virtual bool waitUntil(
+    std::function<bool()> condition,
+    int activityDialogDelayMS,
+    std::string const &activityDialogTitle,
+    std::string const &activityDialogMessage) override;
+};
 
 
 #endif // SMQTUTIL_SYNC_WAIT_H

@@ -121,8 +121,9 @@ void SyncWaitTestWindow::slot_start() noexcept
   m_timesChecked = 0;
   m_waiting = true;
 
-  bool completed = synchronouslyWaitUntil(
-    (widgetPointer? m_centralWidget : nullptr),
+  SynchronousWaiter waiter(widgetPointer? m_centralWidget : nullptr);
+
+  bool completed = waiter.waitUntil(
     [this]() -> bool { return this->waitCondition(); },
     delayMS /*ms*/,
     "Activity Title",

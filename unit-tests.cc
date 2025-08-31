@@ -45,6 +45,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(col_width_rules);
   RUN_TEST(qtbdffont);
   RUN_TEST(qtutil);
+  RUN_TEST(sync_wait);
 
   #undef RUN_TEST
 

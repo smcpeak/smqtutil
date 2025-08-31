@@ -127,6 +127,7 @@ UNIT_TEST_OBJS += col-width-rules-test.o
 UNIT_TEST_OBJS += qtbdffont-test.o
 UNIT_TEST_OBJS += qtutil-test.moc.o
 UNIT_TEST_OBJS += qtutil-test.o
+UNIT_TEST_OBJS += sync-wait-test.o
 UNIT_TEST_OBJS += unit-tests.o
 
 TEST_PROGRAMS += unit-tests.exe

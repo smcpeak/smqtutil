@@ -6,6 +6,7 @@
 #include "smqtutil/qtguiutil.h"        // OverrideCursorSetRestore
 #include "smqtutil/qtutil.h"           // waitForQtEvent
 
+#include "smbase/sm-macros.h"          // IMEMBFP
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 
 #include <functional>                  // std::function
@@ -100,6 +101,62 @@ bool synchronouslyWaitUntil(
          ", title: " << activityDialogTitle);
 
   return !canceled;
+}
+
+
+// ------------------------- SynchronousWaiter -------------------------
+SynchronousWaiter::SynchronousWaiter(QWidget *widget)
+  : IMEMBFP(widget)
+{}
+
+
+bool SynchronousWaiter::waitUntil(
+  std::function<bool()> condition,
+  int activityDialogDelayMS,
+  std::string const &activityDialogTitle,
+  std::string const &activityDialogMessage)
+{
+  return synchronouslyWaitUntil(
+    m_widget,
+    condition,
+    activityDialogDelayMS,
+    activityDialogTitle,
+    activityDialogMessage);
+}
+
+
+// ----------------------- TestSynchronousWaiter -----------------------
+TestSynchronousWaiter::TestSynchronousWaiter(
+  std::optional<int> cancelCountdown)
+  : IMEMBFP(cancelCountdown)
+{}
+
+
+bool TestSynchronousWaiter::waitUntil(
+  std::function<bool()> condition,
+  int activityDialogDelayMS,
+  std::string const &activityDialogTitle,
+  std::string const &activityDialogMessage)
+{
+  if (m_cancelCountdown) {
+    if (*m_cancelCountdown == 0) {
+      return false;
+    }
+    else {
+      --*m_cancelCountdown;
+    }
+  }
+
+  while (!condition()) {
+    TRACE2("TestSynchronousWaiter::waitUntil: waiting");
+
+    // Allow processing user input just to more closely simulate the
+    // real thing, but this class is meant to be used in non-interactive
+    // tests, so it shouldn't matter.
+    waitForQtEvent(true /*processInputEvents*/);
+  }
+
+  return true;
 }
 
 
