@@ -3,11 +3,14 @@
 
 #include "sync-wait.h"                 // module under test
 
+#include "smbase/exc.h"                // smbase::XAssert
 #include "smbase/nonport.h"            // getMilliseconds
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <QTimer>
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -71,6 +74,7 @@ void test_secondCancel()
   auto condition = [&]() -> bool
     { return !timer.isActive(); };
   EXPECT_TRUE(w.waitUntil(condition, 0, {}, {}));
+  EXPECT_EQ(w.m_waitUntilCount, 1);
 
   long endMS = getMilliseconds();
   long durationMS = endMS - startMS;
@@ -82,6 +86,7 @@ void test_secondCancel()
   timer.start(50 /*ms*/);
   EXPECT_TRUE(timer.isActive());
   EXPECT_FALSE(w.waitUntil(condition, 0, {}, {}));
+  EXPECT_EQ(w.m_waitUntilCount, 2);
 
   endMS = getMilliseconds();
   durationMS = endMS - startMS;
@@ -97,6 +102,32 @@ void test_immediate()
   auto condition = []() -> bool
     { return true; };
   EXPECT_TRUE(w.waitUntil(condition, 0, {}, {}));
+  EXPECT_EQ(w.m_waitUntilCount, 1);
+}
+
+
+void test_disallowWaiting()
+{
+  TestSynchronousWaiter w;
+  w.m_disallowWaiting = true;
+
+  // This would try to wait.
+  {
+    auto condition = []() -> bool
+      { return false; };
+    EXPECT_EXN_SUBSTR(w.waitUntil(condition, 0, {}, {}),
+      XAssert, "waiting not allowed");
+    EXPECT_EQ(w.m_waitUntilCount, 1);
+  }
+
+  // But even with that flag, we can call `waitUntil` so long as the
+  // condition is immediately true.
+  {
+    auto condition = []() -> bool
+      { return true; };
+    EXPECT_TRUE(w.waitUntil(condition, 0, {}, {}));
+    EXPECT_EQ(w.m_waitUntilCount, 2);
+  }
 }
 
 
@@ -109,6 +140,7 @@ void test_sync_wait()
   test_cancel();
   test_secondCancel();
   test_immediate();
+  test_disallowWaiting();
 }
 
 

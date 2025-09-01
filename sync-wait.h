@@ -68,7 +68,17 @@ public:      // data
   // If set, then if this is 0, we will immediately return false from
   // `waitUntil`, simulating a canceled wait.  Otherwise we decrement
   // it and wait.  If it is not set, we just wait.
+  //
+  // Initial value comes from ctor argument.
   std::optional<int> m_cancelCountdown;
+
+  // If true, then attempting to block will throw an exception.
+  //
+  // Initially false.
+  bool m_disallowWaiting;
+
+  // Number of times `waitUntil` was called.  Initially 0.
+  int m_waitUntilCount;
 
 public:      // methods
   explicit TestSynchronousWaiter(

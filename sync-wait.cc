@@ -128,7 +128,9 @@ bool SynchronousWaiter::waitUntil(
 // ----------------------- TestSynchronousWaiter -----------------------
 TestSynchronousWaiter::TestSynchronousWaiter(
   std::optional<int> cancelCountdown)
-  : IMEMBFP(cancelCountdown)
+  : IMEMBFP(cancelCountdown),
+    m_disallowWaiting(false),
+    m_waitUntilCount(0)
 {}
 
 
@@ -138,6 +140,8 @@ bool TestSynchronousWaiter::waitUntil(
   std::string const &activityDialogTitle,
   std::string const &activityDialogMessage)
 {
+  ++m_waitUntilCount;
+
   if (m_cancelCountdown) {
     if (*m_cancelCountdown == 0) {
       return false;
@@ -148,6 +152,10 @@ bool TestSynchronousWaiter::waitUntil(
   }
 
   while (!condition()) {
+    if (m_disallowWaiting) {
+      xfailure("waiting not allowed");
+    }
+
     TRACE2("TestSynchronousWaiter::waitUntil: waiting");
 
     // Allow processing user input just to more closely simulate the
