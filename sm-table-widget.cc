@@ -6,7 +6,7 @@
 #include "sm-table-widget.h"                     // this module
 
 #include "smqtutil/col-width-rules.h"            // ColumnWidthRules
-#include "smqtutil/gdvalue-qstring.h"            // gdv::toGDValue(QString)
+#include "smqtutil/gdvalue-qt.h"                 // gdv::toGDValue(QString)
 #include "smqtutil/qtguiutil.h"                  // keysString(QKeyEvent)
 #include "smqtutil/qtutil.h"                     // toString(Qt::KeyboardModifiers)
 

@@ -3,7 +3,7 @@
 
 #include "smqtutil/qtguiutil.h"        // module under test
 
-#include "smqtutil/gdvalue-qrect.h"    // toGDValue(QRect)
+#include "smqtutil/gdvalue-qt.h"       // toGDValue(QRect)
 #include "smqtutil/test-main-window.h" // TestMainWindow
 
 #include "smbase/gdvalue.h"            // for TRACE1_GDVN_EXPRS

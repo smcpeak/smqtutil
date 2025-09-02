@@ -4,7 +4,7 @@
 #include "qtguiutil.h"                 // this module
 
 // smqtutil
-#include "smqtutil/gdvalue-qrect.h"    // toGDValue({QRect,QPoint})
+#include "smqtutil/gdvalue-qt.h"       // toGDValue({QRect,QPoint})
 #include "smqtutil/qstringb.h"         // qstringb
 #include "smqtutil/qtutil.h"           // toString for Key and Modifiers
 

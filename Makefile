@@ -101,8 +101,7 @@ gensrc: $(BDFGENSRC)
 OBJS :=
 OBJS += $(BDFGENSRC:.cc=.o)
 OBJS += col-width-rules.o
-OBJS += gdvalue-qrect.o
-OBJS += gdvalue-qstring.o
+OBJS += gdvalue-qt.o
 OBJS += qhboxframe.o
 OBJS += qtbdffont.o
 OBJS += qtguiutil.o
@@ -124,6 +123,7 @@ libsmqtutil.a: $(OBJS)
 # ----------------------------- unit-tests -----------------------------
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += col-width-rules-test.o
+UNIT_TEST_OBJS += gdvalue-qt-test.o
 UNIT_TEST_OBJS += qtbdffont-test.o
 UNIT_TEST_OBJS += qtutil-test.moc.o
 UNIT_TEST_OBJS += qtutil-test.o

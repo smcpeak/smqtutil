@@ -1,9 +1,11 @@
-// gdvalue-qrect.cc
-// Code for `gdvalue-qrect` module.
+// gdvalue-qt.cc
+// Code for `gdvalue-qt` module.
 
-#include "gdvalue-qrect.h"             // this module
+#include "gdvalue-qt.h"                // this module
 
-#include "smbase/gdvalue.h"           // gdv::GDValue
+#include "smbase/gdvalue.h"            // gdv::GDValue
+
+#include "smqtutil/qtutil.h"           // toString(QString)
 
 #include <QPoint>
 #include <QRect>
@@ -28,6 +30,12 @@ gdv::GDValue toGDValue(QRect const &r)
   m.mapSetValueAtSym("width", r.width());
   m.mapSetValueAtSym("height", r.height());
   return m;
+}
+
+
+gdv::GDValue toGDValue(QString const &str)
+{
+  return GDValue(toString(str));
 }
 
 
