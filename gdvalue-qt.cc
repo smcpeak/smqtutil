@@ -51,7 +51,7 @@ gdv::GDValue toGDValue(QSize const &sz)
 namespace gdv {
   /*static*/ QSize GDVPTo<QSize>::f(GDValueParser const &p)
   {
-    p.checkIsTaggedTuple("QSize", 2);
+    p.checkTaggedTupleSize("QSize", 2);
     return QSize(
       p.tupleGetValueAt(0).smallIntegerGet(),
       p.tupleGetValueAt(1).smallIntegerGet());
