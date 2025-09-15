@@ -69,6 +69,14 @@ namespace gdv {
       p.tupleGetValueAt(0).smallIntegerGet(),
       p.tupleGetValueAt(1).smallIntegerGet());
   }
+
+  /*static*/ QPoint GDVPTo<QPoint>::f(GDValueParser const &p)
+  {
+    p.checkTaggedOrderedMapTag("QPoint");
+    return QPoint(
+      p.mapGetValueAtSym("x").smallIntegerGet(),
+      p.mapGetValueAtSym("y").smallIntegerGet());
+  }
 }
 
 

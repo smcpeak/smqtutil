@@ -22,7 +22,8 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_QPoint()
 {
-  EXPECT_EQ(toGDValue(QPoint(4,5)).asString(), "QPoint[x:4 y:5]");
+  gdvnTestRoundtripEq(QPoint(4,5),
+    "QPoint[x:4 y:5]");
 }
 
 

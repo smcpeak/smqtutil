@@ -38,6 +38,7 @@ gdv::GDValue toGDValue(QSize const &sz);
   }
 
 DECLARE_GDVPTO(QSize);
+DECLARE_GDVPTO(QPoint);
 
 
 // Return the given value as a symbol if recognized, and a tagged tuple
