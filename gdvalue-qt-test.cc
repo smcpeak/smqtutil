@@ -69,7 +69,6 @@ void test_KeyboardModifier()
     fromGDVN("Alt"));
   EXPECT_EQ_GDV(Qt::KeyboardModifier(456),
     fromGDVN("UnknownKeyboardModifier(456)"));
-
 }
 
 
@@ -79,6 +78,44 @@ void test_MouseButton()
     fromGDVN("MiddleButton"));
   EXPECT_EQ_GDV(Qt::MouseButton(123),
     fromGDVN("UnknownMouseButton(123)"));
+}
+
+
+void test_KeyboardModifiers()
+{
+  EXPECT_EQ_GDV(Qt::KeyboardModifiers(Qt::NoModifier),
+    fromGDVN("{}"));
+
+  EXPECT_EQ_GDV(Qt::KeyboardModifiers(Qt::AltModifier),
+    fromGDVN("{Alt}"));
+
+  EXPECT_EQ_GDV(
+    Qt::KeyboardModifiers(Qt::AltModifier | Qt::ShiftModifier),
+    fromGDVN("{Alt Shift}"));
+
+  EXPECT_EQ_GDV(
+    Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::KeyboardModifier(2)),
+    fromGDVN("{Shift UnknownKeyboardModifier(2)}"));
+}
+
+
+void test_MouseButtons()
+{
+  EXPECT_EQ_GDV(Qt::MouseButtons(Qt::NoButton),
+    fromGDVN("{}"));
+
+  EXPECT_EQ_GDV(Qt::MouseButtons(Qt::LeftButton),
+    fromGDVN("{LeftButton}"));
+
+  EXPECT_EQ_GDV(
+    Qt::MouseButtons(Qt::LeftButton | Qt::RightButton),
+    fromGDVN("{LeftButton RightButton}"));
+
+  // 0x1000 is actually `ExtraButton10`, but my table does not include
+  // it, so it exercises the "unknown" case.
+  EXPECT_EQ_GDV(
+    Qt::MouseButtons(Qt::MiddleButton | Qt::MouseButton(0x1000)),
+    fromGDVN("{MiddleButton UnknownMouseButton(4096)}"));
 }
 
 
@@ -152,6 +189,8 @@ void test_gdvalue_qt()
   test_QEvent_Type();
   test_KeyboardModifier();
   test_MouseButton();
+  test_KeyboardModifiers();
+  test_MouseButtons();
   test_QMouseEvent();
 }
 

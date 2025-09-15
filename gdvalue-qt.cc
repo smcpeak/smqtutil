@@ -108,7 +108,7 @@ GDValue toGDValue(Qt::MouseButton button)
 
 
 template <typename FLAG>
-GDValue toGDValue(QFlags<FLAG> flags)
+GDValue flagsToGDValue(QFlags<FLAG> flags)
 {
   GDValue s(GDVK_SET);
 
@@ -123,6 +123,18 @@ GDValue toGDValue(QFlags<FLAG> flags)
   }
 
   return s;
+}
+
+
+gdv::GDValue toGDValue(Qt::KeyboardModifiers mods)
+{
+  return flagsToGDValue(mods);
+}
+
+
+gdv::GDValue toGDValue(Qt::MouseButtons buttons)
+{
+  return flagsToGDValue(buttons);
 }
 
 

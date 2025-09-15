@@ -10,7 +10,7 @@
 #include "smbase/gdvalue-parser-fwd.h" // gdv::GDVPTo [n]
 
 #include <QEvent>                      // QEvent::Type
-#include <qnamespace.h>                // MouseButton, KeyboardModifier
+#include <qnamespace.h>                // MouseButton[s], KeyboardModifier[s]
 
 class QPoint;
 class QPointF;
@@ -41,6 +41,10 @@ namespace gdv {
 gdv::GDValue toGDValue(QEvent::Type eventType);
 gdv::GDValue toGDValue(Qt::KeyboardModifier mod);
 gdv::GDValue toGDValue(Qt::MouseButton button);
+
+// Return a set.
+gdv::GDValue toGDValue(Qt::KeyboardModifiers mods);
+gdv::GDValue toGDValue(Qt::MouseButtons buttons);
 
 
 // All event details as an ordered map.
