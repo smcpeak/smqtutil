@@ -54,68 +54,113 @@ void test_QSize()
 }
 
 
+// TODO: Move to `gdvalue-parser.h`.
+template <typename T>
+T fromGDVNTo(char const *gdvn)
+{
+  return gdvpTo<T>(GDValueParser(fromGDVN(gdvn)));
+}
+
+
 void test_QEvent_Type()
 {
-  EXPECT_EQ_GDV(QEvent::MouseButtonRelease,
-    fromGDVN("MouseButtonRelease"));
-  EXPECT_EQ_GDV(QEvent::User,
-    fromGDVN("User(1000)"));
+  gdvnTestRoundtripEq(QEvent::MouseButtonRelease,
+    "MouseButtonRelease");
+  gdvnTestRoundtripEq(QEvent::User,
+    "UserEvent(1000)");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<QEvent::Type>("SomeSymbol"),
+    XGDValueError,
+    "Unrecognized QEvent::Type: `SomeSymbol`.");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<QEvent::Type>("UserEvent()"),
+    XGDValueError,
+    "Expected container to have 1 elements, but it instead has 0 elements.");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<QEvent::Type>("UserEvent[]"),
+    XGDValueError,
+    "Expected tagged tuple, not tagged sequence.");
 }
 
 
 void test_KeyboardModifier()
 {
+  TEST_CASE(__func__);
+
   EXPECT_EQ_GDV(Qt::AltModifier,
     fromGDVN("Alt"));
-  EXPECT_EQ_GDV(Qt::KeyboardModifier(456),
-    fromGDVN("UnknownKeyboardModifier(456)"));
+
+  gdvnTestRoundtripEq(Qt::AltModifier,
+    "Alt");
+  gdvnTestRoundtripEq(Qt::KeyboardModifier(456),
+    "UnknownKeyboardModifier(456)");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<Qt::KeyboardModifier>("SomeSymbol"),
+    XGDValueError,
+    "Unrecognized Qt::KeyboardModifier: `SomeSymbol`.");
 }
 
 
 void test_MouseButton()
 {
-  EXPECT_EQ_GDV(Qt::MiddleButton,
-    fromGDVN("MiddleButton"));
-  EXPECT_EQ_GDV(Qt::MouseButton(123),
-    fromGDVN("UnknownMouseButton(123)"));
+  gdvnTestRoundtripEq(Qt::MiddleButton,
+    "MiddleButton");
+  gdvnTestRoundtripEq(Qt::MouseButton(123),
+    "UnknownMouseButton(123)");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<Qt::MouseButton>("SomeSymbol"),
+    XGDValueError,
+    "Unrecognized Qt::MouseButton: `SomeSymbol`.");
 }
 
 
 void test_KeyboardModifiers()
 {
-  EXPECT_EQ_GDV(Qt::KeyboardModifiers(Qt::NoModifier),
-    fromGDVN("{}"));
+  gdvnTestRoundtripEq(Qt::KeyboardModifiers(Qt::NoModifier),
+    "{}");
 
-  EXPECT_EQ_GDV(Qt::KeyboardModifiers(Qt::AltModifier),
-    fromGDVN("{Alt}"));
+  gdvnTestRoundtripEq(Qt::KeyboardModifiers(Qt::AltModifier),
+    "{Alt}");
 
-  EXPECT_EQ_GDV(
+  gdvnTestRoundtripEq(
     Qt::KeyboardModifiers(Qt::AltModifier | Qt::ShiftModifier),
-    fromGDVN("{Alt Shift}"));
+    "{Alt Shift}");
 
-  EXPECT_EQ_GDV(
+  gdvnTestRoundtripEq(
     Qt::KeyboardModifiers(Qt::ShiftModifier | Qt::KeyboardModifier(2)),
-    fromGDVN("{Shift UnknownKeyboardModifier(2)}"));
+    "{Shift UnknownKeyboardModifier(2)}");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<Qt::KeyboardModifiers>("{SomeSymbol}"),
+    XGDValueError,
+    "Unrecognized Qt::KeyboardModifier: `SomeSymbol`.");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<Qt::KeyboardModifiers>("SomeSymbol"),
+    XGDValueError,
+    "Expected set, not symbol.");
 }
 
 
 void test_MouseButtons()
 {
-  EXPECT_EQ_GDV(Qt::MouseButtons(Qt::NoButton),
-    fromGDVN("{}"));
+  gdvnTestRoundtripEq(Qt::MouseButtons(Qt::NoButton),
+    "{}");
 
-  EXPECT_EQ_GDV(Qt::MouseButtons(Qt::LeftButton),
-    fromGDVN("{LeftButton}"));
+  gdvnTestRoundtripEq(Qt::MouseButtons(Qt::LeftButton),
+    "{LeftButton}");
 
-  EXPECT_EQ_GDV(
+  gdvnTestRoundtripEq(
     Qt::MouseButtons(Qt::LeftButton | Qt::RightButton),
-    fromGDVN("{LeftButton RightButton}"));
+    "{LeftButton RightButton}");
 
   // 0x1000 is actually `ExtraButton10`, but my table does not include
   // it, so it exercises the "unknown" case.
-  EXPECT_EQ_GDV(
+  gdvnTestRoundtripEq(
     Qt::MouseButtons(Qt::MiddleButton | Qt::MouseButton(0x1000)),
-    fromGDVN("{MiddleButton UnknownMouseButton(4096)}"));
+    "{MiddleButton UnknownMouseButton(4096)}");
+
+  EXPECT_EXN_SUBSTR(fromGDVNTo<Qt::MouseButtons>("{SomeSymbol}"),
+    XGDValueError,
+    "Unrecognized Qt::MouseButton: `SomeSymbol`.");
 }
 
 

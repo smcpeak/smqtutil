@@ -13,6 +13,7 @@
 #include <QRect>
 
 #include <climits>                     // CHAR_BIT
+#include <optional>                    // std::optional
 
 using namespace gdv;
 
@@ -78,7 +79,7 @@ GDValue toGDValue(QEvent::Type eventType)
   }
   else {
     // Unknown event ID is treated as a user-defined ID.
-    return GDVTaggedTuple("User"_sym, GDVTuple{int(eventType)});
+    return GDVTaggedTuple("UserEvent"_sym, GDVTuple{int(eventType)});
   }
 }
 
@@ -135,6 +136,85 @@ gdv::GDValue toGDValue(Qt::KeyboardModifiers mods)
 gdv::GDValue toGDValue(Qt::MouseButtons buttons)
 {
   return flagsToGDValue(buttons);
+}
+
+
+namespace {
+  // Parse `p` into a `T`, which is described as a `category`, and which
+  // serializes to a tuple tagged with `unrecognized` when it is.
+  template <typename T>
+  T gdvpToEnumerator(
+    GDValueParser const &p,
+    char const *category,
+    char const *unrecognized)
+  {
+    if (p.isSymbol()) {
+      if (std::optional<T> eventTypeOpt =
+            qtEnumeratorFromNameOpt<T>(p.symbolGetName())) {
+        return *eventTypeOpt;
+      }
+      else {
+        p.throwUnrecognizedSymbol(category);
+      }
+    }
+
+    p.checkTaggedTupleSize(unrecognized, 1);
+    return T(p.tupleGetValueAt(0).integerGetAs<int>());
+  }
+
+  // Parse `p` into a `QFlags`.
+  template <typename T>
+  QFlags<T> gdvpToQFlags(
+    GDValueParser const &p)
+  {
+    QFlags<T> ret;
+
+    for (GDValue const &elt : p.setGet()) {
+      // TODO: Provide a way to directly iterate over parsers instead of
+      // using this two-step procedure.
+      GDValueParser eltParser = p.setGetValue(elt);
+
+      ret |= gdvpTo<T>(eltParser);
+    }
+
+    return ret;
+  }
+}
+
+
+namespace gdv {
+  /*static*/ QEvent::Type GDVPTo<QEvent::Type>::f(
+    GDValueParser const &p)
+  {
+    return gdvpToEnumerator<QEvent::Type>(p,
+      "QEvent::Type", "UserEvent");
+  }
+
+  /*static*/ Qt::KeyboardModifier GDVPTo<Qt::KeyboardModifier>::f(
+    GDValueParser const &p)
+  {
+    return gdvpToEnumerator<Qt::KeyboardModifier>(p,
+      "Qt::KeyboardModifier", "UnknownKeyboardModifier");
+  }
+
+  /*static*/ Qt::KeyboardModifiers GDVPTo<Qt::KeyboardModifiers>::f(
+    GDValueParser const &p)
+  {
+    return gdvpToQFlags<Qt::KeyboardModifier>(p);
+  }
+
+  /*static*/ Qt::MouseButton GDVPTo<Qt::MouseButton>::f(
+    GDValueParser const &p)
+  {
+    return gdvpToEnumerator<Qt::MouseButton>(p,
+      "Qt::MouseButton", "UnknownMouseButton");
+  }
+
+  /*static*/ Qt::MouseButtons GDVPTo<Qt::MouseButtons>::f(
+    GDValueParser const &p)
+  {
+    return gdvpToQFlags<Qt::MouseButton>(p);
+  }
 }
 
 

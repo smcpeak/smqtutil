@@ -28,12 +28,16 @@ gdv::GDValue toGDValue(QString const &str);
 
 gdv::GDValue toGDValue(QSize const &sz);
 
-namespace gdv {
-  template <>
-  struct GDVPTo<QSize> {
-    static QSize f(GDValueParser const &p);
-  };
-}
+// TODO: Move this into `gdvalue-parser.h`?
+#define DECLARE_GDVPTO(Type)                 \
+  namespace gdv {                            \
+    template <>                              \
+    struct GDVPTo<Type> {                    \
+      static Type f(GDValueParser const &p); \
+    };                                       \
+  }
+
+DECLARE_GDVPTO(QSize);
 
 
 // Return the given value as a symbol if recognized, and a tagged tuple
@@ -46,9 +50,27 @@ gdv::GDValue toGDValue(Qt::MouseButton button);
 gdv::GDValue toGDValue(Qt::KeyboardModifiers mods);
 gdv::GDValue toGDValue(Qt::MouseButtons buttons);
 
+// Parse the above.
+DECLARE_GDVPTO(QEvent::Type);
+DECLARE_GDVPTO(Qt::KeyboardModifier);
+DECLARE_GDVPTO(Qt::KeyboardModifiers);
+DECLARE_GDVPTO(Qt::MouseButton);
+DECLARE_GDVPTO(Qt::MouseButtons);
+
+#undef DECLARE_GDVPTO
+
 
 // All event details as an ordered map.
 gdv::GDValue toGDValue(QMouseEvent const &mev);
+
+
+// Put the global `toGDValue` functions into the `Qt` namespace as well
+// so they be found by ADL when working with `Qt::KeyboardModifier`,
+// etc., when calling a function template that has "using
+// gdv::toGDValue;" in it (such as `gdvnTestRoundtripEq`).
+namespace Qt {
+  using ::toGDValue;
+}
 
 
 #endif // SMQTUTIL_GDVALUE_QT_H
