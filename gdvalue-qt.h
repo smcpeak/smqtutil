@@ -9,13 +9,19 @@
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [m]
 #include "smbase/gdvalue-parser-fwd.h" // gdv::GDVPTo [n]
 
+#include <QEvent>                      // QEvent::Type
+#include <qnamespace.h>                // MouseButton, KeyboardModifier
+
 class QPoint;
+class QPointF;
 class QRect;
 class QSize;
 class QString;
+class QMouseEvent;
 
 
 gdv::GDValue toGDValue(QPoint const &p);
+gdv::GDValue toGDValue(QPointF const &p);
 gdv::GDValue toGDValue(QRect const &r);
 gdv::GDValue toGDValue(QString const &str);
 
@@ -28,5 +34,17 @@ namespace gdv {
     static QSize f(GDValueParser const &p);
   };
 }
+
+
+// Return the given value as a symbol if recognized, and a tagged tuple
+// carrying the numeric value if not.
+gdv::GDValue toGDValue(QEvent::Type eventType);
+gdv::GDValue toGDValue(Qt::KeyboardModifier mod);
+gdv::GDValue toGDValue(Qt::MouseButton button);
+
+
+// All event details as an ordered map.
+gdv::GDValue toGDValue(QMouseEvent const &mev);
+
 
 #endif // SMQTUTIL_GDVALUE_QT_H
