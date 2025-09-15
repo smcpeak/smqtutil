@@ -5,6 +5,7 @@
 #define SMQTUTIL_QTUTIL_H
 
 #include "smbase/sm-macros.h"                    // NULLABLE
+#include "smbase/std-optional-fwd.h"             // std::optional
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 #include "smbase/std-vector-fwd.h"               // std::vector
@@ -84,6 +85,24 @@ extern EnumerationNames<Qt::Key> const g_qtKeyNames;
 char const * NULLABLE toStringOpt(QEvent::Type value);
 char const * NULLABLE toStringOpt(Qt::KeyboardModifier value);
 char const * NULLABLE toStringOpt(Qt::MouseButton value);
+
+// If `name` is what `toStringOpt(v)` would return, return `v`.
+// Otherwise return nullopt.
+template <typename T>
+std::optional<T> qtEnumeratorFromNameOpt(
+  std::string_view name) = delete;
+
+template <>
+std::optional<QEvent::Type> qtEnumeratorFromNameOpt(
+  std::string_view name);
+
+template <>
+std::optional<Qt::KeyboardModifier> qtEnumeratorFromNameOpt(
+  std::string_view name);
+
+template <>
+std::optional<Qt::MouseButton> qtEnumeratorFromNameOpt(
+  std::string_view name);
 
 
 // True if `eventType` is one that is carried by a `QMouseEvent`.

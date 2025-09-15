@@ -24,6 +24,7 @@
 #include <QShortcutEvent>
 
 // libc++
+#include <optional>                    // std::optional
 #include <string_view>                 // std::string_view
 
 
@@ -422,39 +423,61 @@ static void test_qStringListToStringVector()
 }
 
 
+template <typename T>
+void testEnumeratorRoundtrip(
+  T value,
+  char const *name)
+{
+  TEST_CASE(__func__);
+
+  EXPECT_EQ(toStringOpt(value), name);
+
+  auto actual = qtEnumeratorFromNameOpt<T>(name);
+  EXPECT_EQ(*actual, value);
+}
+
+
 static void test_toStringOpt_QEvent_Type()
 {
-  EXPECT_EQ(toStringOpt(QEvent::MouseButtonPress), "MouseButtonPress");
-  EXPECT_EQ(toStringOpt(QEvent::Quit), "Quit");
+  testEnumeratorRoundtrip(QEvent::MouseButtonPress,
+    "MouseButtonPress");
+  testEnumeratorRoundtrip(QEvent::Quit,
+    "Quit");
 
   xassert(toStringOpt(QEvent::User) == nullptr);
   xassert(toStringOpt(QEvent::MaxUser) == nullptr);
+
+  EXPECT_FALSE(qtEnumeratorFromNameOpt<QEvent::Type>("blah").has_value());
 }
 
 
 static void test_toStringOpt_KeyboardModifier()
 {
-  EXPECT_EQ(toStringOpt(Qt::NoModifier), "NoModifier");
+  testEnumeratorRoundtrip(Qt::NoModifier, "NoModifier");
 
-  EXPECT_EQ(toStringOpt(Qt::ShiftModifier), "Shift");
-  EXPECT_EQ(toStringOpt(Qt::AltModifier), "Alt");
+  testEnumeratorRoundtrip(Qt::ShiftModifier, "Shift");
+  testEnumeratorRoundtrip(Qt::AltModifier, "Alt");
 
   // For this one, I use a different name...
-  EXPECT_EQ(toStringOpt(Qt::ControlModifier), "Ctrl");
+  testEnumeratorRoundtrip(Qt::ControlModifier, "Ctrl");
 
   // A keyboard modifier (singular) is not supposed to have multiple
   // flags set, but we can test what happens.
   int const shiftAlt = int(Qt::ShiftModifier) | int(Qt::AltModifier);
   xassert(toStringOpt(Qt::KeyboardModifier(shiftAlt)) == nullptr);
+
+  EXPECT_FALSE(qtEnumeratorFromNameOpt<Qt::KeyboardModifier>("blah").has_value());
 }
 
 
 static void test_toStringOpt_MouseButton()
 {
-  EXPECT_EQ(toStringOpt(Qt::NoButton), "NoButton");
+  testEnumeratorRoundtrip(Qt::NoButton, "NoButton");
 
-  EXPECT_EQ(toStringOpt(Qt::LeftButton), "LeftButton");
-  EXPECT_EQ(toStringOpt(Qt::RightButton), "RightButton");
+  testEnumeratorRoundtrip(Qt::LeftButton, "LeftButton");
+  testEnumeratorRoundtrip(Qt::RightButton, "RightButton");
+
+  EXPECT_FALSE(qtEnumeratorFromNameOpt<Qt::MouseButton>("blah").has_value());
 }
 
 

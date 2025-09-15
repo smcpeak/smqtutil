@@ -22,6 +22,7 @@
 
 // libc++
 #include <iostream>                    // std::{ostream, cerr, endl}
+#include <optional>                    // std::{nullopt, optional}
 #include <sstream>                     // std::ostringstream
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
@@ -497,7 +498,7 @@ static EnumerationNames<QEvent::Type> const eventTypeNames = {
 
 
 template <typename T>
-char const * NULLABLE lookupEnumeratorName(
+char const * NULLABLE getEnumeratorNameForValue(
   T value,
   EnumerationNames<T> const &names)
 {
@@ -512,19 +513,57 @@ char const * NULLABLE lookupEnumeratorName(
 
 char const * NULLABLE toStringOpt(QEvent::Type value)
 {
-  return lookupEnumeratorName(value, eventTypeNames);
+  return getEnumeratorNameForValue(value, eventTypeNames);
 }
 
 
 char const * NULLABLE toStringOpt(Qt::KeyboardModifier value)
 {
-  return lookupEnumeratorName(value, keyboardModifierNames);
+  return getEnumeratorNameForValue(value, keyboardModifierNames);
 }
 
 
 char const * NULLABLE toStringOpt(Qt::MouseButton value)
 {
-  return lookupEnumeratorName(value, mouseButtonNames);
+  return getEnumeratorNameForValue(value, mouseButtonNames);
+}
+
+
+template <typename T>
+std::optional<T> getEnumeratorValueForName(
+  std::string_view name,
+  EnumerationNames<T> const &names)
+{
+  for (int i=0; i < names.m_size; ++i) {
+    if (name == names.m_names[i].m_name) {
+      return T(names.m_names[i].m_value);
+    }
+  }
+  return std::nullopt;
+}
+
+
+template <>
+std::optional<QEvent::Type> qtEnumeratorFromNameOpt(
+  std::string_view name)
+{
+  return getEnumeratorValueForName(name, eventTypeNames);
+}
+
+
+template <>
+std::optional<Qt::KeyboardModifier> qtEnumeratorFromNameOpt(
+  std::string_view name)
+{
+  return getEnumeratorValueForName(name, keyboardModifierNames);
+}
+
+
+template <>
+std::optional<Qt::MouseButton> qtEnumeratorFromNameOpt(
+  std::string_view name)
+{
+  return getEnumeratorValueForName(name, mouseButtonNames);
 }
 
 
