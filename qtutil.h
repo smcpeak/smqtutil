@@ -4,11 +4,13 @@
 #ifndef SMQTUTIL_QTUTIL_H
 #define SMQTUTIL_QTUTIL_H
 
+#include "smbase/sm-macros.h"                    // NULLABLE
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 #include "smbase/std-vector-fwd.h"               // std::vector
 
 #include <QColor>                                // QRgb
+#include <QEvent>                                // QEvent::Type
 #include <qnamespace.h>                          // MouseButtons, KeyboardModifiers, Key
 
 #include <iosfwd>                                // std::ostream
@@ -76,6 +78,12 @@ bool isModifierKey(int key);
 
 // Table of key names.
 extern EnumerationNames<Qt::Key> const g_qtKeyNames;
+
+
+// Return the name of `value`, or nullptr if not recognized.
+char const * NULLABLE toStringOpt(QEvent::Type value);
+char const * NULLABLE toStringOpt(Qt::KeyboardModifier value);
+char const * NULLABLE toStringOpt(Qt::MouseButton value);
 
 
 // Convert 'QString' to 'std::string'.

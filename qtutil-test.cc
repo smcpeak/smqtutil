@@ -13,7 +13,7 @@
 #include "smbase/sm-test.h"            // DIAG, EXPECT_EQ
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/strutil.h"            // hasSubstring
-#include "smbase/xassert.h"            // xfailure_stringbc
+#include "smbase/xassert.h"            // xfailure_stringbc, xassert
 
 // Qt
 #include <QByteArray>
@@ -422,6 +422,42 @@ static void test_qStringListToStringVector()
 }
 
 
+static void test_toStringOpt_QEvent_Type()
+{
+  EXPECT_EQ(toStringOpt(QEvent::MouseButtonPress), "MouseButtonPress");
+  EXPECT_EQ(toStringOpt(QEvent::Quit), "Quit");
+
+  xassert(toStringOpt(QEvent::User) == nullptr);
+  xassert(toStringOpt(QEvent::MaxUser) == nullptr);
+}
+
+
+static void test_toStringOpt_KeyboardModifier()
+{
+  EXPECT_EQ(toStringOpt(Qt::NoModifier), "NoModifier");
+
+  EXPECT_EQ(toStringOpt(Qt::ShiftModifier), "Shift");
+  EXPECT_EQ(toStringOpt(Qt::AltModifier), "Alt");
+
+  // For this one, I use a different name...
+  EXPECT_EQ(toStringOpt(Qt::ControlModifier), "Ctrl");
+
+  // A keyboard modifier (singular) is not supposed to have multiple
+  // flags set, but we can test what happens.
+  int const shiftAlt = int(Qt::ShiftModifier) | int(Qt::AltModifier);
+  xassert(toStringOpt(Qt::KeyboardModifier(shiftAlt)) == nullptr);
+}
+
+
+static void test_toStringOpt_MouseButton()
+{
+  EXPECT_EQ(toStringOpt(Qt::NoButton), "NoButton");
+
+  EXPECT_EQ(toStringOpt(Qt::LeftButton), "LeftButton");
+  EXPECT_EQ(toStringOpt(Qt::RightButton), "RightButton");
+}
+
+
 CLOSE_NAMESPACE(qtutil_test)
 
 
@@ -442,6 +478,9 @@ void test_qtutil()
   testDisconnectSignals();
   testStringConversion();
   test_qStringListToStringVector();
+  test_toStringOpt_QEvent_Type();
+  test_toStringOpt_KeyboardModifier();
+  test_toStringOpt_MouseButton();
 
   DIAG("QString: " << toString(qstringb("ab" << 'c')));
   DIAG("QRect: " << toString(QRect(10,20,30,40)));

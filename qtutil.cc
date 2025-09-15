@@ -103,19 +103,27 @@ static T stringToFlag(std::string const &str,
 }
 
 
-#define FLAG_DEFN(flag) { Qt::flag, #flag },
+#define QT_FLAG_DEFN(flag) { Qt::flag, #flag },
 
 static EnumeratorName<Qt::MouseButton> const mouseButtonDefinitions[] = {
-  FLAG_DEFN(LeftButton)
-  FLAG_DEFN(RightButton)
-  FLAG_DEFN(MiddleButton)
-  FLAG_DEFN(BackButton)
-  FLAG_DEFN(ForwardButton)
-  FLAG_DEFN(TaskButton)
-  FLAG_DEFN(ExtraButton4)
-  FLAG_DEFN(ExtraButton5)
+  // This list comes from qt5/qtbase/src/corelib/kernel/qnamespace.h.
+  QT_FLAG_DEFN(NoButton)
+  QT_FLAG_DEFN(LeftButton)
+  QT_FLAG_DEFN(RightButton)
+  QT_FLAG_DEFN(MiddleButton)
+  QT_FLAG_DEFN(BackButton)
+  QT_FLAG_DEFN(ForwardButton)
+  QT_FLAG_DEFN(TaskButton)
+  QT_FLAG_DEFN(ExtraButton4)
+  QT_FLAG_DEFN(ExtraButton5)
   // ExtraButtons up to 24 are defined, but I'll stop here.
 };
+
+static EnumerationNames<Qt::MouseButton> const mouseButtonNames = {
+  mouseButtonDefinitions,
+  TABLESIZE(mouseButtonDefinitions)
+};
+
 
 std::string toString(Qt::MouseButtons buttons)
 {
@@ -130,13 +138,22 @@ std::string toString(Qt::MouseButtons buttons)
 #define MODIFIER_FLAG_DEFN(key) { Qt::key##Modifier, #key },
 
 static EnumeratorName<Qt::KeyboardModifier> const keyboardModifierDefinitions[] = {
-  FLAG_DEFN(NoModifier)
+  QT_FLAG_DEFN(NoModifier)
   MODIFIER_FLAG_DEFN(Shift)
   { Qt::ControlModifier, "Ctrl" },
   MODIFIER_FLAG_DEFN(Alt)
   MODIFIER_FLAG_DEFN(Meta)
   MODIFIER_FLAG_DEFN(Keypad)
   MODIFIER_FLAG_DEFN(GroupSwitch)
+};
+
+#undef MODIFIER_FLAG_DEFN
+#undef QT_FLAG_DEFN
+
+
+static EnumerationNames<Qt::KeyboardModifier> const keyboardModifierNames = {
+  keyboardModifierDefinitions,
+  TABLESIZE(keyboardModifierDefinitions)
 };
 
 
@@ -240,6 +257,275 @@ EnumerationNames<Qt::Key> const g_qtKeyNames = {
   s_qtKeyNameTable,
   TABLESIZE(s_qtKeyNameTable)
 };
+
+
+static EnumeratorName<QEvent::Type> const eventTypeDefinitions[] = {
+  #define EVENT_TYPE_DEFN(Enumerator) \
+    { QEvent::Enumerator, #Enumerator },
+
+  // This list comes from qt5/qtbase/src/corelib/kernel/qcoreevent.h.
+  EVENT_TYPE_DEFN(None)
+  EVENT_TYPE_DEFN(Timer)
+  EVENT_TYPE_DEFN(MouseButtonPress)
+  EVENT_TYPE_DEFN(MouseButtonRelease)
+  EVENT_TYPE_DEFN(MouseButtonDblClick)
+  EVENT_TYPE_DEFN(MouseMove)
+  EVENT_TYPE_DEFN(KeyPress)
+  EVENT_TYPE_DEFN(KeyRelease)
+  EVENT_TYPE_DEFN(FocusIn)
+  EVENT_TYPE_DEFN(FocusOut)
+  EVENT_TYPE_DEFN(FocusAboutToChange)
+  EVENT_TYPE_DEFN(Enter)
+  EVENT_TYPE_DEFN(Leave)
+  EVENT_TYPE_DEFN(Paint)
+  EVENT_TYPE_DEFN(Move)
+  EVENT_TYPE_DEFN(Resize)
+  EVENT_TYPE_DEFN(Create)
+  EVENT_TYPE_DEFN(Destroy)
+  EVENT_TYPE_DEFN(Show)
+  EVENT_TYPE_DEFN(Hide)
+  EVENT_TYPE_DEFN(Close)
+  EVENT_TYPE_DEFN(Quit)
+  EVENT_TYPE_DEFN(ParentChange)
+  EVENT_TYPE_DEFN(ParentAboutToChange)
+  EVENT_TYPE_DEFN(ThreadChange)
+  EVENT_TYPE_DEFN(WindowActivate)
+  EVENT_TYPE_DEFN(WindowDeactivate)
+  EVENT_TYPE_DEFN(ShowToParent)
+  EVENT_TYPE_DEFN(HideToParent)
+  EVENT_TYPE_DEFN(Wheel)
+  EVENT_TYPE_DEFN(WindowTitleChange)
+  EVENT_TYPE_DEFN(WindowIconChange)
+  EVENT_TYPE_DEFN(ApplicationWindowIconChange)
+  EVENT_TYPE_DEFN(ApplicationFontChange)
+  EVENT_TYPE_DEFN(ApplicationLayoutDirectionChange)
+  EVENT_TYPE_DEFN(ApplicationPaletteChange)
+  EVENT_TYPE_DEFN(PaletteChange)
+  EVENT_TYPE_DEFN(Clipboard)
+  EVENT_TYPE_DEFN(Speech)
+  EVENT_TYPE_DEFN(MetaCall)
+  EVENT_TYPE_DEFN(SockAct)
+  EVENT_TYPE_DEFN(WinEventAct)
+  EVENT_TYPE_DEFN(DeferredDelete)
+  EVENT_TYPE_DEFN(DragEnter)
+  EVENT_TYPE_DEFN(DragMove)
+  EVENT_TYPE_DEFN(DragLeave)
+  EVENT_TYPE_DEFN(Drop)
+  EVENT_TYPE_DEFN(DragResponse)
+  EVENT_TYPE_DEFN(ChildAdded)
+  EVENT_TYPE_DEFN(ChildPolished)
+  EVENT_TYPE_DEFN(ChildRemoved)
+  EVENT_TYPE_DEFN(ShowWindowRequest)
+  EVENT_TYPE_DEFN(PolishRequest)
+  EVENT_TYPE_DEFN(Polish)
+  EVENT_TYPE_DEFN(LayoutRequest)
+  EVENT_TYPE_DEFN(UpdateRequest)
+  EVENT_TYPE_DEFN(UpdateLater)
+
+  EVENT_TYPE_DEFN(EmbeddingControl)
+  EVENT_TYPE_DEFN(ActivateControl)
+  EVENT_TYPE_DEFN(DeactivateControl)
+  EVENT_TYPE_DEFN(ContextMenu)
+  EVENT_TYPE_DEFN(InputMethod)
+  EVENT_TYPE_DEFN(TabletMove)
+  EVENT_TYPE_DEFN(LocaleChange)
+  EVENT_TYPE_DEFN(LanguageChange)
+  EVENT_TYPE_DEFN(LayoutDirectionChange)
+  EVENT_TYPE_DEFN(Style)
+  EVENT_TYPE_DEFN(TabletPress)
+  EVENT_TYPE_DEFN(TabletRelease)
+  EVENT_TYPE_DEFN(OkRequest)
+  EVENT_TYPE_DEFN(HelpRequest)
+
+  EVENT_TYPE_DEFN(IconDrag)
+
+  EVENT_TYPE_DEFN(FontChange)
+  EVENT_TYPE_DEFN(EnabledChange)
+  EVENT_TYPE_DEFN(ActivationChange)
+  EVENT_TYPE_DEFN(StyleChange)
+  EVENT_TYPE_DEFN(IconTextChange)
+  EVENT_TYPE_DEFN(ModifiedChange)
+  EVENT_TYPE_DEFN(MouseTrackingChange)
+
+  EVENT_TYPE_DEFN(WindowBlocked)
+  EVENT_TYPE_DEFN(WindowUnblocked)
+  EVENT_TYPE_DEFN(WindowStateChange)
+
+  EVENT_TYPE_DEFN(ReadOnlyChange)
+
+  EVENT_TYPE_DEFN(ToolTip)
+  EVENT_TYPE_DEFN(WhatsThis)
+  EVENT_TYPE_DEFN(StatusTip)
+
+  EVENT_TYPE_DEFN(ActionChanged)
+  EVENT_TYPE_DEFN(ActionAdded)
+  EVENT_TYPE_DEFN(ActionRemoved)
+
+  EVENT_TYPE_DEFN(FileOpen)
+
+  EVENT_TYPE_DEFN(Shortcut)
+  EVENT_TYPE_DEFN(ShortcutOverride)
+
+  EVENT_TYPE_DEFN(WhatsThisClicked)
+
+  EVENT_TYPE_DEFN(ToolBarChange)
+
+  EVENT_TYPE_DEFN(ApplicationActivate)
+  EVENT_TYPE_DEFN(ApplicationDeactivate)
+
+  EVENT_TYPE_DEFN(QueryWhatsThis)
+  EVENT_TYPE_DEFN(EnterWhatsThisMode)
+  EVENT_TYPE_DEFN(LeaveWhatsThisMode)
+
+  EVENT_TYPE_DEFN(ZOrderChange)
+
+  EVENT_TYPE_DEFN(HoverEnter)
+  EVENT_TYPE_DEFN(HoverLeave)
+  EVENT_TYPE_DEFN(HoverMove)
+
+#ifdef QT_KEYPAD_NAVIGATION
+  EVENT_TYPE_DEFN(EnterEditFocus)
+  EVENT_TYPE_DEFN(LeaveEditFocus)
+#endif
+  EVENT_TYPE_DEFN(AcceptDropsChange)
+
+  EVENT_TYPE_DEFN(ZeroTimerEvent)
+
+  EVENT_TYPE_DEFN(GraphicsSceneMouseMove)
+  EVENT_TYPE_DEFN(GraphicsSceneMousePress)
+  EVENT_TYPE_DEFN(GraphicsSceneMouseRelease)
+  EVENT_TYPE_DEFN(GraphicsSceneMouseDoubleClick)
+  EVENT_TYPE_DEFN(GraphicsSceneContextMenu)
+  EVENT_TYPE_DEFN(GraphicsSceneHoverEnter)
+  EVENT_TYPE_DEFN(GraphicsSceneHoverMove)
+  EVENT_TYPE_DEFN(GraphicsSceneHoverLeave)
+  EVENT_TYPE_DEFN(GraphicsSceneHelp)
+  EVENT_TYPE_DEFN(GraphicsSceneDragEnter)
+  EVENT_TYPE_DEFN(GraphicsSceneDragMove)
+  EVENT_TYPE_DEFN(GraphicsSceneDragLeave)
+  EVENT_TYPE_DEFN(GraphicsSceneDrop)
+  EVENT_TYPE_DEFN(GraphicsSceneWheel)
+
+  EVENT_TYPE_DEFN(KeyboardLayoutChange)
+
+  EVENT_TYPE_DEFN(DynamicPropertyChange)
+
+  EVENT_TYPE_DEFN(TabletEnterProximity)
+  EVENT_TYPE_DEFN(TabletLeaveProximity)
+
+  EVENT_TYPE_DEFN(NonClientAreaMouseMove)
+  EVENT_TYPE_DEFN(NonClientAreaMouseButtonPress)
+  EVENT_TYPE_DEFN(NonClientAreaMouseButtonRelease)
+  EVENT_TYPE_DEFN(NonClientAreaMouseButtonDblClick)
+
+  EVENT_TYPE_DEFN(MacSizeChange)
+
+  EVENT_TYPE_DEFN(ContentsRectChange)
+
+  EVENT_TYPE_DEFN(MacGLWindowChange)
+
+  EVENT_TYPE_DEFN(FutureCallOut)
+
+  EVENT_TYPE_DEFN(GraphicsSceneResize)
+  EVENT_TYPE_DEFN(GraphicsSceneMove)
+
+  EVENT_TYPE_DEFN(CursorChange)
+  EVENT_TYPE_DEFN(ToolTipChange)
+
+  EVENT_TYPE_DEFN(NetworkReplyUpdated)
+
+  EVENT_TYPE_DEFN(GrabMouse)
+  EVENT_TYPE_DEFN(UngrabMouse)
+  EVENT_TYPE_DEFN(GrabKeyboard)
+  EVENT_TYPE_DEFN(UngrabKeyboard)
+  EVENT_TYPE_DEFN(MacGLClearDrawable)
+
+  EVENT_TYPE_DEFN(StateMachineSignal)
+  EVENT_TYPE_DEFN(StateMachineWrapped)
+
+  EVENT_TYPE_DEFN(TouchBegin)
+  EVENT_TYPE_DEFN(TouchUpdate)
+  EVENT_TYPE_DEFN(TouchEnd)
+
+#ifndef QT_NO_GESTURES
+  EVENT_TYPE_DEFN(NativeGesture)
+#endif
+  EVENT_TYPE_DEFN(RequestSoftwareInputPanel)
+  EVENT_TYPE_DEFN(CloseSoftwareInputPanel)
+
+  EVENT_TYPE_DEFN(WinIdChange)
+#ifndef QT_NO_GESTURES
+  EVENT_TYPE_DEFN(Gesture)
+  EVENT_TYPE_DEFN(GestureOverride)
+#endif
+  EVENT_TYPE_DEFN(ScrollPrepare)
+  EVENT_TYPE_DEFN(Scroll)
+
+  EVENT_TYPE_DEFN(Expose)
+
+  EVENT_TYPE_DEFN(InputMethodQuery)
+  EVENT_TYPE_DEFN(OrientationChange)
+
+  EVENT_TYPE_DEFN(TouchCancel)
+
+  EVENT_TYPE_DEFN(ThemeChange)
+
+  EVENT_TYPE_DEFN(SockClose)
+
+  EVENT_TYPE_DEFN(PlatformPanel)
+
+  EVENT_TYPE_DEFN(StyleAnimationUpdate)
+  EVENT_TYPE_DEFN(ApplicationStateChange)
+
+  EVENT_TYPE_DEFN(WindowChangeInternal)
+  EVENT_TYPE_DEFN(ScreenChangeInternal)
+
+  EVENT_TYPE_DEFN(PlatformSurface)
+
+  EVENT_TYPE_DEFN(Pointer)
+
+  EVENT_TYPE_DEFN(TabletTrackingChange)
+
+  #undef EVENT_TYPE_DEFN
+};
+
+
+static EnumerationNames<QEvent::Type> const eventTypeNames = {
+  eventTypeDefinitions,
+  TABLESIZE(eventTypeDefinitions)
+};
+
+
+template <typename T>
+char const * NULLABLE lookupEnumeratorName(
+  T value,
+  EnumerationNames<T> const &names)
+{
+  for (int i=0; i < names.m_size; ++i) {
+    if (names.m_names[i].m_value == value) {
+      return names.m_names[i].m_name;
+    }
+  }
+  return nullptr;
+}
+
+
+char const * NULLABLE toStringOpt(QEvent::Type value)
+{
+  return lookupEnumeratorName(value, eventTypeNames);
+}
+
+
+char const * NULLABLE toStringOpt(Qt::KeyboardModifier value)
+{
+  return lookupEnumeratorName(value, keyboardModifierNames);
+}
+
+
+char const * NULLABLE toStringOpt(Qt::MouseButton value)
+{
+  return lookupEnumeratorName(value, mouseButtonNames);
+}
 
 
 std::string toString(QString const &s)
