@@ -10,7 +10,7 @@
 
 // smbase
 #include "smbase/exc.h"                // smbase::XFormat
-#include "smbase/sm-test.h"            // DIAG, EXPECT_EQ
+#include "smbase/sm-test.h"            // DIAG, EXPECT_EQ, EXPECT_{TRUE,FALSE}
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/strutil.h"            // hasSubstring
 #include "smbase/xassert.h"            // xfailure_stringbc, xassert
@@ -458,6 +458,18 @@ static void test_toStringOpt_MouseButton()
 }
 
 
+static void test_isMouseEventType()
+{
+  EXPECT_TRUE(isMouseEventType(QEvent::MouseButtonPress));
+  EXPECT_TRUE(isMouseEventType(QEvent::MouseButtonRelease));
+  EXPECT_TRUE(isMouseEventType(QEvent::MouseButtonDblClick));
+  EXPECT_TRUE(isMouseEventType(QEvent::MouseMove));
+
+  EXPECT_FALSE(isMouseEventType(QEvent::Quit));
+  EXPECT_FALSE(isMouseEventType(QEvent::FocusIn));
+}
+
+
 CLOSE_NAMESPACE(qtutil_test)
 
 
@@ -481,6 +493,7 @@ void test_qtutil()
   test_toStringOpt_QEvent_Type();
   test_toStringOpt_KeyboardModifier();
   test_toStringOpt_MouseButton();
+  test_isMouseEventType();
 
   DIAG("QString: " << toString(qstringb("ab" << 'c')));
   DIAG("QRect: " << toString(QRect(10,20,30,40)));

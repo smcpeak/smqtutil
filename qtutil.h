@@ -86,6 +86,10 @@ char const * NULLABLE toStringOpt(Qt::KeyboardModifier value);
 char const * NULLABLE toStringOpt(Qt::MouseButton value);
 
 
+// True if `eventType` is one that is carried by a `QMouseEvent`.
+bool isMouseEventType(QEvent::Type eventType);
+
+
 // Convert 'QString' to 'std::string'.
 std::string toString(QString const &s);
 

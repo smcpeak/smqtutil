@@ -528,6 +528,15 @@ char const * NULLABLE toStringOpt(Qt::MouseButton value)
 }
 
 
+bool isMouseEventType(QEvent::Type eventType)
+{
+  return eventType == QEvent::MouseButtonPress ||
+         eventType == QEvent::MouseButtonRelease ||
+         eventType == QEvent::MouseButtonDblClick ||
+         eventType == QEvent::MouseMove;
+}
+
+
 std::string toString(QString const &s)
 {
   QByteArray utf8(s.toUtf8());
