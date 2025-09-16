@@ -4,6 +4,7 @@
 #include "gdvalue-qt.h"                // this module
 
 #include "smbase/gdvalue-parser.h"     // gdv::GDValueParser
+#include "smbase/gdvalue-tuple.h"      // gdv::gdvpToTuple
 #include "smbase/gdvalue.h"            // gdv::GDValue
 
 #include "smqtutil/qtutil.h"           // toString(QString), toStringOpt(QEvent::Type)
@@ -14,25 +15,26 @@
 
 #include <climits>                     // CHAR_BIT
 #include <optional>                    // std::optional
+#include <tuple>                       // std::make_from_tuple
 
 using namespace gdv;
 
 
 gdv::GDValue toGDValue(QPoint const &p)
 {
-  GDValue m(GDVK_TAGGED_ORDERED_MAP, "QPoint"_sym);
-  m.mapSetValueAtSym("x", p.x());
-  m.mapSetValueAtSym("y", p.y());
-  return m;
+  return GDValue(GDVTaggedTuple("QPoint"_sym, {
+    toGDValue(p.x()),
+    toGDValue(p.y())
+  }));
 }
 
 
 gdv::GDValue toGDValue(QPointF const &p)
 {
-  GDValue m(GDVK_TAGGED_ORDERED_MAP, "QPointF"_sym);
-  m.mapSetValueAtSym("x", toGDValue(p.x()));
-  m.mapSetValueAtSym("y", toGDValue(p.y()));
-  return m;
+  return GDValue(GDVTaggedTuple("QPointF"_sym, {
+    toGDValue(p.x()),
+    toGDValue(p.y())
+  }));
 }
 
 
@@ -55,9 +57,10 @@ gdv::GDValue toGDValue(QString const &str)
 
 gdv::GDValue toGDValue(QSize const &sz)
 {
-  GDValue t(GDVK_TAGGED_TUPLE, "QSize"_sym);
-  t.tupleSet(GDVTuple{sz.width(), sz.height()});
-  return t;
+  return GDValue(GDVTaggedTuple("QSize"_sym, {
+    toGDValue(sz.width()),
+    toGDValue(sz.height())
+  }));
 }
 
 
@@ -65,17 +68,15 @@ namespace gdv {
   /*static*/ QSize GDVPTo<QSize>::f(GDValueParser const &p)
   {
     p.checkTaggedTupleSize("QSize", 2);
-    return QSize(
-      p.tupleGetValueAt(0).smallIntegerGet(),
-      p.tupleGetValueAt(1).smallIntegerGet());
+    return std::make_from_tuple<QSize>(
+      gdvpToTuple<int, int>(p));
   }
 
   /*static*/ QPoint GDVPTo<QPoint>::f(GDValueParser const &p)
   {
-    p.checkTaggedOrderedMapTag("QPoint");
-    return QPoint(
-      p.mapGetValueAtSym("x").smallIntegerGet(),
-      p.mapGetValueAtSym("y").smallIntegerGet());
+    p.checkTaggedTupleSize("QPoint", 2);
+    return std::make_from_tuple<QPoint>(
+      gdvpToTuple<int, int>(p));
   }
 }
 

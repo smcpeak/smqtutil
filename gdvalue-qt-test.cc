@@ -22,20 +22,23 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_QPoint()
 {
+  TEST_CASE(__func__);
   gdvnTestRoundtripEq(QPoint(4,5),
-    "QPoint[x:4 y:5]");
+    "QPoint(4 5)");
 }
 
 
 void test_QPointF()
 {
+  TEST_CASE(__func__);
   EXPECT_EQ(toGDValue(QPointF(4.5,5.5)).asString(),
-            "QPointF[x:4.5 y:5.5]");
+            "QPointF(4.5 5.5)");
 }
 
 
 void test_QRect()
 {
+  TEST_CASE(__func__);
   EXPECT_EQ(toGDValue(QRect(4,5,6,7)).asString(),
     "QRect[left:4 top:5 width:6 height:7]");
 }
@@ -43,12 +46,15 @@ void test_QRect()
 
 void test_QString()
 {
+  TEST_CASE(__func__);
   EXPECT_EQ(toGDValue(QString("abc")).asString(), "\"abc\"");
 }
 
 
 void test_QSize()
 {
+  TEST_CASE(__func__);
+
   gdvnTestRoundtripEq(QSize(4,5), "QSize(4 5)");
 
   EXPECT_EQ(toGDValue(QSize(4,5)).asString(), "QSize(4 5)");
@@ -65,6 +71,8 @@ T fromGDVNTo(char const *gdvn)
 
 void test_QEvent_Type()
 {
+  TEST_CASE(__func__);
+
   gdvnTestRoundtripEq(QEvent::MouseButtonRelease,
     "MouseButtonRelease");
   gdvnTestRoundtripEq(QEvent::User,
@@ -104,6 +112,8 @@ void test_KeyboardModifier()
 
 void test_MouseButton()
 {
+  TEST_CASE(__func__);
+
   gdvnTestRoundtripEq(Qt::MiddleButton,
     "MiddleButton");
   gdvnTestRoundtripEq(Qt::MouseButton(123),
@@ -117,6 +127,8 @@ void test_MouseButton()
 
 void test_KeyboardModifiers()
 {
+  TEST_CASE(__func__);
+
   gdvnTestRoundtripEq(Qt::KeyboardModifiers(Qt::NoModifier),
     "{}");
 
@@ -143,6 +155,8 @@ void test_KeyboardModifiers()
 
 void test_MouseButtons()
 {
+  TEST_CASE(__func__);
+
   gdvnTestRoundtripEq(Qt::MouseButtons(Qt::NoButton),
     "{}");
 
@@ -167,6 +181,8 @@ void test_MouseButtons()
 
 void test_QMouseEvent()
 {
+  TEST_CASE(__func__);
+
   {
     QMouseEvent ev(
       QEvent::MouseButtonPress,
@@ -186,9 +202,9 @@ void test_QMouseEvent()
         timestamp: 0
         button: LeftButton
         buttons: {LeftButton, RightButton}
-        pos: QPoint[x:1 y:2]
-        windowPos: QPointF[x:3.0 y:4.0]
-        globalPos: QPoint[x:5 y:6]
+        pos: QPoint(1 2)
+        windowPos: QPointF(3.0 4.0)
+        globalPos: QPoint(5 6)
       ]
     )"));
   }
@@ -212,9 +228,9 @@ void test_QMouseEvent()
         timestamp: 0
         button: NoButton
         buttons: {}
-        pos: QPoint[x:11 y:12]
-        windowPos: QPointF[x:13.0 y:14.0]
-        globalPos: QPoint[x:15 y:16]
+        pos: QPoint(11 12)
+        windowPos: QPointF(13.0 14.0)
+        globalPos: QPoint(15 16)
       ]
     )"));
   }
