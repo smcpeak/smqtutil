@@ -282,6 +282,18 @@ GDValue toGDValue(QMouseEvent const &ev)
 }
 
 
+gdv::GDValue toGDValue(QResizeEvent const &ev)
+{
+  GDValue m = toGDValue(static_cast<QEvent const &>(ev));
+  m.taggedContainerSetTag("QResizeEvent"_sym);
+
+  SET_EVENT_FIELD(oldSize);
+  SET_EVENT_FIELD(size);
+
+  return m;
+}
+
+
 #undef SET_EVENT_FIELD
 
 

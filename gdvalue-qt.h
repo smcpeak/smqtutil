@@ -12,12 +12,13 @@
 #include <QEvent>                      // QEvent::Type
 #include <qnamespace.h>                // MouseButton[s], KeyboardModifier[s]
 
+class QMouseEvent;
 class QPoint;
 class QPointF;
 class QRect;
+class QResizeEvent;
 class QSize;
 class QString;
-class QMouseEvent;
 
 
 gdv::GDValue toGDValue(QPoint const &p);
@@ -62,7 +63,8 @@ DECLARE_GDVPTO(Qt::MouseButtons);
 
 
 // All event details as an ordered map.
-gdv::GDValue toGDValue(QMouseEvent const &mev);
+gdv::GDValue toGDValue(QMouseEvent const &ev);
+gdv::GDValue toGDValue(QResizeEvent const &ev);
 
 
 // Put the global `toGDValue` functions into the `Qt` namespace as well

@@ -12,6 +12,7 @@
 #include <QMouseEvent>
 #include <QPoint>
 #include <QRect>
+#include <QResizeEvent>
 #include <QString>
 
 using namespace gdv;
@@ -237,6 +238,26 @@ void test_QMouseEvent()
 }
 
 
+void test_QResizeEvent()
+{
+  TEST_CASE(__func__);
+
+  {
+    QResizeEvent ev(QSize(1, 2), QSize(3, 4));
+
+    EXPECT_EQ_GDV(toGDValue(ev), fromGDVN(R"(
+      QResizeEvent[
+        type: Resize
+        spontaneous: false
+        isAccepted: true
+        oldSize: QSize(3 4)
+        size: QSize(1 2)
+      ]
+    )"));
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -254,6 +275,7 @@ void test_gdvalue_qt()
   test_KeyboardModifiers();
   test_MouseButtons();
   test_QMouseEvent();
+  test_QResizeEvent();
 }
 
 
