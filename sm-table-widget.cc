@@ -200,12 +200,20 @@ void SMTableWidget::on_selectionChanged() NOEXCEPT
 
 void SMTableWidget::resizeEvent(QResizeEvent *event)
 {
-  TRACE2("resizeEvent");
-  QTableWidget::resizeEvent(event);
+  TRACE2_GDVN_EXPRS("resizeEvent", *event);
 
   if (m_columnsFillWidth) {
     adjustColumnsToFitWidth();
   }
+
+  // This is a bit subtle: we need to call the base class method *after*
+  // adjusting column sizes.  Otherwise, the computed overall table size
+  // lags behind by one resize event when the horizontal scrollbar is
+  // always on (`setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn)`).
+  // One noticeable effect of that is, when resizing smaller, the
+  // hscroll will enable itself even when the column sizes properly just
+  // fill the viewport.
+  QTableWidget::resizeEvent(event);
 }
 
 
@@ -375,9 +383,16 @@ void SMTableWidget::adjustColumnsToFitWidth()
   // Start with current sizes.
   std::vector<int> curSizes = getColumnWidths();
 
+  TRACE2_GDVN_EXPRS("adjustColumns inputs",
+    numColumns, viewWidth, curSizes);
+
   // Choose new sizes.
   std::vector<int> newSizes = curSizes;
   if (m_colRules.resizeAll(newSizes, viewWidth)) {
+    int const sumNewSizes = vecSum(newSizes);
+    TRACE2_GDVN_EXPRS("adjustColumns resizeAll output",
+      newSizes, sumNewSizes);
+
     QSignalBlocker blocker(header);
     for (int i=0; i < numColumns; ++i) {
       if (newSizes[i] != curSizes[i]) {

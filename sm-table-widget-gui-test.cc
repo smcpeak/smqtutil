@@ -38,7 +38,7 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   // True to test a configuration where we are showing a very wide table
   // and intend that the user scroll, rather than keeping it all visible
   // at once.
-  bool veryWide = envAsBool("WIDE");
+  bool const veryWide = envAsBool("WIDE");
 
   // Test doing this before `setColumnInfo`.  In the past, that would
   // lead to an assertion failure.
@@ -73,7 +73,8 @@ int gui_test_sm_table_widget(QApplication &app, bool nogui)
   table->setRowCount(numRows);
   table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-  if (veryWide) {
+  bool const forceHScroll = envAsBool("FORCE_HSCROLL");
+  if (veryWide || forceHScroll) {
     table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   }
 
