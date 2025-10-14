@@ -34,7 +34,12 @@ void test_timer()
   long endMS = getMilliseconds();
   long durationMS = endMS - startMS;
   VPVAL(durationMS);
-  xassert(durationMS >= 50);
+
+  // On Linux, I've seen this duration be as low as 48 ms, and I suppose
+  // that's because the second clock sample might happen before whatever
+  // the underlying clock is ticks, so I've weakened the check
+  // significantly, to just 30 ms.
+  xassert(durationMS >= 30);
 }
 
 
