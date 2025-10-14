@@ -25,6 +25,9 @@ RANLIB := ranlib
 EXTRA_CCFLAGS :=
 EXTRA_LDFLAGS :=
 
+# Other tools.
+PYTHON3 = python3
+
 # Pull in build configuration.  This must provide definitions of
 # QT5INCLUDE, QT5LIB and QT5BIN.  It can optionally override the
 # variables defined above.
@@ -81,7 +84,7 @@ TEST_PROGRAMS :=
 
 # ---------------- default fonts --------------------
 %.bdf.gen.cc %.bdf.gen.h: fonts/%.bdf
-	perl $(SMBASE)/file-to-strlit.pl bdfFontData_$* $^ $*.bdf.gen.h $@
+	$(PYTHON3) $(SMBASE)/file-to-strlit.py bdfFontData_$* $^ $*.bdf.gen.h $@
 
 BDFGENSRC :=
 BDFGENSRC += courB24_ISO8859_1.bdf.gen.cc
