@@ -8,14 +8,14 @@
 # for -I arguments.  Fortunately, it seems that both the mingw and
 # cygwin compilers accept paths like "c:/path", using forward slashes.
 # This is also what 'cygpath -m' produces.
-QT5INCLUDE := /usr/include/qt5
+QT5INCLUDE := /usr/include/x86_64-linux-gnu/qt5
 
 # Directory containing Qt5 libraries.  It must have files including
-# "libQt5Core.so", "libQt5Gui.so", and "libQt5Widgets.do".  On Windows,
+# "libQt5Core.so", "libQt5Gui.so", and "libQt5Widgets.so".  On Windows,
 # the file extension is ".a" instead, and there are also files like
 # "Qt5Core.dll".  The path syntax must be suitable for use with the
 # compiler -L arguments.
-QT5LIB := /usr/lib
+QT5LIB := /usr/lib/x86_64-linux-gnu
 
 # Directory with Qt5 program 'moc'.
 QT5BIN := /usr/bin
