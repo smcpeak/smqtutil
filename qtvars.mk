@@ -34,6 +34,10 @@ QT_CCFLAGS += -isystem ${QT5INCLUDE}/QtWidgets
 # counterparts.
 QT_CCFLAGS += -DQT_NO_KEYWORDS
 
+# The Qt5 I get on Ubuntu from "qtbase5-dev" is evidently compiled in a
+# way that requires -fPIC.
+QT_CCFLAGS += -fPIC
+
 # Qt link flags.
 #
 # Note: -rpath does not work on Windows.  Instead, $(QT5BIN) must be on
