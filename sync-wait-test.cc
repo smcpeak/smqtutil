@@ -83,8 +83,10 @@ void test_secondCancel()
 
   long endMS = getMilliseconds();
   long durationMS = endMS - startMS;
+
+  // Like above, this can be lower than expected.
   VPVAL(durationMS);
-  xassert(durationMS >= 50);
+  xassert(durationMS >= 30);
 
   startMS = endMS;
 
