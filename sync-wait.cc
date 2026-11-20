@@ -125,8 +125,8 @@ bool SynchronousWaiter::waitUntil(
 }
 
 
-// ----------------------- TestSynchronousWaiter -----------------------
-TestSynchronousWaiter::TestSynchronousWaiter(
+// ----------------------- MockSynchronousWaiter -----------------------
+MockSynchronousWaiter::MockSynchronousWaiter(
   std::optional<int> cancelCountdown)
   : IMEMBFP(cancelCountdown),
     m_disallowWaiting(false),
@@ -134,7 +134,7 @@ TestSynchronousWaiter::TestSynchronousWaiter(
 {}
 
 
-bool TestSynchronousWaiter::waitUntil(
+bool MockSynchronousWaiter::waitUntil(
   std::function<bool()> condition,
   int activityDialogDelayMS,
   std::string const &activityDialogTitle,
@@ -156,7 +156,7 @@ bool TestSynchronousWaiter::waitUntil(
       xfailure("waiting not allowed");
     }
 
-    TRACE2("TestSynchronousWaiter::waitUntil: waiting");
+    TRACE2("MockSynchronousWaiter::waitUntil: waiting");
 
     // Allow processing user input just to more closely simulate the
     // real thing, but this class is meant to be used in non-interactive

@@ -63,7 +63,7 @@ public:      // methods
 
 
 // A mock waiter for testing.  It does not show any UI.
-class TestSynchronousWaiter : public SynchronousWaiter {
+class MockSynchronousWaiter : public SynchronousWaiter {
 public:      // data
   // If set, then if this is 0, we will immediately return false from
   // `waitUntil`, simulating a canceled wait.  Otherwise we decrement
@@ -81,7 +81,7 @@ public:      // data
   int m_waitUntilCount;
 
 public:      // methods
-  explicit TestSynchronousWaiter(
+  explicit MockSynchronousWaiter(
     std::optional<int> cancelCountdown = std::nullopt);
 
   // This ignores everything but `condition`, waiting indefinitely for

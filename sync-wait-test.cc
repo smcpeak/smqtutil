@@ -21,7 +21,7 @@ void test_timer()
 {
   long startMS = getMilliseconds();
 
-  TestSynchronousWaiter w;
+  MockSynchronousWaiter w;
   QTimer timer;
   timer.setSingleShot(true);
   timer.start(50 /*ms*/);
@@ -48,7 +48,7 @@ void test_cancel()
 {
   long startMS = getMilliseconds();
 
-  TestSynchronousWaiter w(0 /*cancelCountdown*/);
+  MockSynchronousWaiter w(0 /*cancelCountdown*/);
   QTimer timer;
   timer.setSingleShot(true);
   timer.start(50 /*ms*/);
@@ -70,7 +70,7 @@ void test_secondCancel()
 {
   long startMS = getMilliseconds();
 
-  TestSynchronousWaiter w(1 /*cancelCountdown*/);
+  MockSynchronousWaiter w(1 /*cancelCountdown*/);
   QTimer timer;
   timer.setSingleShot(true);
   timer.start(50 /*ms*/);
@@ -105,7 +105,7 @@ void test_secondCancel()
 // Condition is true right at the start.
 void test_immediate()
 {
-  TestSynchronousWaiter w;
+  MockSynchronousWaiter w;
   auto condition = []() -> bool
     { return true; };
   EXPECT_TRUE(w.waitUntil(condition, 0, {}, {}));
@@ -115,7 +115,7 @@ void test_immediate()
 
 void test_disallowWaiting()
 {
-  TestSynchronousWaiter w;
+  MockSynchronousWaiter w;
   w.m_disallowWaiting = true;
 
   // This would try to wait.
