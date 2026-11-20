@@ -22,9 +22,15 @@
 INIT_TRACE("sync-wait");
 
 
-// TODO: For the reasons explained in comments on `waitForQtEvent`, it
-// would be ideal to have an alternative interface that uses a signal
-// instead of the "wait for" loop.
+// ------------------------- SynchronousWaiter -------------------------
+SynchronousWaiter::~SynchronousWaiter()
+{}
+
+
+// ---------------------- synchronouslyWaitUntil -----------------------
+// TODO: For the reasons explained in comments on `waitForQtEvent` in
+// `qtutil.h`, it would be ideal to have an alternative interface that
+// uses a signal instead of the "wait for" loop.
 bool synchronouslyWaitUntil(
   QWidget * NULLABLE widget,
   std::function<bool()> condition,
@@ -104,13 +110,13 @@ bool synchronouslyWaitUntil(
 }
 
 
-// ------------------------- SynchronousWaiter -------------------------
-SynchronousWaiter::SynchronousWaiter(QWidget *widget)
+// ----------------------- GUISynchronousWaiter ------------------------
+GUISynchronousWaiter::GUISynchronousWaiter(QWidget * NULLABLE widget)
   : IMEMBFP(widget)
 {}
 
 
-bool SynchronousWaiter::waitUntil(
+bool GUISynchronousWaiter::waitUntil(
   std::function<bool()> condition,
   int activityDialogDelayMS,
   std::string const &activityDialogTitle,

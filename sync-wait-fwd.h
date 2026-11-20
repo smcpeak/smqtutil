@@ -7,6 +7,7 @@
 #define SMQTUTIL_SYNC_WAIT_FWD_H
 
 class SynchronousWaiter;
+class GUISynchronousWaiter;
 class MockSynchronousWaiter;
 
 #endif // SMQTUTIL_SYNC_WAIT_FWD_H

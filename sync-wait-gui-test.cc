@@ -121,7 +121,7 @@ void SyncWaitTestWindow::slot_start() noexcept
   m_timesChecked = 0;
   m_waiting = true;
 
-  SynchronousWaiter waiter(widgetPointer? m_centralWidget : nullptr);
+  GUISynchronousWaiter waiter(widgetPointer? m_centralWidget : nullptr);
 
   bool completed = waiter.waitUntil(
     [this]() -> bool { return this->waitCondition(); },

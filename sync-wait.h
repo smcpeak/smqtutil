@@ -17,22 +17,39 @@
 class QWidget;
 
 
-/* Synchronously wait until `condition` is true.
+// Interface to a synchronous wait capability.
+class SynchronousWaiter {
+public:      // methods
+  virtual ~SynchronousWaiter();
 
-   For the first `activityDialogDelayMS` milliseconds, show a "wait"
-   mouse cursor in `widget`, while blocking input to it as if a modal
-   dialog was shown.  During this time, if the condition becomes true,
-   restore the mouse cursor and return true.
+  /*
+    Synchronously wait until `condition` is true, then return true; or
+    until the operation is canceled, then return false.
 
-   After that time elapses, restore the mouse cursor and pop up a modal
-   activity dialog with the specified title and message, and containing
-   a Cancel button.  During this time, if the condition becomes true,
-   close the dialog and return true.  If the user presses Cancel, close
-   the dialog and return false.
+    The nominal UI behavior is this function will first show the user a
+    "wait" indicator, such as an hourglass mouse cursor.
 
-   If `widget` is non-null, then user input to its window is disabled
-   for the duration of this function.
-*/
+    Then, after `activityDialogDelayMS` milliseconds, it pops up a
+    dialog with the specified title and message, and a Cancel button.
+    If the user presses Cancel, then `waitUntil` returns false.
+
+    If `condition` becomes true at any time before Cancel is pressed,
+    then any opened dialog is closed, the wait indicator removed, and
+    this function returns true.
+
+    The Qt/OS event queue is serviced while waiting.
+  */
+  virtual bool waitUntil(
+    std::function<bool()> condition,
+    int activityDialogDelayMS,
+    std::string const &activityDialogTitle,
+    std::string const &activityDialogMessage) = 0;
+};
+
+
+// This function implements the GUI behavior described as the nominal
+// behavior of `waitUntil`.  The modal activity dialog is shown with
+// `widget` as its parent.
 bool synchronouslyWaitUntil(
   QWidget * NULLABLE widget,
   std::function<bool()> condition,
@@ -41,24 +58,22 @@ bool synchronouslyWaitUntil(
   std::string const &activityDialogMessage);
 
 
-// Interface to a synchronous wait capability.
-class SynchronousWaiter {
+// Implementation of SynchronousWaiter that uses
+// `synchronouslyWaitUntil`.
+class GUISynchronousWaiter : public SynchronousWaiter {
 public:      // data
   // The widget whose window will have input blocked while we wait, if
   // any.
   QWidget * NULLABLE m_widget;
 
 public:      // methods
-  explicit SynchronousWaiter(QWidget *widget = nullptr);
+  explicit GUISynchronousWaiter(QWidget * NULLABLE widget = nullptr);
 
-  // Call `synchronouslyWaitUntil`, returning its result.
-  //
-  // However, this is meant to be overridden for testing purposes.
   virtual bool waitUntil(
     std::function<bool()> condition,
     int activityDialogDelayMS,
     std::string const &activityDialogTitle,
-    std::string const &activityDialogMessage);
+    std::string const &activityDialogMessage) override;
 };
 
 
