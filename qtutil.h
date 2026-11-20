@@ -202,4 +202,18 @@ void waitForQtEvent(bool processInputEvents = true);
 void installSMQtUtilMessageHandler();
 
 
+// Interface to receive notification of a clipboard failure.
+class ClipboardFailureNotifier {
+public:      // funcs
+  virtual ~ClipboardFailureNotifier();
+  virtual void notify() = 0;
+};
+
+// If this is not nullptr, and the custom message handler installed by
+// `installSMQtUtilMessageHandler` sees a message that reports a failure
+// to set the clipboard, call this function and suppress printing the
+// message.  It is initially nullptr.
+extern ClipboardFailureNotifier *g_clipboardFailureNotifier;
+
+
 #endif // SMQTUTIL_QTUTIL_H

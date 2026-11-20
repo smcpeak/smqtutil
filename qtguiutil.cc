@@ -6,11 +6,12 @@
 // smqtutil
 #include "smqtutil/gdvalue-qt.h"       // toGDValue({QRect,QPoint})
 #include "smqtutil/qstringb.h"         // qstringb
-#include "smqtutil/qtutil.h"           // toString for Key and Modifiers
+#include "smqtutil/qtutil.h"           // toString for Key and Modifiers; ClipboardFailureNotifier
 
 // smbase
 #include "smbase/gdvalue.h"            // gdv::toGDValue for TRACE1_GDVN_EXPRS
 #include "smbase/exc.h"                // smbase::{xformat, XBase}
+#include "smbase/save-restore.h"       // SET_RESTORE
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/sm-windows.h"         // RECT, GetWindowRect
 #include "smbase/string-util.h"        // doubleQuote
@@ -20,6 +21,7 @@
 // Qt
 #include <qtcoreversion.h>             // QTCORE_VERSION
 #include <QApplication>
+#include <QClipboard>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
@@ -28,6 +30,7 @@
 #include <QShortcutEvent>
 #include <QString>
 #include <QStringList>
+#include <QThread>
 #include <QWidget>
 
 // libc
@@ -347,6 +350,72 @@ void trueMoveWindow(QWidget *window, QPoint desiredTopLeft)
       prevCorrection,
       actual);
   }
+}
+
+
+namespace {
+  class Notifier : public ClipboardFailureNotifier {
+  public:      // data
+    bool m_sawFailure = false;
+
+  public:      // funcs
+    virtual void notify() override
+    {
+      m_sawFailure = true;
+    }
+  };
+}
+
+
+bool setClipboardReportFailure(string const &newText)
+{
+  QClipboard *cb = QApplication::clipboard();
+
+  TRACE1("setClipboardReportFailure: newText=" << doubleQuote(newText) <<
+         " supportsSelection=" << cb->supportsSelection());
+
+  Notifier notifier;
+  SET_RESTORE(g_clipboardFailureNotifier, &notifier);
+
+  QString qsNewText = toQString(newText);
+  cb->setText(qsNewText, QClipboard::Clipboard);
+  if (cb->supportsSelection()) {
+    // Also set the X selection so I can paste it into an xterm.
+    cb->setText(qsNewText, QClipboard::Selection);
+  }
+
+  // Detects if either `setText` call failed.
+  bool success = !notifier.m_sawFailure;
+
+  if (!success) {
+    TRACE1("setClipboardReportFailure saw a failure");
+  }
+
+  return success;
+}
+
+
+bool setClipboardWithRetry(string const &newText, int maxRetries)
+{
+  for (int i=0; i < maxRetries; ++i) {
+    if (setClipboardReportFailure(newText)) {
+      if (i > 0) {
+        TRACE1("setClipboardWithRetry succeeded after " << i <<
+               " prior failures");
+      }
+      return true;
+    }
+
+    // Sleep *without* pumping the event queue.  I do this in part to
+    // avoid letting the event replay system think we are quiescent, and
+    // more generally to try to ensure that the event sequencing is the
+    // same with and without a retry.
+    QThread::msleep(100);
+  }
+
+  TRACE1("setClipboardWithRetry giving up after " << maxRetries <<
+         " retries");
+  return false;
 }
 
 

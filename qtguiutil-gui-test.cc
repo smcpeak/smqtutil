@@ -16,6 +16,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <iostream>                    // std::{cout, endl}
+
 using namespace gdv;
 
 
@@ -58,6 +60,15 @@ static void buttonFunc(TestMainWindow &mainWindow)
 }
 
 
+static void copyFunc()
+{
+  std::cout << "Calling setClipboard..." << std::endl;
+  bool success =
+    setClipboardWithRetry("Clipboard text from qtguiutil-gui-test.");
+  std::cout << "Copied: " << success << std::endl;
+}
+
+
 // Called from gui-tests.cc.
 int gui_test_qtguiutil(QApplication &app, bool nogui)
 {
@@ -72,11 +83,19 @@ int gui_test_qtguiutil(QApplication &app, bool nogui)
 
   {
     QVBoxLayout *vb = new QVBoxLayout();
+
     QPushButton *btn = new QPushButton("Make windows");
     QObject::connect(btn, &QPushButton::clicked, [&]() {
       buttonFunc(mainWindow);
     });
     vb->addWidget(btn);
+
+    QPushButton *copyButton = new QPushButton("Copy to clipboard");
+    QObject::connect(copyButton, &QPushButton::clicked, [&]() {
+      copyFunc();
+    });
+    vb->addWidget(copyButton);
+
     vb->addStretch();
 
     widget->setLayout(vb);

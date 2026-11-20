@@ -100,6 +100,24 @@ void setTrueFrameGeometry(
 void trueMoveWindow(QWidget *window, QPoint desiredTopLeft);
 
 
+// Copy `newText` to the window system clipboard.  This can fail on
+// Windows when another app has the clipboard open; this function
+// returns false when that happens.
+bool setClipboardReportFailure(string const &newText);
+
+
+/*
+  Like `setClipboardReportFailure`, but if an attempt fails, keep trying
+  every 100ms up to the indicated limit, after which return false.  In
+  this function, waiting does *not* pump the event queue.
+
+  Interestingly, Qt already has an internal retry mechanism for the case
+  of copying *from* the clipboard; see
+  `QWindowsClipboardRetrievalMimeData::retrieveDataObject`.
+*/
+bool setClipboardWithRetry(string const &newText, int maxRetries = 10);
+
+
 // Set a widget mouse cursor, then restore it on scope exit.
 class CursorSetRestore {
 public:      // data

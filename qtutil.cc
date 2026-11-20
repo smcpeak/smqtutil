@@ -805,6 +805,18 @@ static void customMessageHandler(
     return;
   }
 
+  // This message comes from
+  // qt5/qtbase/src/plugins/platforms/windows/qwindowsclipboard.cpp,
+  // `QWindowsClipboard::setMimeData`.  Intercepting this message is the
+  // only way to detect this failure.
+  if (message.indexOf("OleSetClipboard: Failed to set mime data") >= 0) {
+    TRACE1("Saw clipboard error: " << message);
+    if (g_clipboardFailureNotifier) {
+      g_clipboardFailureNotifier->notify();
+      return;
+    }
+  }
+
   // Print the message.
   std::cerr << toString(mtype) << ": " << message << std::endl;
 
@@ -839,6 +851,17 @@ void installSMQtUtilMessageHandler()
 {
   qInstallMessageHandler(customMessageHandler);
 }
+
+
+// I explicitly define this so the vtable ends up in this module's
+// object file only, rather than that of every module that #includes
+// qtutil.h.  With mingw, it seems I still get typeinfo in all TUs
+// though.
+ClipboardFailureNotifier::~ClipboardFailureNotifier()
+{}
+
+
+ClipboardFailureNotifier *g_clipboardFailureNotifier = nullptr;
 
 
 // EOF
