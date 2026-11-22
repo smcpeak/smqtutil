@@ -63,6 +63,16 @@ void messageBox_details(QWidget *parent, QString title,
                         QString message, QString details);
 
 
+// Show an informational message box, and wait for it to be dismissed,
+// but do not block input to the rest of the app.  The dialog stays
+// above `parent`, without preventing interaction with it, if that is
+// not nullptr.
+void modelessMessageBox(
+  QWidget * NULLABLE parent,
+  QString const &title,
+  QString const &message);
+
+
 // Ask a question with Yes and Cancel buttons.  Return true on Yes.
 bool questionBoxYesCancel(QWidget *parent, QString title, QString question);
 

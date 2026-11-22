@@ -22,6 +22,7 @@
 #include <qtcoreversion.h>             // QTCORE_VERSION
 #include <QApplication>
 #include <QClipboard>
+#include <QEventLoop>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
@@ -416,6 +417,36 @@ bool setClipboardWithRetry(string const &newText, int maxRetries)
   TRACE1("setClipboardWithRetry giving up after " << maxRetries <<
          " retries");
   return false;
+}
+
+
+void modelessMessageBox(
+  QWidget * NULLABLE parent,
+  QString const &title,
+  QString const &message)
+{
+  QMessageBox mb(parent);
+
+  mb.setWindowTitle(title);
+  mb.setText(message);
+  mb.setStandardButtons(QMessageBox::Ok);
+
+  // Do not block input to rest of app.
+  mb.setWindowModality(Qt::NonModal);
+
+  // We cannot just call `mb.exec()` because that resets the modality.
+  // So, use an explicit event loop.
+  QEventLoop loop;
+
+  // Arrange to quit the local loop when the dialog is dismissed.
+  QObject::connect(&mb, &QMessageBox::finished,
+                   &loop, &QEventLoop::quit);
+
+  // Show the dialog onscreen.
+  mb.show();
+
+  // Wait until it is dismissed.
+  loop.exec();
 }
 
 

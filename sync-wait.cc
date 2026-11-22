@@ -3,20 +3,25 @@
 
 #include "sync-wait.h"                 // this module
 
-#include "smqtutil/qtguiutil.h"        // OverrideCursorSetRestore
+// smqtutil
+#include "smqtutil/qstringb.h"         // qstringb
+#include "smqtutil/qtguiutil.h"        // OverrideCursorSetRestore, modelessMessageBox
 #include "smqtutil/qtutil.h"           // waitForQtEvent
 
+// smbase
 #include "smbase/sm-macros.h"          // IMEMBFP
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 
-#include <functional>                  // std::function
-#include <string>                      // std::string
-
+// Qt
 #include <QApplication>
 #include <QCursor>
 #include <QProgressDialog>
 #include <QTimer>
 #include <QWidget>
+
+// libc++
+#include <functional>                  // std::function
+#include <string>                      // std::string
 
 
 INIT_TRACE("sync-wait");
@@ -112,7 +117,8 @@ bool synchronouslyWaitUntil(
 
 // ----------------------- GUISynchronousWaiter ------------------------
 GUISynchronousWaiter::GUISynchronousWaiter(QWidget * NULLABLE widget)
-  : IMEMBFP(widget)
+  : IMEMBFP(widget),
+    m_showCompletionDialog(false)
 {}
 
 
@@ -122,12 +128,26 @@ bool GUISynchronousWaiter::waitUntil(
   std::string const &activityDialogTitle,
   std::string const &activityDialogMessage)
 {
-  return synchronouslyWaitUntil(
+  bool completed = synchronouslyWaitUntil(
     m_widget,
     condition,
     activityDialogDelayMS,
     activityDialogTitle,
     activityDialogMessage);
+
+  if (completed && m_showCompletionDialog) {
+    modelessMessageBox(
+      // Use a nullptr parent because I want this dialog to be able to
+      // be raised and lowered independently of other windows.  It
+      // exists to simulate a delay caused externally, which of course
+      // would not restrict how windows can be arranged.
+      nullptr,
+
+      toQString(activityDialogTitle),
+      qstringb("Completed: " << activityDialogMessage));
+  }
+
+  return completed;
 }
 
 

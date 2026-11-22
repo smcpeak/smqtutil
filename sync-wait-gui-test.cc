@@ -26,6 +26,7 @@ SyncWaitTestWindow::SyncWaitTestWindow()
     m_dialogDelayMS(nullptr),
     m_completionTimeMS(nullptr),
     m_widgetPointer(nullptr),
+    m_showCompletionDialog(nullptr),
     m_resultLabel(nullptr),
     m_timer(),
     m_timesChecked(0),
@@ -66,6 +67,11 @@ SyncWaitTestWindow::SyncWaitTestWindow()
     "Pass widget pointer (otherwise pass nullptr)");
   m_widgetPointer->setChecked(true);
   vbox->addWidget(m_widgetPointer);
+
+  m_showCompletionDialog = new QCheckBox(
+    "Show completion dialog");
+  m_showCompletionDialog->setChecked(false);
+  vbox->addWidget(m_showCompletionDialog);
 
   m_resultLabel = new QLabel("Result: none yet");
   vbox->addWidget(m_resultLabel);
@@ -112,9 +118,13 @@ void SyncWaitTestWindow::slot_start() noexcept
   // phase (the dialog is open) starts.
   bool widgetPointer = m_widgetPointer->isChecked();
 
+  bool showCompletionDialog = m_showCompletionDialog->isChecked();
+
   std::cout << "pressed: delayMS=" << delayMS
             << ", completionMS=" << completionMS
-            << ", widgetPointer=" << widgetPointer << "\n";
+            << ", widgetPointer=" << widgetPointer
+            << ", showCompletionDialog=" << showCompletionDialog
+            << "\n";
 
   m_timer.setSingleShot(true);
   m_timer.start(completionMS);
@@ -122,6 +132,8 @@ void SyncWaitTestWindow::slot_start() noexcept
   m_waiting = true;
 
   GUISynchronousWaiter waiter(widgetPointer? m_centralWidget : nullptr);
+  xassert(!waiter.m_showCompletionDialog);
+  waiter.m_showCompletionDialog = showCompletionDialog;
 
   bool completed = waiter.waitUntil(
     [this]() -> bool { return this->waitCondition(); },

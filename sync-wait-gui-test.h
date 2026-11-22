@@ -30,6 +30,9 @@ public:      // data
   // Check to enable passing the widget pointer.
   QCheckBox *m_widgetPointer;
 
+  // Check to enable the completion dialog.
+  QCheckBox *m_showCompletionDialog;
+
   // Result of the most recent wait session.
   QLabel *m_resultLabel;
 

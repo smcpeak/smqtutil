@@ -66,6 +66,18 @@ public:      // data
   // any.
   QWidget * NULLABLE m_widget;
 
+  /* If true, then once the condition becomes true (if it does), pop up
+     a message box (separate from the progress dialog) that says the
+     operation finished, but holds execution there until the dialog is
+     dismissed.
+
+     This is meant for use during testing in order to force a specific
+     synchronous wait to take arbitrarily long.
+
+     Initially false.
+  */
+  bool m_showCompletionDialog;
+
 public:      // methods
   explicit GUISynchronousWaiter(QWidget * NULLABLE widget = nullptr);
 
