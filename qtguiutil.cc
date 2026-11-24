@@ -34,6 +34,9 @@
 #include <QThread>
 #include <QWidget>
 
+// libc++
+#include <string>                      // std::string
+
 // libc
 #include <string.h>                    // memcmp
 
@@ -44,7 +47,7 @@ using namespace smbase;
 INIT_TRACE("qtguiutil");
 
 
-string keysString(QKeyEvent const &k)
+std::string keysString(QKeyEvent const &k)
 {
   // When the key is a modifier key, QKeyEvent::modifiers() flips the
   // corresponding bit!  Use QInputEvent::modifiers() instead to get
@@ -62,7 +65,7 @@ string keysString(QKeyEvent const &k)
 
 static QKeyEvent *getKeyPressOrReleaseEventFromString(
   QEvent::Type eventType,
-  string const &keys,
+  std::string const &keys,
   QString const &text)
 {
   try {
@@ -86,21 +89,21 @@ static QKeyEvent *getKeyPressOrReleaseEventFromString(
 }
 
 
-QKeyEvent *getKeyPressEventFromString(string const &keys,
+QKeyEvent *getKeyPressEventFromString(std::string const &keys,
                                       QString const &text)
 {
   return getKeyPressOrReleaseEventFromString(QEvent::KeyPress, keys, text);
 }
 
 
-QKeyEvent *getKeyReleaseEventFromString(string const &keys,
+QKeyEvent *getKeyReleaseEventFromString(std::string const &keys,
                                         QString const &text)
 {
   return getKeyPressOrReleaseEventFromString(QEvent::KeyRelease, keys, text);
 }
 
 
-QKeySequence parseKeySequence(string const &keys)
+QKeySequence parseKeySequence(std::string const &keys)
 {
   try {
     QKeySequence kseq(QKeySequence::fromString(toQString(keys)));
@@ -130,7 +133,7 @@ QKeySequence parseKeySequence(string const &keys)
 }
 
 
-QShortcutEvent *getShortcutEventFromString(string const &keys)
+QShortcutEvent *getShortcutEventFromString(std::string const &keys)
 {
   QKeySequence kseq(parseKeySequence(keys));
 
@@ -368,7 +371,7 @@ namespace {
 }
 
 
-bool setClipboardReportFailure(string const &newText)
+bool setClipboardReportFailure(std::string const &newText)
 {
   QClipboard *cb = QApplication::clipboard();
 
@@ -396,7 +399,7 @@ bool setClipboardReportFailure(string const &newText)
 }
 
 
-bool setClipboardWithRetry(string const &newText, int maxRetries)
+bool setClipboardWithRetry(std::string const &newText, int maxRetries)
 {
   for (int i=0; i < maxRetries; ++i) {
     if (setClipboardReportFailure(newText)) {

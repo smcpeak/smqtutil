@@ -11,7 +11,7 @@
 
 #include "smbase/exc.h"                // smbase::XBase
 #include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
-#include "smbase/str.h"                // string
+#include "smbase/std-string-fwd.h"     // std::string [f]
 
 #include <QCursor>
 
@@ -27,25 +27,25 @@ class QWidget;
 
 // Render as a string for debugging or event record/replay.  This
 // string just captures the key(s), not the text.
-string keysString(QKeyEvent const &k);
+std::string keysString(QKeyEvent const &k);
 
 // Convert the string back to a QKeyEvent for event replay.  The
 // returned pointer is an owner pointer.  Throws XFormat if the string
 // cannot be parsed as a KeyPress event.
-QKeyEvent *getKeyPressEventFromString(string const &keys,
+QKeyEvent *getKeyPressEventFromString(std::string const &keys,
                                       QString const &text);
 
 // Same, but as a release event.
-QKeyEvent *getKeyReleaseEventFromString(string const &keys,
+QKeyEvent *getKeyReleaseEventFromString(std::string const &keys,
                                         QString const &text);
 
 // Parse a string returned by QKeySequence.toString(), or throw XFormat.
 // The returned object is guaranteed to have at least one key.
-QKeySequence parseKeySequence(string const &keys);
+QKeySequence parseKeySequence(std::string const &keys);
 
 // Convert a string created with QShortcutEvent::key().toString() to an
 // event object.  Throws XFormat on error.  Returns an owner pointer.
-QShortcutEvent *getShortcutEventFromString(string const &keys);
+QShortcutEvent *getShortcutEventFromString(std::string const &keys);
 
 
 // Display an unhandled exception error in a message box.  Limits
@@ -113,7 +113,7 @@ void trueMoveWindow(QWidget *window, QPoint desiredTopLeft);
 // Copy `newText` to the window system clipboard.  This can fail on
 // Windows when another app has the clipboard open; this function
 // returns false when that happens.
-bool setClipboardReportFailure(string const &newText);
+bool setClipboardReportFailure(std::string const &newText);
 
 
 /*
@@ -125,7 +125,7 @@ bool setClipboardReportFailure(string const &newText);
   of copying *from* the clipboard; see
   `QWindowsClipboardRetrievalMimeData::retrieveDataObject`.
 */
-bool setClipboardWithRetry(string const &newText, int maxRetries = 10);
+bool setClipboardWithRetry(std::string const &newText, int maxRetries = 10);
 
 
 // Set a widget mouse cursor, then restore it on scope exit.
