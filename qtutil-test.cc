@@ -493,6 +493,15 @@ static void test_isMouseEventType()
 }
 
 
+static void test_toQPointF()
+{
+  QPoint pt(1, 2);
+  QPointF ptf = toQPointF(pt);
+  EXPECT_EQ(ptf.x(), 1);
+  EXPECT_EQ(ptf.y(), 2);
+}
+
+
 CLOSE_NAMESPACE(qtutil_test)
 
 
@@ -517,6 +526,7 @@ void test_qtutil()
   test_toStringOpt_KeyboardModifier();
   test_toStringOpt_MouseButton();
   test_isMouseEventType();
+  test_toQPointF();
 
   DIAG("QString: " << toString(qstringb("ab" << 'c')));
   DIAG("QRect: " << toString(QRect(10,20,30,40)));

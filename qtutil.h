@@ -20,6 +20,7 @@
 class QByteArray;
 class QObject;
 class QPoint;
+class QPointF;
 class QRect;
 class QSize;
 class QString;
@@ -65,6 +66,8 @@ QSize qSizeFromString(std::string const &str);
 // Convert between QSize and QPoint.
 QPoint toQPoint(QSize const &size);
 QSize toQSize(QPoint const &point);
+
+QPointF toQPointF(QPoint const &pt);
 
 
 // Convert a keyboard modifier name back to its number, or throw XFormat.

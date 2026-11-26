@@ -232,6 +232,12 @@ QSize toQSize(QPoint const &point)
 }
 
 
+QPointF toQPointF(QPoint const &pt)
+{
+  return QPointF(pt.x(), pt.y());
+}
+
+
 bool isModifierKey(int key)
 {
   switch (key) {
