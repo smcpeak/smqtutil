@@ -102,8 +102,8 @@ SMTableWidget::SMTableWidget(QWidget *parent)
 
 SMTableWidget::~SMTableWidget()
 {
-  QObject::disconnect(horizontalHeader(), nullptr, this, nullptr);
-  QObject::disconnect(selectionModel(), nullptr, this, nullptr);
+  disconnectSignals(horizontalHeader(), this);
+  disconnectSignals(selectionModel(), this);
 }
 
 

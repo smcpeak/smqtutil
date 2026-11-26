@@ -151,13 +151,17 @@ void setQObjectName(QObject *obj, char const *name);
 #define SET_QOBJECT_NAME(object) setQObjectName(object, #object)
 
 
-// Disconnect all signals where 'sender' is the sender.
-//
-// This is generally a good idea to do in a destructor, upon 'this' and
-// all owned QObjects, since the activity of destruction can otherwise
-// result in signals being sent to QObjects that have been at least
-// partially destroyed.
+// Disconnect all signals where `sender` is the sender.
 void disconnectSignalSender(QObject *sender);
+
+
+/* Disconnect `sender` and `receiver`.  This is important to do
+   explicitly in destructors.  See doc/signals-and-dtors.txt.
+
+   If `receiver` is nullptr then `sender` is disconnected from all
+   receivers it is connected to.
+*/
+void disconnectSignals(QObject *sender, QObject * NULLABLE receiver);
 
 
 // Return a dotted sequence of object names from a root object down to

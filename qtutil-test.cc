@@ -52,9 +52,7 @@ Receiver::Receiver()
 
 
 Receiver::~Receiver()
-{
-  disconnectSignalSender(this);
-}
+{}
 
 
 void Receiver::on_sig1() noexcept

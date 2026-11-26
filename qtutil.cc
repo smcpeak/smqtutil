@@ -660,6 +660,12 @@ void disconnectSignalSender(QObject *sender)
 }
 
 
+void disconnectSignals(QObject *sender, QObject * NULLABLE receiver)
+{
+  QObject::disconnect(sender, nullptr, receiver, nullptr);
+}
+
+
 std::string qObjectPath(QObject const *obj)
 {
   if (!obj) {
