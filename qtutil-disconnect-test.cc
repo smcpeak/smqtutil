@@ -83,6 +83,10 @@ Runner::Runner()
 Runner::~Runner()
 {
   // Removing this call makes the test fail.
+  //
+  // Technically, without this call, we are exercising C++ undefined
+  // behavior, so test failure per se is not guaranteed (but is what
+  // happens in practice).
   disconnectSignals(&m_process, this);
 }
 
